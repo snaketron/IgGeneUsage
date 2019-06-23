@@ -1,0 +1,29 @@
+Package: IgGeneUsage
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Simo",
+           family = "Kitanovski",
+           role = c("aut", "cre"),
+           email = "simo.kitanovski@uni-due.de")
+Description: Comparison of gene usage in immune repertoires between different 
+  conditions
+License: GPL (>=3)
+Depends: 
+    methods,
+    R (>= 3.4.0),
+    Rcpp (>= 1.0.1)
+Imports: 
+    rstan (>= 2.18.2),
+    rstantools (>= 1.5.1)
+LinkingTo: 
+    BH (>= 1.69.0-1),
+    Rcpp (>= 1.0.1),
+    RcppEigen (>= 0.3.3.5.0),
+    rstan (>= 2.18.2),
+    StanHeaders (>= 2.18.1-10)
+Encoding: UTF-8
+LazyData: true
+NeedsCompilation: yes
+SystemRequirements: GNU make
+RoxygenNote: 6.1.1
