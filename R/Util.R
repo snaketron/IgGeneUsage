@@ -608,6 +608,13 @@ getTTestStats <- function(usage.data) {
 
   tout.summary <- do.call(rbind, lapply(tout, getTTestSummary))
   tout.summary$gene_name <- usage.data$gene_names
+
+  # multiple correction
+  tout.summary$fdr.p.value <- p.adjust(p = tout.summary$p.value,
+                                       method = "fdr")
+  tout.summary$bonf.p.value <- p.adjust(p = tout.summary$p.value,
+                                        method = "bonferroni")
+
   return (tout.summary)
 }
 
@@ -630,6 +637,13 @@ getManUStats <- function(usage.data) {
 
   mout.summary <- do.call(rbind, lapply(tout, getMSummary))
   mout.summary$gene_name <- usage.data$gene_names
+
+  # multiple correction
+  mout.summary$fdr.p.value <- p.adjust(p = mout.summary$p.value,
+                                       method = "fdr")
+  mout.summary$bonf.p.value <- p.adjust(p = mout.summary$p.value,
+                                        method = "bonferroni")
+
   return (mout.summary)
 
 
