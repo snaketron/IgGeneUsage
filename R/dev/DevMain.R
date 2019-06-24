@@ -6,21 +6,12 @@ source(file = "R/Usage.R")
 
 
 input <- get(load(file = "inst/input.RData"))
-small.input <- get(load(file = "inst/small.input.RData"))
-# rm(usage)
+input.V <- input[which(regexpr(pattern = "IGHV", text = input$gene_name) != -1), ]
+input.J <- input[which(regexpr(pattern = "IGHJ", text = input$gene_name) != -1), ]
+rm(input)
 
 
-
-
-# usage.data <- input
-usage.data <- small.input
-
-
-
-
-
-
-comparison.usage <- compareUsage(usage.data = usage.data,
+comparison.usage <- compareUsage(usage.data = input.J,
                                  mcmc.warmup = 500,
                                  mcmc.steps = 1500,
                                  mcmc.chains = 2,
@@ -30,6 +21,7 @@ comparison.usage <- compareUsage(usage.data = usage.data,
                                  max.treedepth = 13)
 
 comparison.usage$glm.summary
+
 
 
 
@@ -52,6 +44,9 @@ ggplot()+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4),
         legend.position = "top")
 
+
+comparison.usage$usage.data$
+t.test()
 
 
 
