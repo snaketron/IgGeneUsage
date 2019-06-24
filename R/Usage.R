@@ -83,13 +83,19 @@ compareUsage <- function(usage.data,
                              hdi.level = hdi.level)
 
 
+
+  # frequentist tests
+  t.test.stats <- getTTestStats(usage.data = usage.data)
+  man.u.stats <- getManUStats(usage.data = usage.data)
+
   # result
   result <- list(glm = glm,
                  glm.summary = glm.summary,
                  group.ppc = group.ppc,
                  ppc = ppc,
-                 usage.data = usage.data)
-
+                 usage.data = usage.data,
+                 t.test.stats = t.test.stats,
+                 man.u.stats = man.u.stats)
 
   return (result)
 }
