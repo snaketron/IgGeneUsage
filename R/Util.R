@@ -587,5 +587,50 @@ getGroupStats <- function(glm.ext,
 }
 
 
+# two sided t.test
+getTTestStats <- function(usage.data) {
+  getTTest <- function(x, Ys, Xs, Ns) {
+    return(t.test(Ys[x, ]/Ns*100~Xs))
+  }
+  getTTestSummary <- function(x) {
+    return(data.frame(p.value = x$p.value,
+                      t.value = x$statistic,
+                      L95 = x$conf.int[1],
+                      H95 = x$conf.int[2],
+                      stringsAsFactors = FALSE))
+  }
+
+  tout <- lapply(X = 1:usage.data$N_gene,
+                 FUN = getTTest,
+                 Ys = usage.data$Y,
+                 Xs = usage.data$X,
+                 Ns = usage.data$N)
+
+  tout.summary <- do.call(rbind, lapply(tout, getTTestSummary))
+  tout.summary$gene_name <- usage.data$gene_names
+  return (tout.summary)
+}
 
 
+getManUStats <- function(usage.data) {
+  getMTest <- function(x, Ys, Xs, Ns) {
+    return(wilcox.test(Ys[x, ]/Ns*100~Xs))
+  }
+  getMSummary <- function(x) {
+    return(data.frame(p.value = x$p.value,
+                      w.value = x$statistic,
+                      stringsAsFactors = FALSE))
+  }
+
+  mout <- lapply(X = 1:usage.data$N_gene,
+                 FUN = getMTest,
+                 Ys = usage.data$Y,
+                 Xs = usage.data$X,
+                 Ns = usage.data$N)
+
+  mout.summary <- do.call(rbind, lapply(tout, getMSummary))
+  mout.summary$gene_name <- usage.data$gene_names
+  return (mout.summary)
+
+
+}
