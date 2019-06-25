@@ -26,7 +26,8 @@ diffUsage <- function(usage.data,
 
 
   # model
-  model <- rstan::stan_model(file = "src/stan_files/model.stan")
+  model <- rstan::stan_model(file = "src/stan_files/m.stan")
+  # model <- rstan::stan_model(file = "src/stan_files/model.stan")
 
 
   # stan sampling
