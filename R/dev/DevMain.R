@@ -5,10 +5,19 @@ source(file = "R/Util.R")
 source(file = "R/Usage.R")
 
 
+
+
+# D1
 input <- get(load(file = "inst/input.RData"))
 input.V <- input[which(regexpr(pattern = "IGHV", text = input$gene_name) != -1), ]
 input.J <- input[which(regexpr(pattern = "IGHJ", text = input$gene_name) != -1), ]
 rm(input)
+
+
+# D2
+input <- get(load(file = "inst/IGHV_HCV.RData"))
+input <- input[, c("sample_id", "condition", "gene_name", "gene_usage_count")]
+input.V <- input
 
 
 usage.J <- compareUsage(usage.data = input.J,
@@ -27,7 +36,7 @@ usage.V <- compareUsage(usage.data = input.V,
                         mcmc.cores = 2,
                         hdi.level = 0.95,
                         adapt.delta = 0.95,
-                        max.treedepth = 13)
+                        max.treedepth = 10)
 
 
 
@@ -70,3 +79,8 @@ ggplot()+
 usage.V$t.test.stats
 usage.V$man.u.stats
 
+
+
+z <- usage.V$glm
+z <- summary(z, pars = c("alpha_gene", "beta_gene"))$summary
+plot(z[1:65, 1], z[66:nrow(z), 1])
