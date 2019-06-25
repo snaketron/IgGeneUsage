@@ -13,12 +13,31 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+
+```{r}
+require(ggplot2)
+require(gridExtra)
+require(rstan)
+require(ggrepel)
+
+
+rstan_options(auto_write = TRUE)
+
+source(file = "R/Util.R")
+source(file = "R/Usage.R")
+```
+
+
+
+
+
 ## Introduction
 
 The IgGeneUsage package comes with a few gene usage datasets taken from the 
 following publications:
-    * D1: XXX
-    * D2: XXX
+* D1: XXX
+* D2: XXX
 In this tutorial we explore the different functionalities of the R package using
 these datasets.
 
@@ -27,8 +46,214 @@ these datasets.
 ## Case Study
 ### D1: XXX
 
-```{r cars}
-data(IGHV_HCV)
+```{r}
+# data(IGHV_HCV_CSM)
+IGHV_HCV_CSM <- get(load(file = "inst/IGHV_HCV_CSM.RData"))
+IGHV_HCV_CSM <- IGHV_HCV_CSM[, c("sample_id", "condition", 
+                                 "gene_name", "gene_usage_count")]
+
+# estimate total usage per sample
+total.usage <- aggregate(gene_usage_count~sample_id+condition, 
+                         FUN = sum, data = IGHV_HCV_CSM)
+total.usage$total_usage_count <- total.usage$gene_usage_count
+total.usage$gene_usage_count <- NULL
+
+IGHV_HCV_CSM <- merge(x = IGHV_HCV_CSM, y = total.usage, by = c("sample_id", "condition"), all.x = T)
+IGHV_HCV_CSM$gene_usage_pct <- IGHV_HCV_CSM$gene_usage_count/IGHV_HCV_CSM$total_usage_count*100
+```
+
+
+```{r, fig.width=7, fig.height=4}
+IGHV_HCV_CSM$bit <- IGHV_HCV_CSM$gene_usage_pct < 1
+bit.m <- table(IGHV_HCV_CSM$gene_name, IGHV_HCV_CSM$bit)
+
+ggplot(data = IGHV_HCV_CSM[!IGHV_HCV_CSM$gene_name %in% names(which(bit.m[, "TRUE"] == 29)), ])+
+  geom_point(aes(x = gene_name, y = gene_usage_pct, 
+                 fill = condition, shape = condition),
+             position = position_dodge(width = 1), stroke = 0)+
+  theme_bw(base_size = 9)+
+  ylab(label = "Usage [%]")+
+  xlab(label = '')+
+  theme(legend.position = "top",
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
+  scale_fill_manual(name = "Condition", values = c("orange", "#6666ff"))+
+  scale_shape_manual(name = "Condition", values = c(21, 22))
+```
+
+
+```{r}
+IGHV_HCV_CSM <- IGHV_HCV_CSM[, c("sample_id", "condition", 
+                                 "gene_name", "gene_usage_count")]
+
+usage.hcv.csm <- diffUsage(usage.data = IGHV_HCV_CSM,
+                           mcmc.warmup = 500,
+                           mcmc.steps = 1500,
+                           mcmc.chains = 4,
+                           mcmc.cores = 4,
+                           hdi.level = 0.95,
+                           adapt.delta = 0.95,
+                           max.treedepth = 13)
+```
+
+
+
+
+### Repertoire-specific PPC
+
+```{r, fig.height=8, fig.width=6}
+ppc <- usage.hcv.csm$ppc
+ggplot(data = ppc)+
+  facet_wrap(facets = ~sample_id, ncol = 5)+
+  geom_abline(intercept = 0, slope = 1)+
+  geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")
+```
+
+
+
+
+### Gene x Condition -specific PPC
+
+```{r}
+ggplot()+
+  geom_errorbar(data = usage.hcv.csm$group.ppc$group.ppc,
+                aes(x = gene_name, ymin = ppc.L,
+                    ymax = ppc.H, col = condition),
+                position = position_dodge(width = .8),
+                width = 0.75)+
+  geom_point(data = usage.hcv.csm$group.ppc$individual.pct.data,
+             aes(x = gene_name, y = gene_usage_pct,
+                 col = condition), shape = 21, size = 0.5,
+             position = position_dodge(width = .8), fill = "black")+
+  theme_bw(base_size = 9)+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4),
+        legend.position = "top")
+```
+
+
+
+
+### Comparison of results
+
+```{r, fig.width=6, fig.height=6}
+stats <- merge(x= usage.hcv.csm$glm.summary,
+               y = usage.hcv.csm$test.stats, 
+               by = "gene_name")
+
+stats <- stats[order(-log10(stats$t.test.pvalue), decreasing = T), ]
+stats$rank.t <- 1:nrow(stats)
+stats <- stats[order(-log10(stats$u.test.pvalue), decreasing = T), ]
+stats$rank.u <- 1:nrow(stats)
+stats <- stats[order(stats$pmax, decreasing = T), ]
+stats$rank.pmax <- 1:nrow(stats)
+```
+
+
+
+```{r}
+ggplot(data = stats)+
+  geom_text_repel(aes(x = pmax, y = -log10(u.test.fdr.pvalue), 
+                label = gene_name), size = 2.5)
+```
+
+
+
+```{r}
+ggplot(data = stats)+
+  geom_text_repel(aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
+                label = gene_name), size = 2.5)
+```
+
+
+
+```{r, fig.width=5, fig.height=4}
+gene_name <- "IGHV1-3"
+group.ppc <- usage.hcv.csm$group.ppc$group.ppc
+group.ppc <- group.ppc[group.ppc$gene_name == gene_name, ]
+
+individual.data <- usage.hcv.csm$group.ppc$individual.pct.data
+individual.data <- individual.data[individual.data$gene_name == gene_name, ]
+
+ggplot()+
+  geom_errorbar(data = group.ppc,
+                aes(x = gene_name, ymin = ppc.L, ymax = ppc.H, col = condition),
+                position = position_dodge(width = .8), width = 0.75)+
+  geom_point(data = individual.data,
+             aes(x = gene_name, y = gene_usage_pct, col = condition),
+             shape = 21, size = 2, fill = "black",
+             position = position_jitterdodge(jitter.width = 0.25, 
+                                             jitter.height = 0, 
+                                             dodge.width = 0.8))+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")
+
+usage.hcv.csm$usage.data$Y[gene_name, ]
+```
+
+
+
+```{r, fig.width=5, fig.height=4}
+gene_name <- "IGHV1-58"
+group.ppc <- usage.hcv.csm$group.ppc$group.ppc
+group.ppc <- group.ppc[group.ppc$gene_name == gene_name, ]
+
+individual.data <- usage.hcv.csm$group.ppc$individual.pct.data
+individual.data <- individual.data[individual.data$gene_name == gene_name, ]
+
+ggplot()+
+  geom_errorbar(data = group.ppc,
+                aes(x = gene_name, ymin = ppc.L, ymax = ppc.H, col = condition),
+                position = position_dodge(width = .8), width = 0.75)+
+  geom_point(data = individual.data,
+             aes(x = gene_name, y = gene_usage_pct, col = condition),
+             shape = 21, size = 2, fill = "black",
+             position = position_jitterdodge(jitter.width = 0.25, 
+                                             jitter.height = 0, 
+                                             dodge.width = 0.8))+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")
+
+usage.hcv.csm$usage.data$Y[gene_name, ]
+```
+
+
+
+
+```{r, fig.width=5, fig.height=4}
+gene_name <- "IGHV3-72"
+group.ppc <- usage.hcv.csm$group.ppc$group.ppc
+group.ppc <- group.ppc[group.ppc$gene_name == gene_name, ]
+
+individual.data <- usage.hcv.csm$group.ppc$individual.pct.data
+individual.data <- individual.data[individual.data$gene_name == gene_name, ]
+
+ggplot()+
+  geom_errorbar(data = group.ppc,
+                aes(x = gene_name, ymin = ppc.L, ymax = ppc.H, col = condition),
+                position = position_dodge(width = .8), width = 0.75)+
+  geom_point(data = individual.data,
+             aes(x = gene_name, y = gene_usage_pct, col = condition),
+             shape = 21, size = 2, fill = "black",
+             position = position_jitterdodge(jitter.width = 0.25, 
+                                             jitter.height = 0, 
+                                             dodge.width = 0.8))+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")
+
+usage.hcv.csm$usage.data$Y[gene_name, ]
+```
+
+
+```{r}
+e <- rstan::extract(object = usage.hcv.csm$glm, pars = c("alpha_gene", "beta_gene"))
+e.i <- which(usage.hcv.csm$usage.data$gene_names == "IGHV1-3")
+hist(1/(1+exp(-e$alpha_gene[, e.i]))*100)
+```
+
+```{r}
+hist(e$beta_gene[, e.i])
+hist(1/(1+exp(-(e$alpha_gene[, e.i] + e$beta_gene[, e.i])))*100)
 ```
 
 
