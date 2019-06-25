@@ -1,13 +1,13 @@
 
 
-compareUsage <- function(usage.data,
-                         mcmc.warmup = 500,
-                         mcmc.steps = 1500,
-                         mcmc.chains = 4,
-                         mcmc.cores = 4,
-                         hdi.level = 0.95,
-                         adapt.delta = 0.99,
-                         max.treedepth = 12) {
+diffUsage <- function(usage.data,
+                      mcmc.warmup = 500,
+                      mcmc.steps = 1500,
+                      mcmc.chains = 4,
+                      mcmc.cores = 4,
+                      hdi.level = 0.95,
+                      adapt.delta = 0.99,
+                      max.treedepth = 12) {
 
 
   # check inputs
@@ -60,14 +60,14 @@ compareUsage <- function(usage.data,
 
 
 
-  # bc
-  glm.summary$bc <- getBcStats(glm.ext = glm.ext,
-                               usage.data = usage.data)
+  # Depreceated: bc
+  # glm.summary$bc <- getBcStats(glm.ext = glm.ext,
+  #                              usage.data = usage.data)
 
 
 
   # add gene id
-  glm.summary$gene <- usage.data$gene_names
+  glm.summary$gene_name <- usage.data$gene_names
 
 
 
@@ -84,9 +84,12 @@ compareUsage <- function(usage.data,
 
 
 
-  # frequentist tests
+  # frequentist tests, merge data
   t.test.stats <- getTTestStats(usage.data = usage.data)
-  man.u.stats <- getManUStats(usage.data = usage.data)
+  u.test.stats <- getManUStats(usage.data = usage.data)
+  test.stats <- merge(x = t.test.stats, y = u.test.stats,
+                      by = "gene_name")
+
 
   # result
   result <- list(glm = glm,
@@ -94,8 +97,7 @@ compareUsage <- function(usage.data,
                  group.ppc = group.ppc,
                  ppc = ppc,
                  usage.data = usage.data,
-                 t.test.stats = t.test.stats,
-                 man.u.stats = man.u.stats)
+                 test.stats = test.stats)
 
   return (result)
 }

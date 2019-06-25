@@ -593,27 +593,27 @@ getTTestStats <- function(usage.data) {
     return(try(t.test(Ys[x, ]/Ns*100~Xs)))
   }
   getTTestSummary <- function(x) {
-    return(data.frame(p.value = x$p.value,
-                      t.value = x$statistic,
-                      L95 = x$conf.int[1],
-                      H95 = x$conf.int[2],
+    return(data.frame(t.test.pvalue = x$p.value,
+                      t.test.tvalue = x$statistic,
+                      t.test.L95 = x$conf.int[1],
+                      t.test.H95 = x$conf.int[2],
                       stringsAsFactors = FALSE))
   }
 
-  tout <- lapply(X = 1:usage.data$N_gene,
-                 FUN = getTTest,
-                 Ys = usage.data$Y,
-                 Xs = usage.data$X,
-                 Ns = usage.data$N)
+  tout <- suppressWarnings(expr = lapply(X = 1:usage.data$N_gene,
+                                         FUN = getTTest,
+                                         Ys = usage.data$Y,
+                                         Xs = usage.data$X,
+                                         Ns = usage.data$N))
 
   tout.summary <- do.call(rbind, lapply(tout, getTTestSummary))
   tout.summary$gene_name <- usage.data$gene_names
 
   # multiple correction
-  tout.summary$fdr.p.value <- p.adjust(p = tout.summary$p.value,
-                                       method = "fdr")
-  tout.summary$bonf.p.value <- p.adjust(p = tout.summary$p.value,
-                                        method = "bonferroni")
+  tout.summary$t.test.fdr.pvalue <- p.adjust(p = tout.summary$t.test.pvalue,
+                                             method = "fdr")
+  tout.summary$t.test.bonf.pvalue <- p.adjust(p = tout.summary$t.test.pvalue,
+                                              method = "bonferroni")
 
   return (tout.summary)
 }
@@ -627,25 +627,25 @@ getManUStats <- function(usage.data) {
   }
 
   getMSummary <- function(x) {
-    return(data.frame(p.value = x$p.value,
-                      w.value = x$statistic,
+    return(data.frame(u.test.pvalue = x$p.value,
+                      u.test.wvalue = x$statistic,
                       stringsAsFactors = FALSE))
   }
 
-  mout <- lapply(X = 1:usage.data$N_gene,
-                 FUN = getMTest,
-                 Ys = usage.data$Y,
-                 Xs = usage.data$X,
-                 Ns = usage.data$N)
+  mout <- suppressWarnings(expr = lapply(X = 1:usage.data$N_gene,
+                                         FUN = getMTest,
+                                         Ys = usage.data$Y,
+                                         Xs = usage.data$X,
+                                         Ns = usage.data$N))
 
   mout.summary <- do.call(rbind, lapply(mout, getMSummary))
   mout.summary$gene_name <- usage.data$gene_names
 
   # multiple correction
-  mout.summary$fdr.p.value <- p.adjust(p = mout.summary$p.value,
-                                       method = "fdr")
-  mout.summary$bonf.p.value <- p.adjust(p = mout.summary$p.value,
-                                        method = "bonferroni")
+  mout.summary$u.test.fdr.pvalue <- p.adjust(p = mout.summary$u.test.pvalue,
+                                             method = "fdr")
+  mout.summary$u.test.bonf.pvalue <- p.adjust(p = mout.summary$u.test.pvalue,
+                                              method = "bonferroni")
 
   return (mout.summary)
 }
