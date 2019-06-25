@@ -21,6 +21,7 @@ functions {
              binomial_lpmf(y | trials, theta);
     }
   }
+
   /* zero-inflated binomial log-PDF of a single response
    * logit parameterization of the zero-inflation part
    * Args:
@@ -42,6 +43,7 @@ functions {
              binomial_lpmf(y | trials, theta);
     }
   }
+
   /* zero-inflated binomial log-PDF of a single response
    * logit parameterization of the binomial part
    * Args:
@@ -89,6 +91,7 @@ functions {
   real zero_inflated_binomial_lccdf(int y, int trials, real theta, real zi) {
     return bernoulli_lpmf(0 | zi) + binomial_lccdf(y | trials, theta);
   }
+
   real zero_inflated_binomial_lcdf(int y, int trials, real theta, real zi) {
     return log1m_exp(zero_inflated_binomial_lccdf(y | trials, theta, zi));
   }
@@ -114,6 +117,7 @@ parameters {
   vector [N_gene] beta_raw [N_sample];
   vector [N_gene] alpha_gene_raw;
   vector [N_gene] beta_gene_raw;
+  vector <lower=0,upper=1> [N_gene] z;  // zero-inflation probability
 }
 
 
@@ -138,8 +142,9 @@ transformed parameters {
 
 model {
   for(i in 1:N_sample) {
-    Y[, i] ~ binomial_logit(N[i], alpha[i] + beta[i]*X[i]);
-    // target += zero_inflated_binomial_blogit_lpmf(Y[n] | trials[n], mu[n], zi);
+    for(j in 1:N_gene) {
+      target += zero_inflated_binomial_blogit_lpmf(Y[j, i] | N[i], alpha[i][j] + beta[i][j]*X[i], z[j]);
+    }
   }
 
   alpha_grand ~ normal(0, 20);
@@ -156,6 +161,7 @@ model {
   }
   alpha_gene_raw ~ normal(0, 1);
   beta_gene_raw ~ normal(0, 1);
+  z ~ beta(1, 1);
 }
 
 
@@ -170,7 +176,7 @@ generated quantities {
     for(i in 1:N_sample) {
       temp = N[i];
 
-      log_lik[j,i] = binomial_logit_lpmf(Y[j,i] | N[i], alpha[i][j] + beta[i][j] * X[i]);
+      log_lik[j,i] = zero_inflated_binomial_blogit_lpmf(Y[j,i] | N[i], alpha[i][j] + beta[i][j] * X[i], z[j]);
       Yhat[j, i] = binomial_rng(N[i], inv_logit(alpha[i][j]+beta[i][j]*X[i]));
 
       if(temp == 0.0) {
