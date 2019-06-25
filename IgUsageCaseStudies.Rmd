@@ -168,7 +168,7 @@ ggplot(data = stats)+
 
 
 ```{r, fig.width=5, fig.height=4}
-gene_name <- "IGHV1-3"
+gene_name <- "IGHV3-64D"
 group.ppc <- usage.hcv.csm$group.ppc$group.ppc
 group.ppc <- group.ppc[group.ppc$gene_name == gene_name, ]
 
@@ -189,8 +189,19 @@ ggplot()+
   theme(legend.position = "top")
 
 usage.hcv.csm$usage.data$Y[gene_name, ]
+paste(usage.hcv.csm$usage.data$Y[gene_name, ], collapse = ', ')
+paste(usage.hcv.csm$usage.data$X, collapse = ', ')
 ```
 
+```{r}
+e <- rstan::extract(object = usage.hcv.csm$glm, pars = c("alpha_gene", "beta_gene"))
+e.i <- which(usage.hcv.csm$usage.data$gene_names == gene_name)
+par(mfrow = c(2, 2))
+hist(e$alpha_gene[, e.i])
+hist(e$beta_gene[, e.i])
+hist(1/(1 + exp(-(e$alpha_gene[, e.i] + e$beta_gene[, e.i])))*100)
+hist(1/(1 + exp(-(e$alpha_gene[, e.i] + e$beta_gene[, e.i]*(-1))))*100)
+```
 
 
 ```{r, fig.width=5, fig.height=4}

@@ -48,6 +48,7 @@ model {
   beta_grand ~ normal(0, 5);
 
   alpha_sigma ~ cauchy(0, 3);
+  alpha_gene_sigma ~ cauchy(0, 3);
   beta_sigma ~ cauchy(0, 3);
   beta_gene_sigma ~ cauchy(0, 3);
 
