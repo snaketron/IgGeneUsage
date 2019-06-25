@@ -590,7 +590,7 @@ getGroupStats <- function(glm.ext,
 # two sided t.test
 getTTestStats <- function(usage.data) {
   getTTest <- function(x, Ys, Xs, Ns) {
-    return(t.test(Ys[x, ]/Ns*100~Xs))
+    return(try(t.test(Ys[x, ]/Ns*100~Xs)))
   }
   getTTestSummary <- function(x) {
     return(data.frame(p.value = x$p.value,
@@ -619,10 +619,13 @@ getTTestStats <- function(usage.data) {
 }
 
 
+
 getManUStats <- function(usage.data) {
+
   getMTest <- function(x, Ys, Xs, Ns) {
-    return(wilcox.test(Ys[x, ]/Ns*100~Xs))
+    return(try(wilcox.test(Ys[x, ]/Ns*100~Xs)))
   }
+
   getMSummary <- function(x) {
     return(data.frame(p.value = x$p.value,
                       w.value = x$statistic,
@@ -635,7 +638,7 @@ getManUStats <- function(usage.data) {
                  Xs = usage.data$X,
                  Ns = usage.data$N)
 
-  mout.summary <- do.call(rbind, lapply(tout, getMSummary))
+  mout.summary <- do.call(rbind, lapply(mout, getMSummary))
   mout.summary$gene_name <- usage.data$gene_names
 
   # multiple correction
@@ -645,6 +648,6 @@ getManUStats <- function(usage.data) {
                                         method = "bonferroni")
 
   return (mout.summary)
-
-
 }
+
+

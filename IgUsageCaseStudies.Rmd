@@ -1,0 +1,45 @@
+---
+title: "IgGeneUsage"
+author: "SK"
+date: "June 25, 2019"
+output: 
+  html_document: 
+    highlight: tango
+    theme: journal
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The IgGeneUsage package comes with a few gene usage datasets taken from the 
+following publications:
+    * D1: XXX
+    * D2: XXX
+In this tutorial we explore the different functionalities of the R package using
+these datasets.
+
+
+
+## Case Study
+### D1: XXX
+
+```{r cars}
+data(IGHV_HCV)
+```
+
+
+### D2: XXX
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
