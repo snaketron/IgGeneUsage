@@ -7,7 +7,8 @@ diffUsage <- function(usage.data,
                       mcmc.cores = 4,
                       hdi.level = 0.95,
                       adapt.delta = 0.99,
-                      max.treedepth = 12) {
+                      max.treedepth = 12,
+                      dev.model) {
 
 
   # check inputs
@@ -25,10 +26,9 @@ diffUsage <- function(usage.data,
   usage.data <- getUsageData(usage = usage.data.raw)
 
 
+  model <- rstan::stan_model(file = dev.model)
   # model
-  model <- rstan::stan_model(file = "src/stan_files/z.stan")
-  # model <- rstan::stan_model(file = "src/stan_files/m.stan")
-  # model <- rstan::stan_model(file = "src/stan_files/model.stan")
+  # model <- rstan::stan_model(file = "src/stan_files/zib_multiz.stan")
 
 
   # stan sampling
