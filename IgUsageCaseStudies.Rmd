@@ -92,7 +92,9 @@ usage.hcv.csm <- diffUsage(usage.data = IGHV_HCV_CSM,
                            mcmc.cores = 4,
                            hdi.level = 0.95,
                            adapt.delta = 0.95,
-                           max.treedepth = 13)
+                           max.treedepth = 13,
+                           dev.model = "src/stan_files/beta_binomial_model.stan")
+# save(usage.hcv.csm, file = "R/dev/beta_binomial.RData")
 ```
 
 
@@ -115,21 +117,51 @@ ggplot(data = ppc)+
 
 ### Gene x Condition -specific PPC
 
-```{r}
+```{r, fig.width=10, fig.height=5}
+# usage.hcv.csm <- get(load(file = "R/dev/b.RData"))
+# usage.hcv.csm <- get(load(file = "R/dev/zib_multiz.RData"))
+
 ggplot()+
   geom_errorbar(data = usage.hcv.csm$group.ppc$group.ppc,
                 aes(x = gene_name, ymin = ppc.L,
                     ymax = ppc.H, col = condition),
                 position = position_dodge(width = .8),
-                width = 0.75)+
+                width = 1, size = 1)+
   geom_point(data = usage.hcv.csm$group.ppc$individual.pct.data,
              aes(x = gene_name, y = gene_usage_pct,
-                 col = condition), shape = 21, size = 0.5,
+                 col = condition), shape = 21, size = 0.75,
              position = position_dodge(width = .8), fill = "black")+
   theme_bw(base_size = 9)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4),
         legend.position = "top")
 ```
+
+
+
+
+```{r, fig.height=8, fig.width=5}
+getMinEffect <- function(x) {
+  if(x[1] <= 0 & x[2] >= 0) {
+    return (0)
+  }
+  return(min(abs(c(x[1], x[2]))))
+}
+
+stats <- usage.hcv.csm$glm.summary
+stats$effect_min <- apply(X = stats[, c("effect_L", "effect_H")], MARGIN = 1, FUN = getMinEffect)
+stats$effect_col <- ifelse(test = stats$effect_min == 0, yes = "black", no = "red")
+stats <- stats[order(abs(stats$effect_mean), decreasing = F), ]
+stats$gene_fac <- factor(x = stats$gene_name, levels = stats$gene_name)
+
+ggplot(data = stats)+
+  geom_vline(xintercept = 0, linetype = "dashed", col = "darkgray")+
+  geom_errorbarh(aes(y = gene_fac, xmin = effect_L, 
+                     xmax = effect_H, col = effect_col))+
+  geom_point(aes(y = gene_fac, x = effect_mean))+
+  theme_bw(base_size = 9)
+```
+
+
 
 
 
@@ -151,24 +183,28 @@ stats$rank.pmax <- 1:nrow(stats)
 
 
 
+
 ```{r}
 ggplot(data = stats)+
   geom_text_repel(aes(x = pmax, y = -log10(u.test.fdr.pvalue), 
-                label = gene_name), size = 2.5)
+                label = gene_name), size = 2.5)+
+  xlim(0.5, 1)
 ```
+
 
 
 
 ```{r}
 ggplot(data = stats)+
   geom_text_repel(aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
-                label = gene_name), size = 2.5)
+                label = gene_name), size = 2.5)+
+  xlim(0.5, 1)
 ```
 
 
 
 ```{r, fig.width=5, fig.height=4}
-gene_name <- "IGHV3-64D"
+gene_name <- "IGHV5-10-1"
 group.ppc <- usage.hcv.csm$group.ppc$group.ppc
 group.ppc <- group.ppc[group.ppc$gene_name == gene_name, ]
 
@@ -188,24 +224,27 @@ ggplot()+
   theme_bw(base_size = 9)+
   theme(legend.position = "top")
 
-usage.hcv.csm$usage.data$Y[gene_name, ]
-paste(usage.hcv.csm$usage.data$Y[gene_name, ], collapse = ', ')
-paste(usage.hcv.csm$usage.data$X, collapse = ', ')
+# usage.hcv.csm$usage.data$Y[gene_name, ]
+# paste(usage.hcv.csm$usage.data$Y[gene_name, ], collapse = ', ')
+# paste(usage.hcv.csm$usage.data$X, collapse = ', ')
 ```
 
 ```{r}
-e <- rstan::extract(object = usage.hcv.csm$glm, pars = c("alpha_gene", "beta_gene"))
-e.i <- which(usage.hcv.csm$usage.data$gene_names == gene_name)
-par(mfrow = c(2, 2))
-hist(e$alpha_gene[, e.i])
-hist(e$beta_gene[, e.i])
-hist(1/(1 + exp(-(e$alpha_gene[, e.i] + e$beta_gene[, e.i])))*100)
-hist(1/(1 + exp(-(e$alpha_gene[, e.i] + e$beta_gene[, e.i]*(-1))))*100)
+# e <- rstan::extract(object = usage.hcv.csm$glm, pars = c("alpha_gene", "beta_gene", "z"))
+# e.i <- which(usage.hcv.csm$usage.data$gene_names == gene_name)
+# 
+# 
+# par(mfrow = c(2, 2))
+# hist(e$alpha_gene[, e.i])
+# hist(e$beta_gene[, e.i])
+# hist((1-e$z[, e.i]) * 1/(1 + exp(-(e$alpha_gene[, e.i] + e$beta_gene[, e.i]))) *100)
+# hist((1-e$z[, e.i]) * 1/(1 + exp(-(e$alpha_gene[, e.i] + (-1) * e$beta_gene[, e.i]))) *100)
 ```
 
 
+
 ```{r, fig.width=5, fig.height=4}
-gene_name <- "IGHV1-58"
+gene_name <- "IGHV3-23"
 group.ppc <- usage.hcv.csm$group.ppc$group.ppc
 group.ppc <- group.ppc[group.ppc$gene_name == gene_name, ]
 
@@ -305,13 +344,14 @@ ggplot(data = test[!test$gene_name %in% names(which(bit.m[, "TRUE"] == 29)), ])+
 
 
 ```{r}
-test <- test[, c("sample_id", "condition", "gene_name", "gene_usage_count")]
+test <- test[, c("sample_id", "condition", 
+                 "gene_name", "gene_usage_count")]
 
 usage.hcv.csm <- diffUsage(usage.data = test,
                            mcmc.warmup = 500,
                            mcmc.steps = 1500,
-                           mcmc.chains = 2,
-                           mcmc.cores = 2,
+                           mcmc.chains = 4,
+                           mcmc.cores = 4,
                            hdi.level = 0.95,
                            adapt.delta = 0.95,
                            max.treedepth = 13)
@@ -322,7 +362,7 @@ usage.hcv.csm <- diffUsage(usage.data = test,
 
 ### Repertoire-specific PPC
 
-```{r, fig.height=8, fig.width=6}
+```{r, fig.height=6, fig.width=8}
 ppc <- usage.hcv.csm$ppc
 ggplot(data = ppc)+
   facet_wrap(facets = ~sample_id, ncol = 5)+
@@ -384,13 +424,14 @@ ggplot(data = stats)+
 ```{r}
 ggplot(data = stats)+
   geom_text_repel(aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
-                label = gene_name), size = 2.5)
+                label = gene_name), size = 2.5)+
+  xlim(c(0.5, 1))
 ```
 
 
 
 ```{r, fig.width=5, fig.height=4}
-gene_name <- "IGHV3-64D"
+gene_name <- "IGHV4-4"
 group.ppc <- usage.hcv.csm$group.ppc$group.ppc
 group.ppc <- group.ppc[group.ppc$gene_name == gene_name, ]
 
@@ -404,7 +445,7 @@ ggplot()+
   geom_point(data = individual.data,
              aes(x = gene_name, y = gene_usage_pct, col = condition),
              shape = 21, size = 2, fill = "black",
-             position = position_jitterdodge(jitter.width = 0.25, 
+             position = position_jitterdodge(jitter.width = 0.15, 
                                              jitter.height = 0, 
                                              dodge.width = 0.8))+
   theme_bw(base_size = 9)+

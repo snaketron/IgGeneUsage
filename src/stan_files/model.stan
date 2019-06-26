@@ -18,24 +18,25 @@ parameters {
 }
 
 
-
 transformed parameters {
   vector [N_gene] alpha_gene;
   vector [N_gene] beta [N_sample];
   vector [N_gene] beta_gene;
+  vector [N_gene] mu [N_sample];
 
   // non-centered params
   alpha_gene = alpha_grand + alpha_sigma * alpha_raw;
   beta_gene = beta_grand + beta_gene_sigma * beta_gene_raw;
   for(i in 1:N_sample) {
     beta[i] = beta_gene + beta_sigma * beta_raw[i];
+    mu[i] = alpha_gene + beta[i]*X[i];
   }
 }
 
 
 model {
   for(i in 1:N_sample) {
-    Y[, i] ~ binomial_logit(N[i], alpha_gene + beta[i]*X[i]);
+    Y[, i] ~ binomial_logit(N[i], mu[i]);
   }
 
   alpha_grand ~ normal(0, 20);

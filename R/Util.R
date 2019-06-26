@@ -587,6 +587,8 @@ getGroupStats <- function(glm.ext,
 }
 
 
+
+
 # two sided t.test
 getTTestStats <- function(usage.data) {
   getTTest <- function(x, Ys, Xs, Ns) {
@@ -620,6 +622,8 @@ getTTestStats <- function(usage.data) {
 
 
 
+
+
 getManUStats <- function(usage.data) {
 
   getMTest <- function(x, Ys, Xs, Ns) {
@@ -649,5 +653,7 @@ getManUStats <- function(usage.data) {
 
   return (mout.summary)
 }
+
+
 
 

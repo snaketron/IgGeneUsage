@@ -1,0 +1,34 @@
+---
+title: "Model Comparison"
+author: "SK"
+date: "June 25, 2019"
+output: 
+  html_document: 
+    highlight: tango
+    theme: journal
+    toc: yes
+---
+
+```{r setup, include = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, comment = FALSE, 
+                      warning = FALSE, message = FALSE)
+```
+
+
+```{r}
+require(ggplot2)
+require(gridExtra)
+require(ggrepel)
+source(file = "R/Util.R")
+```
+
+
+
+## Models
+### M1: Binomial regression
+  * $ Y_{ij} \sim \operatorname{Binomial}\left(N_{ij}, \theta_{ij}\right) $
+  * $\theta_{ij} = \operatorname{logit^{-1}}\left(\alpha_{j} + \beta_{ij} \cdot X_{i}\right) $
+  
+### M3: Beta-binomial regression
+  * $ Y_{ij} \sim \operatorname{Beta-Binomial}\left(N_{ij}, \theta_{ij} \cdot \phi, (1 - \theta_{ij}) \cdot \phi \right) $
+  * \theta_{ij} = \operatorname{logit^{-1}}\left(\alpha_{j} + \beta_{ij} \cdot X_{i}\right) $
