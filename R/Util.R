@@ -251,7 +251,8 @@ checkInput <- function(usage.data,
     }
 
     if(typeof(usage.data$gene_usage_count) != "numeric" &
-       typeof(usage.data$gene_usage_count) != "double") {
+       typeof(usage.data$gene_usage_count) != "double" &
+       typeof(usage.data$gene_usage_count) != "integer") {
       stop("column gene_usage_count must be of numeric type.")
     }
   }
@@ -533,16 +534,40 @@ getGroupStats <- function(glm.ext,
                            gene.names,
                            conditions,
                            yhat.gene,
-                           hdi.level) {
+                           hdi.level,
+                           usage.data) {
     hdi.1 <- getHdi(vec = yhat.gene[,1,x], hdi.level = hdi.level)
     hdi.2 <- getHdi(vec = yhat.gene[,2,x], hdi.level = hdi.level)
 
+
+
+
+    # get mean raw data
+    x.1 <- which(usage.data$Xorg == conditions[1])
+    real.pct.1 <- 0
+    if(length(x.1) != 0) {
+      real.pct.1 <- usage.data$Y[gene.names[x], x.1]/usage.data$N[x.1]*100
+    }
+
+    x.2 <- which(usage.data$Xorg == conditions[2])
+    real.pct.2 <- 0
+    if(length(x.2) != 0) {
+      real.pct.2 <- usage.data$Y[gene.names[x], x.2]/usage.data$N[x.2]*100
+    }
+
+
     return(rbind(data.frame(gene_name = gene.names[x],
-                            ppc.L = hdi.1[1], ppc.H = hdi.1[2],
+                            ppc.M = mean(yhat.gene[,1,x]),
+                            ppc.L = hdi.1[1],
+                            ppc.H = hdi.1[2],
+                            raw.M = mean(real.pct.1),
                             condition = conditions[1],
                             stringsAsFactors = FALSE),
                  data.frame(gene_name = gene.names[x],
-                            ppc.L = hdi.2[1], ppc.H = hdi.2[2],
+                            ppc.M = mean(yhat.gene[,2,x]),
+                            ppc.L = hdi.2[1],
+                            ppc.H = hdi.2[2],
+                            raw.M = mean(real.pct.2),
                             condition = conditions[2],
                             stringsAsFactors = FALSE)))
   }
@@ -574,7 +599,8 @@ getGroupStats <- function(glm.ext,
                       gene.names = usage.data$gene_names,
                       condition = conditions,
                       yhat.gene = glm.ext$Yhat_gene,
-                      hdi.level = hdi.level)
+                      hdi.level = hdi.level,
+                      usage.data = usage.data)
   group.ppc <- do.call(rbind, group.ppc)
 
 

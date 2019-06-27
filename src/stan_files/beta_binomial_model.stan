@@ -3,7 +3,7 @@ data {
   int <lower = 0> N_gene; // number of genes
   int Y [N_gene, N_sample]; // number of cells in patient x gene
   int N [N_sample]; // number of total cells
-  int <lower = -1, upper = 1> X[N_sample]; // design variable = condition
+  int <lower = -1, upper = 1> X[N_sample]; // condition
 }
 
 parameters {
