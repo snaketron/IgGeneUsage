@@ -182,7 +182,7 @@ generated quantities {
         Yhat_individual[j, i] = Yhat[j,i]/temp*100.0;
       }
     }
-    Yhat_gene[1, j] = (1-z[j])*inv_logit(alpha_gene[j]+beta_gene[j]*1.0)*100.0;
-    Yhat_gene[2, j] = (1-z[j])*inv_logit(alpha_gene[j]+beta_gene[j]*(-1.0))*100.0;
+    Yhat_gene[1, j] = inv_logit(alpha_gene[j]+beta_gene[j]*1.0)*100.0;
+    Yhat_gene[2, j] = inv_logit(alpha_gene[j]+beta_gene[j]*(-1.0))*100.0;
   }
 }
