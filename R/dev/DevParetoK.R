@@ -1,16 +1,14 @@
 M3 <- get(load(file = "R/dev/ighv_hcv_beta_binomial_model.RData"))
 rm(M)
-
-
-
-
 loo.M3 <- loo::loo(x = loo::extract_log_lik(stanfit = M3$glm))
+
+
 
 bad.k <- which(loo.M3$diagnostics$pareto_k >= 0.7)
 dim(M3$usage.data$Y)
 
-g <- floor(bad.k / 69)+1
-q <- data.frame(sample.nr = g, bad.i = bad.k)
+q <- floor(bad.k / 69)+1
+q <- data.frame(sample.nr = q, bad.i = bad.k)
 q$gene.rn <- q$bad.i-(q$sample.nr-1)*69
 
 
@@ -24,7 +22,7 @@ for(i in 1:nrow(q)) {
   q$p[i] <- q$Y[i]/q$N[i]*100
   q$gene_name[i] <- M3$usage.data$gene_names[q$gene.rn[i]]
 }
-rm(i, g)
+rm(i)
 
 
 

@@ -15,8 +15,6 @@ IGHV_HCV <- IGHV_HCV[, c("sample_id", "condition",
                          "gene_name", "gene_usage_count")]
 
 
-IGHV_HCV <- IGHV_HCV[which(regexpr(pattern = "IGHV3",
-                                   text = IGHV_HCV$gene_name) != -1), ]
 
 
 stan.files <- list.files(path = "src/stan_files/",
