@@ -627,7 +627,7 @@ TRV_Cancer <- TRV_Cancer[TRV_Cancer$GroupInformation %in% c("Tumors",
 TRV_Cancer <- TRV_Cancer[which(regexpr(pattern = "TRBV", 
                                        text = TRV_Cancer$ReferenceName) != -1),]
 
-TRV_Cancer$sample_id <- TRV_Cancer$SampleID
+TRV_Cancer$sample_id <- TRV_Cancer$IndividualID
 TRV_Cancer$condition <- TRV_Cancer$GroupInformation
 TRV_Cancer$gene_name <- TRV_Cancer$ReferenceName
 TRV_Cancer$gene_usage_count <- TRV_Cancer$UsageNumber
@@ -726,9 +726,9 @@ grid.arrange(rstan::stan_rhat(object = M$glm),
 
 #### Repertoire-specific PPC
 
-```{r, fig.height=5, fig.width=7}
+```{r, fig.height=4, fig.width=6}
 ggplot(data = M$ppc)+
-  facet_wrap(facets = ~sample_id, ncol = 5)+
+  facet_wrap(facets = ~sample_id, ncol = 6)+
   geom_abline(intercept = 0, slope = 1)+
   geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
   theme_bw(base_size = 9)+
@@ -804,16 +804,10 @@ for comparison of differential gene usage.
 
 ```{r, fig.width=6, fig.height=3.5}
 group.ppc <- M$group.ppc$group.ppc
-group.ppc <- group.ppc[group.ppc$gene_name %in% c("IGHV4-4",
-                                                  "IGHV3-30-3",
-                                                  "IGHV4-61",
-                                                  "IGHV5-51"), ]
+group.ppc <- group.ppc[group.ppc$gene_name %in% c("TRBV25-1"), ]
 
 point.data <- M$group.ppc$individual.pct.data
-point.data <- point.data[point.data$gene_name %in% c("IGHV4-4",
-                                                     "IGHV3-30-3",
-                                                     "IGHV4-61",
-                                                     "IGHV5-51"), ]
+point.data <- point.data[point.data$gene_name %in% c("TRBV25-1"), ]
 ggplot()+
   geom_errorbar(data = group.ppc,
                 aes(x = gene_name, ymin = ppc.L, 
