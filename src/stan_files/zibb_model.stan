@@ -9,9 +9,7 @@ functions {
    * Returns:
    *   a scalar to be added to the log posterior
    */
-  real zero_inflated_beta_binomial_lpmf(int y, int trials,
-                                        real mu, real phi,
-                                        real zi) {
+  real zibb_lpmf(int y, int trials, real mu, real phi, real zi) {
     if (y == 0) {
       return log_sum_exp(bernoulli_lpmf(1 | zi),
                          bernoulli_lpmf(0 | zi) +
@@ -68,7 +66,7 @@ transformed parameters {
 model {
   for(i in 1:N_sample) {
     for(j in 1:N_gene) {
-      target += zero_inflated_beta_binomial_lpmf(Y[j, i]|N[i], mu[i][j] * phi, (1 - mu[i][j]) * phi, z[j]);
+      target += zibb_lpmf(Y[j, i]|N[i], mu[i][j], phi, z[j]);
     }
     // Y[, i] ~ beta_binomial(N[i], mu[i] * phi, (1 - mu[i]) * phi);
   }
@@ -89,30 +87,27 @@ model {
   z ~ beta(1, 1);
 }
 
-//
-// generated quantities {
-//   int Yhat [N_gene, N_sample];
-//   real Yhat_individual [N_gene, N_sample];
-//   matrix [2, N_gene] Yhat_gene;
-//   matrix [N_gene, N_sample] log_lik;
-//   real temp;
-//
-//   for(j in 1:N_gene) {
-//     for(i in 1:N_sample) {
-//       temp = N[i];
-//
-//       log_lik[j,i] = beta_binomial_lpmf(Y[j,i] | N[i], mu[i][j] * phi, (1 - mu[i][j]) * phi);
-//       Yhat[j, i] = beta_binomial_rng(N[i], mu[i][j] * phi, (1 - mu[i][j]) * phi);
-//
-//
-//       if(temp == 0.0) {
-//         Yhat_individual[j, i] = 0;
-//       }
-//       else {
-//         Yhat_individual[j, i] = Yhat[j,i]/temp*100.0;
-//       }
-//     }
-//     Yhat_gene[1, j] = inv_logit(alpha_gene[j]+beta_gene[j]*1.0)*100.0;
-//     Yhat_gene[2, j] = inv_logit(alpha_gene[j]+beta_gene[j]*(-1.0))*100.0;
-//   }
-// }
+
+generated quantities {
+  // int Yhat [N_gene, N_sample];
+  // real Yhat_individual [N_gene, N_sample];
+  // matrix [2, N_gene] Yhat_gene;
+  matrix [N_gene, N_sample] log_lik;
+  // real temp;
+
+  for(j in 1:N_gene) {
+    for(i in 1:N_sample) {
+      log_lik[j,i] = zibb_lpmf(Y[j,i] | N[i], mu[i][j], phi, z[j]);
+      // temp = N[i];
+      // Yhat[j, i] = beta_binomial_rng(N[i], mu[i][j] * phi, (1 - mu[i][j]) * phi);
+      // if(temp == 0.0) {
+      //   Yhat_individual[j, i] = 0;
+      // }
+      // else {
+      //   Yhat_individual[j, i] = Yhat[j,i]/temp*100.0;
+      // }
+    }
+    // Yhat_gene[1, j] = inv_logit(alpha_gene[j]+beta_gene[j]*1.0)*100.0;
+    // Yhat_gene[2, j] = inv_logit(alpha_gene[j]+beta_gene[j]*(-1.0))*100.0;
+  }
+}
