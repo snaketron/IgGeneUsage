@@ -1,13 +1,13 @@
 Package: IgGeneUsage
 Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Version: 0.99
 Authors@R: 
     person(given = "Simo",
            family = "Kitanovski",
            role = c("aut", "cre"),
            email = "simo.kitanovski@uni-due.de")
-Description: Comparison of gene usage in immune repertoires between different 
-  conditions
+Description: Differential gene usage in immune repertoires such 
+    as B-cell and T-cell receptor repertoires
 License: GPL (>=3)
 Depends: 
     methods,
