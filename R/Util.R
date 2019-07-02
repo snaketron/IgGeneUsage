@@ -6,10 +6,12 @@
 getUsageData <- function(usage) {
 
   # get Y data
+  # fill empty combinations with 0
   Y <- reshape2::acast(data = usage,
                        formula = gene_name~sample_id,
-                       fun.aggregate = sum,
-                       value.var = "gene_usage_count")
+                       drop = FALSE,
+                       value.var = "gene_usage_count",
+                       fill = 0)
 
   sample_ids <- colnames(Y)
   gene_names <- rownames(Y)
