@@ -131,7 +131,7 @@ loo::compare(loo::loo(loo::extract_log_lik(M0$glm)),
 
 ### M0
 
-```{r, fig.height=6, fig.width=8}
+```{r, fig.height=5, fig.width=10}
 ggplot(data = M0$ppc)+
   facet_wrap(facets = ~sample_id, ncol = 7)+
   geom_abline(intercept = 0, slope = 1)+
@@ -145,7 +145,7 @@ ggplot(data = M0$ppc)+
 
 ### M1
 
-```{r, fig.height=6, fig.width=8}
+```{r, fig.height=5, fig.width=10}
 ggplot(data = M1$ppc)+
   facet_wrap(facets = ~sample_id, ncol = 7)+
   geom_abline(intercept = 0, slope = 1)+
@@ -159,7 +159,7 @@ ggplot(data = M1$ppc)+
 
 ### M2
 
-```{r, fig.height=6, fig.width=8}
+```{r, fig.height=5, fig.width=10}
 ggplot(data = M2$ppc)+
   facet_wrap(facets = ~sample_id, ncol = 7)+
   geom_abline(intercept = 0, slope = 1)+
@@ -173,7 +173,7 @@ ggplot(data = M2$ppc)+
 
 ### M3
 
-```{r, fig.height=6, fig.width=8}
+```{r, fig.height=5, fig.width=10}
 ggplot(data = M3$ppc)+
   facet_wrap(facets = ~sample_id, ncol = 7)+
   geom_abline(intercept = 0, slope = 1)+
@@ -188,7 +188,7 @@ ggplot(data = M3$ppc)+
   * e[%] = |Yhat[%] - Y[%| or 
   * e[raw count] = |Yhat[count] - Y[count]| 
 
-```{r, fig.height=2.5, fig.width=7}
+```{r, fig.height=2.5, fig.width=10}
 grid.arrange(
   ggplot()+
     geom_sina(data = M0$ppc, aes(x = "M0 [%]", y = abs(raw.pct-ppc.pct.mean)),
@@ -225,7 +225,7 @@ grid.arrange(
 ### Errors at a gene level
   * raw mean in gene&condition vs ppc mean in gene&condition
   
-```{r, fig.height=5, fig.width=5}
+```{r, fig.height=3, fig.width=10}
 grid.arrange(
   ggplot(data = M0$group.ppc$group.ppc)+
     geom_abline(intercept = 0, slope = 1)+
@@ -251,6 +251,6 @@ grid.arrange(
     geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
     theme_bw(base_size = 9)+
     theme(legend.position = "top"),
-  nrow = 2)
+  nrow = 1)
 ```
 
