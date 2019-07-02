@@ -11,7 +11,8 @@ getUsageData <- function(usage) {
                        formula = gene_name~sample_id,
                        drop = FALSE,
                        value.var = "gene_usage_count",
-                       fill = 0)
+                       fill = 0,
+                       fun.aggregate = sum)
 
   sample_ids <- colnames(Y)
   gene_names <- rownames(Y)
