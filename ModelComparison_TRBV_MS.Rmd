@@ -1,0 +1,256 @@
+---
+title: "Model Comparison (TRBV MS)"
+author: "SK"
+date: "June 25, 2019"
+output: 
+  html_document: 
+    highlight: tango
+    theme: journal
+    toc: yes
+---
+
+```{r setup, include = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, comment = FALSE, 
+                      warning = FALSE, message = FALSE)
+```
+
+
+```{r}
+require(ggplot2)
+require(ggforce)
+require(gridExtra)
+require(ggrepel)
+source(file = "R/Util.R")
+```
+
+
+
+## Models
+
+### M0: Zero-model Binomial regression
+* $Y_{ij} \sim \operatorname{Binomial}(N_{i}, \theta_{ij})$
+* $\theta_{ij} = \operatorname{logit^{-1}} (\alpha_{j} + \beta_{j} \cdot X_{i})$
+* $\beta_{j} \sim \operatorname{Normal}(\hat{\beta}, \hat{\beta}_{\sigma})$
+* $\alpha_{j} \sim \operatorname{Normal}(\hat{\alpha}, \hat{\alpha}_{\sigma})$
+* $\hat{\beta} \sim \operatorname{Normal}(0, 5)$
+* $\hat{\alpha} \sim \operatorname{Normal}(0, 20)$
+* $\beta_{\sigma}, \hat{\alpha}_{\sigma} \sim \operatorname{Cauchy^{+}}(0, 3)$
+
+
+### M1: Binomial regression
+* $Y_{ij} \sim \operatorname{Binomial}(N_{i}, \theta_{ij})$
+* $\theta_{ij} = \operatorname{logit^{-1}} (\alpha_{j} + \beta_{ij} \cdot X_{i})$
+* $\beta_{ij} \sim \operatorname{Normal}(\gamma_{j}, \gamma_{\sigma})$
+* $\gamma_{j} \sim \operatorname{Normal}(\hat{\gamma}, \hat{\gamma}_{\sigma})$
+* $\alpha_{j} \sim \operatorname{Normal}(\hat{\alpha}, \hat{\alpha}_{\sigma})$
+* $\hat{\gamma} \sim \operatorname{Normal}(0, 5)$
+* $\hat{\alpha} \sim \operatorname{Normal}(0, 20)$
+* $\gamma_{\sigma}, \hat{\gamma}_{\sigma}, \hat{\alpha}_{\sigma} \sim \operatorname{Cauchy^{+}}(0, 3)$
+
+### M2: Zero-Inflated-Binomial (ZIB) regression
+* cases for $Y_{ij}=$
+* $0, \text{with } \pi_j$
+* $\operatorname{Binomial}(N_{i}, \theta_{ij}), \text{with } 1-\pi_j$
+* $\theta_{ij} = \operatorname{logit^{-1}} (\alpha_{j} + \beta_{ij} \cdot X_{i})$
+* $\beta_{ij} \sim \operatorname{Normal}(\gamma_{j}, \gamma_{\sigma})$
+* $\gamma_{j} \sim \operatorname{Normal}(\hat{\gamma}, \hat{\gamma}_{\sigma})$
+* $\alpha_{j} \sim \operatorname{Normal}(\hat{\alpha}, \hat{\alpha}_{\sigma})$
+* $\hat{\gamma} \sim \operatorname{Normal}(0, 5)$
+* $\hat{\alpha} \sim \operatorname{Normal}(0, 20)$
+* $\gamma_{\sigma}, \hat{\gamma}_{\sigma}, \hat{\alpha}_{\sigma} \sim \operatorname{Cauchy^{+}}(0, 3)$
+* $\pi_j \sim \operatorname{Beta}(1, 1)$
+
+### M3: Beta-binomial regression
+* $Y_{ij} \sim \operatorname{Beta-Binomial}(N_{i}, \theta_{ij} \cdot \phi, (1 - \theta_{ij}) \cdot \phi)$
+* $\theta_{ij} = \operatorname{logit^{-1}} (\alpha_{j} + \beta_{ij} \cdot X_{i})$
+* $\beta_{ij} \sim \operatorname{Normal}(\gamma_{j}, \gamma_{\sigma})$
+* $\gamma_{j} \sim \operatorname{Normal}(\hat{\gamma}, \hat{\gamma}_{\sigma})$
+* $\alpha_{j} \sim \operatorname{Normal}(\hat{\alpha}, \hat{\alpha}_{\sigma})$
+* $\hat{\gamma} \sim \operatorname{Normal}(0, 5)$
+* $\hat{\alpha} \sim \operatorname{Normal}(0, 20)$
+* $\gamma_{\sigma}, \hat{\gamma}_{\sigma}, \hat{\alpha}_{\sigma} \sim \operatorname{Cauchy^{+}}(0, 3)$
+* $\phi \sim \operatorname{Gamma}(0.1, 0.1)$
+
+
+```{r}
+M0 <- get(load(file = "R/dev/trbv_MS_zero_model.RData"))
+M1 <- get(load(file = "R/dev/trbv_MS_model.RData"))
+M2 <- get(load(file = "R/dev/trbv_MS_zib_multiz.RData"))
+M3 <- get(load(file = "R/dev/trbv_MS_beta_binomial_model.RData"))
+rm(usage.hiv.csm)
+
+M0$glm@model_name <- "M0"
+M1$glm@model_name <- "M1"
+M2$glm@model_name <- "M2"
+M3$glm@model_name <- "M3"
+```
+
+
+## LOO
+
+
+### M0
+
+```{r}
+print(loo::loo(loo::extract_log_lik(M0$glm)))
+```
+
+
+### M1
+
+```{r}
+print(loo::loo(loo::extract_log_lik(M1$glm)))
+```
+
+
+### M2
+
+```{r}
+print(loo::loo(loo::extract_log_lik(M2$glm)))
+```
+
+
+### M3
+
+```{r}
+print(loo::loo(loo::extract_log_lik(M3$glm)))
+```
+
+### Comparison
+
+```{r}
+loo::compare(loo::loo(loo::extract_log_lik(M0$glm)),
+             loo::loo(loo::extract_log_lik(M1$glm)),
+             loo::loo(loo::extract_log_lik(M2$glm)),
+             loo::loo(loo::extract_log_lik(M3$glm)))
+```
+
+
+
+## PPC
+
+### M0
+
+```{r, fig.height=5, fig.width=10}
+ggplot(data = M0$ppc)+
+  facet_wrap(facets = ~sample_id, ncol = 6)+
+  geom_abline(intercept = 0, slope = 1)+
+  geom_errorbar(aes(x = raw, y = ppc.raw.mean, 
+                    ymin = ppc.raw.L, ymax = ppc.raw.H))+
+  geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")
+```
+
+
+### M1
+
+```{r, fig.height=5, fig.width=10}
+ggplot(data = M1$ppc)+
+  facet_wrap(facets = ~sample_id, ncol = 6)+
+  geom_abline(intercept = 0, slope = 1)+
+  geom_errorbar(aes(x = raw, y = ppc.raw.mean, 
+                    ymin = ppc.raw.L, ymax = ppc.raw.H))+
+  geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")
+```
+
+
+### M2
+
+```{r, fig.height=5, fig.width=10}
+ggplot(data = M2$ppc)+
+  facet_wrap(facets = ~sample_id, ncol = 6)+
+  geom_abline(intercept = 0, slope = 1)+
+  geom_errorbar(aes(x = raw, y = ppc.raw.mean, 
+                    ymin = ppc.raw.L, ymax = ppc.raw.H))+
+  geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")
+```
+
+
+### M3
+
+```{r, fig.height=5, fig.width=10}
+ggplot(data = M3$ppc)+
+  facet_wrap(facets = ~sample_id, ncol = 6)+
+  geom_abline(intercept = 0, slope = 1)+
+  geom_errorbar(aes(x = raw, y = ppc.raw.mean, 
+                    ymin = ppc.raw.L, ymax = ppc.raw.H))+
+  geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")
+```
+
+### Errors at a repertoire level
+  * e[%] = |Yhat[%] - Y[%| or 
+  * e[raw count] = |Yhat[count] - Y[count]| 
+
+```{r, fig.height=2.5, fig.width=10}
+grid.arrange(
+  ggplot()+
+    geom_sina(data = M0$ppc, aes(x = "M0 [%]", y = abs(raw.pct-ppc.pct.mean)),
+              shape = 21, fill = "white")+
+    geom_sina(data = M1$ppc, aes(x = "M1 [%]", y = abs(raw.pct-ppc.pct.mean)),
+              shape = 21, fill = "white")+
+    geom_sina(data = M2$ppc, aes(x = "M2", y = abs(raw.pct-ppc.pct.mean)),
+              shape = 21, fill = "white")+
+    geom_sina(data = M3$ppc, aes(x = "M3", y = abs(raw.pct-ppc.pct.mean)),
+              shape = 21, fill = "white")+
+    theme_bw(base_size = 9)+
+    theme(legend.position = "top")+
+    ylab(label = "e[%]")+
+    xlab(label = "")+
+    scale_y_log10(),
+  ggplot()+
+    geom_sina(data = M0$ppc, aes(x = "M0", y = abs(raw-ppc.raw.mean)),
+              shape = 21, fill = "white")+
+    geom_sina(data = M1$ppc, aes(x = "M1", y = abs(raw-ppc.raw.mean)),
+              shape = 21, fill = "white")+
+    geom_sina(data = M2$ppc, aes(x = "M2", y = abs(raw-ppc.raw.mean)),
+              shape = 21, fill = "white")+
+    geom_sina(data = M3$ppc, aes(x = "M3", y = abs(raw-ppc.raw.mean)),
+              shape = 21, fill = "white")+
+    theme_bw(base_size = 9)+
+    theme(legend.position = "top")+
+    ylab(label = "e [raw count]")+
+    xlab(label = '')+
+    scale_y_log10(),
+  nrow = 1)
+```
+
+
+### Errors at a gene level
+  * raw mean in gene&condition vs ppc mean in gene&condition
+  
+```{r, fig.height=3, fig.width=10}
+grid.arrange(
+  ggplot(data = M0$group.ppc$group.ppc)+
+    geom_abline(intercept = 0, slope = 1)+
+    geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
+    geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
+    theme_bw(base_size = 9)+
+    theme(legend.position = "top"),
+  ggplot(data = M1$group.ppc$group.ppc)+
+    geom_abline(intercept = 0, slope = 1)+
+    geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
+    geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
+    theme_bw(base_size = 9)+
+    theme(legend.position = "top"),
+  ggplot(data = M2$group.ppc$group.ppc)+
+    geom_abline(intercept = 0, slope = 1)+
+    geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
+    geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
+    theme_bw(base_size = 9)+
+    theme(legend.position = "top"),
+  ggplot(data = M3$group.ppc$group.ppc)+
+    geom_abline(intercept = 0, slope = 1)+
+    geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
+    geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
+    theme_bw(base_size = 9)+
+    theme(legend.position = "top"),
+  nrow = 1)
+```
+

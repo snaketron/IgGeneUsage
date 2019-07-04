@@ -624,6 +624,13 @@ getTTestStats <- function(usage.data) {
     return(try(t.test(Ys[x, ]/Ns*100~Xs)))
   }
   getTTestSummary <- function(x) {
+    if(class(x) == "try-error") {
+      return(data.frame(t.test.pvalue = NA,
+                        t.test.tvalue = NA,
+                        t.test.L95 = NA,
+                        t.test.H95 = NA,
+                        stringsAsFactors = FALSE))
+    }
     return(data.frame(t.test.pvalue = x$p.value,
                       t.test.tvalue = x$statistic,
                       t.test.L95 = x$conf.int[1],
@@ -660,6 +667,11 @@ getManUStats <- function(usage.data) {
   }
 
   getMSummary <- function(x) {
+    if(class(x) == "try-error") {
+      return(data.frame(u.test.pvalue = NA,
+                        u.test.wvalue = NA,
+                        stringsAsFactors = FALSE))
+    }
     return(data.frame(u.test.pvalue = x$p.value,
                       u.test.wvalue = x$statistic,
                       stringsAsFactors = FALSE))

@@ -30,7 +30,6 @@ diffUsage <- function(usage.data,
   # model
   # model <- rstan::stan_model(file = "src/stan_files/zib_multiz.stan")
 
-
   # stan sampling
   glm <- rstan::sampling(object = model, #stanmodels$model
                          data = usage.data,

@@ -19,16 +19,28 @@ source(file = "R/Usage.R")
 #            "gene_name", "gene_usage_count")]
 
 
-# data(TRV_Cancer)
-d <- read.csv(file = "inst/TCR_Cancer.csv", sep = ";", as.is = T)
-d <- d[d$GroupInformation %in% c("Tumors", "None Tumor"), ]
-d <- d[which(regexpr(pattern = "TRBV", text = d$ReferenceName) != -1),]
-d$sample_id <- paste(d$IndividualID, d$GroupInformation, sep = '_')
-d$condition <- d$GroupInformation
-d$gene_name <- d$ReferenceName
-d$gene_usage_count <- d$UsageNumber
-d <- d[, c("sample_id", "condition",
-           "gene_name", "gene_usage_count")]
+# TRV_Cancer -> some processing needed before use, too unreliable
+# d <- read.csv(file = "inst/TCR_Cancer.csv", sep = ";", as.is = T)
+# d <- d[d$GroupInformation %in% c("Tumors", "None Tumor"), ]
+# d <- d[which(regexpr(pattern = "TRBV", text = d$ReferenceName) != -1),]
+# d$sample_id <- paste(d$IndividualID, d$GroupInformation, sep = '_')
+# d$condition <- d$GroupInformation
+# d$gene_name <- d$ReferenceName
+# d$gene_usage_count <- d$UsageNumber
+# d <- d[, c("sample_id", "condition",
+#            "gene_name", "gene_usage_count")]
+
+
+# MS
+# d <- read.csv(file = "inst/TRBV_MS.csv", sep = " ", as.is = T)
+# d$gene_usage_count <- as.integer(d$gene_usage_count)
+
+
+
+# Ig from alakazam
+d <- read.csv(file = "inst/Ig.csv", sep = " ", as.is = T)
+d$gene_usage_count <- as.integer(d$gene_usage_count)
+
 
 
 
@@ -51,7 +63,7 @@ for(m in 1:length(stan.files)) {
                  max.treedepth = 13,
                  dev.model = stan.files[m])
 
-  out <- paste("R/dev/trv_cancer_", gsub(pattern = "\\.stan",
+  out <- paste("R/dev/alakazam_ighv_families_", gsub(pattern = "\\.stan",
                                          replacement = '\\.RData',
                                          x = stan.files.short[m]), sep = '')
   save(M, file = out)
