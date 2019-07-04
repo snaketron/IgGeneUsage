@@ -6,6 +6,7 @@ data {
   int <lower = -1, upper = 1> X[N_sample]; // condition
 }
 
+
 parameters {
   real alpha_grand;
   real beta_grand;
@@ -16,15 +17,16 @@ parameters {
   vector [N_gene] beta_raw [N_sample];
   vector [N_gene] beta_gene_raw;
   real <lower = 0> phi;
+  real<lower = 0> tau;
 }
-
 
 
 transformed parameters {
   vector [N_gene] beta [N_sample];
-  vector <lower = 0, upper = 1> [N_gene] mu [N_sample];
   vector [N_gene] alpha_gene;
   vector [N_gene] beta_gene;
+  vector <lower = 0> [N_gene] a [N_sample];
+  vector <lower = 0> [N_gene] b [N_sample];
 
   // non-centered params
   alpha_gene = alpha_grand + alpha_sigma * alpha_raw;
@@ -34,14 +36,15 @@ transformed parameters {
   }
 
   for(i in 1:N_sample) {
-    mu[i] = inv_logit(alpha_gene + beta[i]*X[i]);
+    a[i] = inv_logit(alpha_gene + beta[i]*X[i]) * phi;
+    b[i] = phi - a[i];
   }
 }
 
 
 model {
   for(i in 1:N_sample) {
-    Y[, i] ~ beta_binomial(N[i], mu[i] * phi, (1 - mu[i]) * phi);
+    Y[, i] ~ beta_binomial(N[i], a[i], b[i]);
   }
 
   alpha_grand ~ normal(0, 20);
@@ -56,7 +59,10 @@ model {
     beta_raw[i] ~ normal(0, 1);
   }
   beta_gene_raw ~ normal(0, 1);
-  phi ~ gamma(0.01, 0.01);
+
+  // phi ~ gamma(0.01, 0.01);
+  phi ~ exponential(tau);
+  tau ~ gamma(3, 0.1);
 }
 
 
@@ -71,8 +77,8 @@ generated quantities {
     for(i in 1:N_sample) {
       temp = N[i];
 
-      log_lik[j,i] = beta_binomial_lpmf(Y[j,i] | N[i], mu[i][j] * phi, (1 - mu[i][j]) * phi);
-      Yhat[j, i] = beta_binomial_rng(N[i], mu[i][j] * phi, (1 - mu[i][j]) * phi);
+      log_lik[j,i] = beta_binomial_lpmf(Y[j,i] | N[i], a[i][j], b[i][j]);
+      Yhat[j, i] = beta_binomial_rng(N[i], a[i][j], b[i][j]);
 
 
       if(temp == 0.0) {
