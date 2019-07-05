@@ -31,11 +31,9 @@ transformed parameters {
   // non-centered params
   alpha_gene = alpha_grand + alpha_sigma * alpha_raw;
   beta_gene = beta_grand + beta_gene_sigma * beta_gene_raw;
-  for(i in 1:N_sample) {
-    beta[i] = beta_gene + beta_sigma * beta_raw[i];
-  }
 
   for(i in 1:N_sample) {
+    beta[i] = beta_gene + beta_sigma * beta_raw[i];
     a[i] = inv_logit(alpha_gene + beta[i]*X[i]) * phi;
     b[i] = phi - a[i];
   }
@@ -43,16 +41,19 @@ transformed parameters {
 
 
 model {
+  int Ytemp [N_gene];
+
   for(i in 1:N_sample) {
-    Y[, i] ~ beta_binomial(N[i], a[i], b[i]);
+    Ytemp = Y[, i];
+    Ytemp ~ beta_binomial(N[i], a[i], b[i]);
   }
 
   alpha_grand ~ normal(0, 20);
   beta_grand ~ normal(0, 5);
 
-  alpha_sigma ~ cauchy(0, 3);
-  beta_sigma ~ cauchy(0, 3);
-  beta_gene_sigma ~ cauchy(0, 3);
+  alpha_sigma ~ cauchy(0, 1);
+  beta_sigma ~ cauchy(0, 1);
+  beta_gene_sigma ~ cauchy(0, 1);
 
   alpha_raw ~ normal(0, 1);
   for(i in 1:N_sample) {
@@ -60,7 +61,6 @@ model {
   }
   beta_gene_raw ~ normal(0, 1);
 
-  // phi ~ gamma(0.01, 0.01);
   phi ~ exponential(tau);
   tau ~ gamma(3, 0.1);
 }

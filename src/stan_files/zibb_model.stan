@@ -1,3 +1,35 @@
+functions {
+  /* zero-inflated binomial log-PDF of a single response
+   * logit parameterization of the binomial part
+   * Args:
+   *   y: the response value
+   *   trials: number of trials of the binomial part
+   *   eta: linear predictor for binomial part
+   *   zi: zero-inflation probability
+   * Returns:
+   *   a scalar to be added to the log posterior
+   */
+  real zibb_lpmf(int y, int trials, real a, real b, real zi) {
+    if (y == 0) {
+      return log_sum_exp(bernoulli_lpmf(1 | zi),
+                         bernoulli_lpmf(0 | zi) +
+                         beta_binomial_lpmf(0 | trials, a, b));
+    } else {
+      return bernoulli_lpmf(0 | zi) +
+             beta_binomial_lpmf(y | trials, a, b);
+    }
+  }
+
+  int zibb_rng(int y, int trials, real a, real b, real zi) {
+    if (y == 0) {
+      return (bernoulli_rng(zi));
+    } else {
+      return (beta_binomial_rng(trials, a, b));
+    }
+  }
+}
+
+
 data {
   int <lower = 0> N_sample; // number of samples
   int <lower = 0> N_gene; // number of genes
@@ -18,7 +50,9 @@ parameters {
   vector [N_gene] beta_gene_raw;
   real <lower = 0> phi;
   real<lower = 0> tau;
+  vector <lower=0,upper=1> [N_gene] z;  // zero-inflation probability
 }
+
 
 
 transformed parameters {
@@ -31,11 +65,9 @@ transformed parameters {
   // non-centered params
   alpha_gene = alpha_grand + alpha_sigma * alpha_raw;
   beta_gene = beta_grand + beta_gene_sigma * beta_gene_raw;
-  for(i in 1:N_sample) {
-    beta[i] = beta_gene + beta_sigma * beta_raw[i];
-  }
 
   for(i in 1:N_sample) {
+    beta[i] = beta_gene + beta_sigma * beta_raw[i];
     a[i] = inv_logit(alpha_gene + beta[i]*X[i]) * phi;
     b[i] = phi - a[i];
   }
@@ -44,15 +76,17 @@ transformed parameters {
 
 model {
   for(i in 1:N_sample) {
-    Y[, i] ~ beta_binomial(N[i], a[i], b[i]);
+    for(j in 1:N_gene) {
+      target += zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], z[j]);
+    }
   }
 
   alpha_grand ~ normal(0, 20);
   beta_grand ~ normal(0, 5);
 
-  alpha_sigma ~ cauchy(0, 3);
-  beta_sigma ~ cauchy(0, 3);
-  beta_gene_sigma ~ cauchy(0, 3);
+  alpha_sigma ~ cauchy(0, 1);
+  beta_sigma ~ cauchy(0, 1);
+  beta_gene_sigma ~ cauchy(0, 1);
 
   alpha_raw ~ normal(0, 1);
   for(i in 1:N_sample) {
@@ -60,9 +94,9 @@ model {
   }
   beta_gene_raw ~ normal(0, 1);
 
-  // phi ~ gamma(0.01, 0.01);
   phi ~ exponential(tau);
   tau ~ gamma(3, 0.1);
+  z ~ beta(1, 1);
 }
 
 
@@ -75,10 +109,9 @@ generated quantities {
 
   for(j in 1:N_gene) {
     for(i in 1:N_sample) {
+      log_lik[j,i] = zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], z[j]);
       temp = N[i];
-
-      log_lik[j,i] = beta_binomial_lpmf(Y[j,i] | N[i], a[i][j], b[i][j]);
-      Yhat[j, i] = beta_binomial_rng(N[i], a[i][j], b[i][j]);
+      Yhat[j, i] = zibb_rng(Y[j, i], N[i], a[i][j], b[i][j], z[j]);
 
 
       if(temp == 0.0) {
