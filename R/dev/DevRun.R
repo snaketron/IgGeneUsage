@@ -14,9 +14,9 @@ source(file = "R/Usage.R")
 #            "gene_name", "gene_usage_count")]
 
 # HIV
-# d <- read.csv(file = "inst/IGHV_HIV.csv", sep = " ", as.is = T)
-# d <- d[, c("sample_id", "condition",
-#            "gene_name", "gene_usage_count")]
+d <- read.csv(file = "inst/IGHV_HIV.csv", sep = " ", as.is = T)
+d <- d[, c("sample_id", "condition",
+           "gene_name", "gene_usage_count")]
 
 
 # TRV_Cancer -> some processing needed before use, too unreliable
@@ -50,9 +50,8 @@ stan.files <- list.files(path = "src/stan_files/",
 stan.files.short <- list.files(path = "src/stan_files/",
                                pattern = "\\.stan",
                                full.names = F)
-
-
-for(m in 1:length(stan.files)) {
+# for(m in 1:length(stan.files)) {
+for(m in c(1, 5)) {
   M <- diffUsage(usage.data = d,
                  mcmc.warmup = 1000,
                  mcmc.steps = 2500,
@@ -63,8 +62,8 @@ for(m in 1:length(stan.files)) {
                  max.treedepth = 13,
                  dev.model = stan.files[m])
 
-  out <- paste("R/dev/alakazam_ighv_families_", gsub(pattern = "\\.stan",
-                                         replacement = '\\.RData',
-                                         x = stan.files.short[m]), sep = '')
+  out <- paste("R/dev/ighv_hiv_", gsub(pattern = "\\.stan",
+                                       replacement = '\\.RData',
+                                       x = stan.files.short[m]), sep = '')
   save(M, file = out)
 }
