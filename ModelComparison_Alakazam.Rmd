@@ -76,12 +76,17 @@ M0 <- get(load(file = "R/dev/alakazam_ighv_families_zero_model.RData"))
 M1 <- get(load(file = "R/dev/alakazam_ighv_families_model.RData"))
 M2 <- get(load(file = "R/dev/alakazam_ighv_families_zib_multiz.RData"))
 M3 <- get(load(file = "R/dev/alakazam_ighv_families_beta_binomial_model.RData"))
+M4 <- get(load(file = "R/dev/alakazam_ighv_families_zibb_model.RData"))
+M5 <- get(load(file = "R/dev/alakazam_ighv_families_zmix_model.RData"))
+
 rm(usage.hiv.csm)
 
 M0$glm@model_name <- "M0"
 M1$glm@model_name <- "M1"
 M2$glm@model_name <- "M2"
 M3$glm@model_name <- "M3"
+M4$glm@model_name <- "M4"
+M5$glm@model_name <- "M5"
 ```
 
 
@@ -115,13 +120,30 @@ print(loo::loo(loo::extract_log_lik(M2$glm)))
 print(loo::loo(loo::extract_log_lik(M3$glm)))
 ```
 
+
+### M4
+
+```{r}
+print(loo::loo(loo::extract_log_lik(M4$glm)))
+```
+
+
+### M5
+
+```{r}
+print(loo::loo(loo::extract_log_lik(M5$glm)))
+```
+
+
 ### Comparison
 
 ```{r}
 loo::compare(loo::loo(loo::extract_log_lik(M0$glm)),
              loo::loo(loo::extract_log_lik(M1$glm)),
              loo::loo(loo::extract_log_lik(M2$glm)),
-             loo::loo(loo::extract_log_lik(M3$glm)))
+             loo::loo(loo::extract_log_lik(M3$glm)),
+             loo::loo(loo::extract_log_lik(M4$glm)),
+             loo::loo(loo::extract_log_lik(M5$glm)))
 ```
 
 
@@ -184,6 +206,34 @@ ggplot(data = M3$ppc)+
 ```
 
 
+### M4
+
+```{r, fig.height=5, fig.width=8}
+ggplot(data = M4$ppc)+
+  facet_wrap(facets = ~sample_id, ncol = 4)+
+  geom_abline(intercept = 0, slope = 1)+
+  geom_errorbar(aes(x = raw, y = ppc.raw.mean, 
+                    ymin = ppc.raw.L, ymax = ppc.raw.H))+
+  geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")
+```
+
+
+
+### M5
+
+```{r, fig.height=5, fig.width=8}
+ggplot(data = M5$ppc)+
+  facet_wrap(facets = ~sample_id, ncol = 4)+
+  geom_abline(intercept = 0, slope = 1)+
+  geom_errorbar(aes(x = raw, y = ppc.raw.mean, 
+                    ymin = ppc.raw.L, ymax = ppc.raw.H))+
+  geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")
+```
+
 ### Errors at a repertoire level
   * e[%] = |Yhat[%] - Y[%| or 
   * e[raw count] = |Yhat[count] - Y[count]| 
@@ -199,6 +249,10 @@ grid.arrange(
               shape = 21, fill = "white")+
     geom_sina(data = M3$ppc, aes(x = "M3 [%]", y = abs(raw.pct-ppc.pct.mean)),
               shape = 21, fill = "white")+
+    geom_sina(data = M4$ppc, aes(x = "M4 [%]", y = abs(raw.pct-ppc.pct.mean)),
+              shape = 21, fill = "white")+
+    geom_sina(data = M5$ppc, aes(x = "M5 [%]", y = abs(raw.pct-ppc.pct.mean)),
+              shape = 21, fill = "white")+
     theme_bw(base_size = 9)+
     theme(legend.position = "top")+
     ylab(label = "e[%]")+
@@ -213,6 +267,10 @@ grid.arrange(
               shape = 21, fill = "white")+
     geom_sina(data = M3$ppc, aes(x = "M3", y = abs(raw-ppc.raw.mean)),
               shape = 21, fill = "white")+
+    geom_sina(data = M3$ppc, aes(x = "M4", y = abs(raw-ppc.raw.mean)),
+              shape = 21, fill = "white")+
+    geom_sina(data = M3$ppc, aes(x = "M5", y = abs(raw-ppc.raw.mean)),
+              shape = 21, fill = "white")+
     theme_bw(base_size = 9)+
     theme(legend.position = "top")+
     ylab(label = "e [raw count]")+
@@ -225,32 +283,53 @@ grid.arrange(
 ### Errors at a gene level
   * raw mean in gene&condition vs ppc mean in gene&condition
   
-```{r, fig.height=3, fig.width=10}
+```{r, fig.height=6, fig.width=8}
 grid.arrange(
   ggplot(data = M0$group.ppc$group.ppc)+
     geom_abline(intercept = 0, slope = 1)+
     geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
     geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
     theme_bw(base_size = 9)+
+    ggtitle(label = "M0")+
     theme(legend.position = "top"),
   ggplot(data = M1$group.ppc$group.ppc)+
     geom_abline(intercept = 0, slope = 1)+
     geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
     geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
     theme_bw(base_size = 9)+
-    theme(legend.position = "top"),
+    theme(legend.position = "top")+
+    ggtitle(label = "M1"),
   ggplot(data = M2$group.ppc$group.ppc)+
     geom_abline(intercept = 0, slope = 1)+
     geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
     geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
     theme_bw(base_size = 9)+
-    theme(legend.position = "top"),
+    theme(legend.position = "top")+
+    ggtitle(label = "M2"),
   ggplot(data = M3$group.ppc$group.ppc)+
     geom_abline(intercept = 0, slope = 1)+
     geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
     geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
     theme_bw(base_size = 9)+
-    theme(legend.position = "top"),
-  nrow = 1)
+    theme(legend.position = "top")+
+    ggtitle(label = "M3"),
+  ggplot(data = M4$group.ppc$group.ppc)+
+    geom_abline(intercept = 0, slope = 1)+
+    geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
+    geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
+    theme_bw(base_size = 9)+
+    theme(legend.position = "top")+
+    ggtitle(label = "M4"),
+  ggplot(data = M5$group.ppc$group.ppc)+
+    geom_abline(intercept = 0, slope = 1)+
+    geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
+    geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
+    theme_bw(base_size = 9)+
+    theme(legend.position = "top")+
+    ggtitle(label = "M5"),
+  nrow = 2)
 ```
+
+
+
 
