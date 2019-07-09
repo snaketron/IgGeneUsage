@@ -21,8 +21,8 @@ d <- d[, c("sample_id", "condition",
 
 
 # Ig from alakazam
-d <- read.csv(file = "inst/Ig.csv", sep = " ", as.is = T)
-d$gene_usage_count <- as.integer(d$gene_usage_count)
+# d <- read.csv(file = "inst/Ig.csv", sep = " ", as.is = T)
+# d$gene_usage_count <- as.integer(d$gene_usage_count)
 
 
 
@@ -42,15 +42,15 @@ for(m in 1:length(stan.files)) {
                  mcmc.chains = 4,
                  mcmc.cores = 4,
                  hdi.level = 0.95,
-                 adapt.delta = 0.99,
-                 max.treedepth = 10,
+                 adapt.delta = 0.95,
+                 max.treedepth = 13,
                  dev.model = stan.files[m])
 
   # out <- paste("R/dev/alakazam_ighv_families_", gsub(pattern = "\\.stan",
   #                                        replacement = '\\.RData',
   #                                        x = stan.files.short[m]), sep = '')
-  out <- paste("R/dev/ighv_hcv_zmix_model.RData", gsub(pattern = "\\.stan",
-                                                     replacement = '\\.RData',
-                                                     x = stan.files.short[m]), sep = '')
+  out <- paste("R/dev/ighv_hcv_zmix_", gsub(pattern = "\\.stan",
+                                            replacement = '\\.RData',
+                                            x = stan.files.short[m]), sep = '')
   save(M, file = out)
 }

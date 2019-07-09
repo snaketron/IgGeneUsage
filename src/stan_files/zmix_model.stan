@@ -77,7 +77,7 @@ model {
   tau ~ gamma(3, 0.1);
 
   // noise
-  p ~ beta(max(Nreal)/10^3, max(Nreal));
+  p ~ beta(1, 10^3);
   z ~ beta(1, 1);
 }
 
