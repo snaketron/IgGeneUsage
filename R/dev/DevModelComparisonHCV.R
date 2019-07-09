@@ -1,3 +1,7 @@
+require(ggplot2)
+require(gridExtra)
+
+
 #### 1. General view ####
 data("IGHV_HCV")
 
@@ -33,20 +37,6 @@ ggplot(data = viz)+
 
 
 #### 2. Model parameters ####
-
-# Mmix2
-Mmix2 <- get(load(file = "R/dev/ighv_hcv_zmix2_model.RData"))
-Mmix2.stats <- Mmix2$glm.summary
-Mmix2.stats$effect_col <- ifelse(test = Mmix2.stats$effect_L <= 0
-                                 & Mmix2.stats$effect_H >= 0,
-                                yes = "include", no = "exclude")
-Mmix2.stats <- Mmix2.stats[order(abs(Mmix2.stats$effect_mean), decreasing = F), ]
-Mmix2.stats$gene_fac <- factor(x = Mmix2.stats$gene_name,
-                              levels = Mmix2.stats$gene_name)
-Mmix2.stats <- merge(x = Mmix2.stats, y = Mmix2$test.stats, by = "gene_name")
-Mmix2.stats$model <- "Mix2"
-
-
 # Mmix
 Mmix <- get(load(file = "R/dev/ighv_hcv_zmix_model.RData"))
 Mmix.stats <- Mmix$glm.summary
@@ -71,7 +61,7 @@ Mbb.stats <- merge(x = Mbb.stats, y = Mbb$test.stats, by = "gene_name")
 Mbb.stats$model <- "Beta-binomial"
 
 
-stats <- rbind(Mmix2.stats, Mmix.stats, Mbb.stats)
+stats <- rbind(Mmix.stats, Mbb.stats)
 
 
 # visualize disruption effects on each gene
@@ -85,45 +75,22 @@ ggplot(data = stats)+
   xlab(label = "Mean effect")
 
 
-# format data
-stats <- Mmix$glm.summary
-stats$effect_col <- ifelse(test = stats$effect_L <= 0 & stats$effect_H >= 0,
-                           yes = "include", no = "exclude")
-stats <- stats[order(abs(stats$effect_mean), decreasing = F), ]
-stats$gene_fac <- factor(x = stats$gene_name,
-                         levels = stats$gene_name)
-
-stats <- merge(x = stats, y = M$test.stats, by = "gene_name")
-
-# visualize disruption effects on each gene
-ggplot(data = stats)+
-  geom_vline(xintercept = 0, linetype = "dashed", col = "darkgray")+
-  geom_errorbarh(aes(y = gene_fac, xmin = effect_L,
-                     xmax = effect_H, col = effect_col))+
-  geom_point(aes(y = gene_fac, x = effect_mean))+
-  theme_bw(base_size = 9)+
-  theme(legend.position = "top")+
-  scale_color_manual(name = '', values = c("exclude"="red", "include"="black"))+
-  xlab(label = "Mean effect")
-
-
 
 # now select interesting genes
-promising.genes <- c("IGHV1-3", "IGHV3-9", "IGHV4-30-4", "IGHV5-10-1")
-promising.genes <- stats$gene_name[order(abs(stats$effect_mean), decreasing = T)[1:10]]
-
+# promising.genes <- c("IGHV1-3", "IGHV3-9", "IGHV4-30-4", "IGHV5-10-1")
+promising.genes <- stats$gene_name[order(abs(stats$effect_mean), decreasing = T)[1:20]]
+# promising.genes <- "IGHV3-9"
 
 
 
 #### 3. Model predictions (gene level) ####
-Mmix2.group <- Mmix2$group.ppc$group.ppc
-Mmix2.group$model <- "Mix2"
+# Mmix2.group <- Mmix2$group.ppc$group.ppc
+# Mmix2.group$model <- "Mix2"
 Mmix.group <- Mmix$group.ppc$group.ppc
 Mmix.group$model <- "Mix"
 Mbb.group <- Mbb$group.ppc$group.ppc
 Mbb.group$model <- "Beta-binomial"
-group <- rbind(Mmix2.group, Mmix.group, Mbb.group)
-
+group <- rbind(Mmix.group, Mbb.group)#Mmix2.group
 
 
 ggplot()+
@@ -148,13 +115,11 @@ ggplot()+
 
 
 #### 4. Model predictions (individual level) ####
-Mmix2.individual <- Mmix2$ppc
-Mmix2.individual$model <- "Mix2"
 Mmix.individual <- Mmix$ppc
 Mmix.individual$model <- "Mix"
 Mbb.individual <- Mbb$ppc
 Mbb.individual$model <- "Beta-binomial"
-individual <- rbind(Mmix2.individual, Mmix.individual, Mbb.individual)
+individual <- rbind(Mmix.individual, Mbb.individual)
 
 
 ggplot()+
@@ -169,3 +134,16 @@ ggplot()+
   theme_bw(base_size = 9)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
   theme(legend.position = "top")
+
+
+
+
+
+#### 5. loo ####
+
+loo::loo(Mbb$glm)
+
+loo::loo(Mmix$glm)
+
+loo::compare(loo::loo(Mbb$glm),
+             loo::loo(Mmix$glm))
