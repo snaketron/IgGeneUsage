@@ -1,7 +1,3 @@
-require(ggplot2)
-require(gridExtra)
-
-
 #### 1. General view ####
 data("IGHV_HCV")
 
@@ -37,31 +33,58 @@ ggplot(data = viz)+
 
 
 #### 2. Model parameters ####
+
 # Mmix
-Mmix <- get(load(file = "R/dev/ighv_hcv_zmix_model.RData"))
-Mmix.stats <- Mmix$glm.summary
-Mmix.stats$effect_col <- ifelse(test = Mmix.stats$effect_L <= 0 & Mmix.stats$effect_H >= 0,
+# Mmix <- get(load(file = "R/dev/alakazam_ighv_families_zmix_model.RData"))
+# Mmix.stats <- Mmix$glm.summary
+# Mmix.stats$effect_col <- ifelse(test = Mmix.stats$effect_L <= 0 & Mmix.stats$effect_H >= 0,
+#                                 yes = "include", no = "exclude")
+# Mmix.stats <- Mmix.stats[order(abs(Mmix.stats$effect_mean), decreasing = F), ]
+# Mmix.stats$gene_fac <- factor(x = Mmix.stats$gene_name,
+#                               levels = Mmix.stats$gene_name)
+# Mmix.stats <- merge(x = Mmix.stats, y = Mmix$test.stats, by = "gene_name")
+# Mmix.stats$model <- "Mix"
+
+
+
+# Mbin
+Mbin <- get(load(file = "R/dev/ighv_hcv_binomial.RData"))
+Mbin.stats <- Mbin$glm.summary
+Mbin.stats$effect_col <- ifelse(test = Mbin.stats$effect_L <= 0 & Mbin.stats$effect_H >= 0,
                                 yes = "include", no = "exclude")
-Mmix.stats <- Mmix.stats[order(abs(Mmix.stats$effect_mean), decreasing = F), ]
-Mmix.stats$gene_fac <- factor(x = Mmix.stats$gene_name,
-                              levels = Mmix.stats$gene_name)
-Mmix.stats <- merge(x = Mmix.stats, y = Mmix$test.stats, by = "gene_name")
-Mmix.stats$model <- "Mix"
+Mbin.stats <- Mbin.stats[order(abs(Mbin.stats$effect_mean), decreasing = F), ]
+Mbin.stats$gene_fac <- factor(x = Mbin.stats$gene_name,
+                              levels = Mbin.stats$gene_name)
+Mbin.stats <- merge(x = Mbin.stats, y = Mbin$test.stats, by = "gene_name")
+Mbin.stats$model <- "Binomial"
 
 
 # Mbb
 Mbb <- get(load(file = "R/dev/ighv_hcv_beta_binomial_model.RData"))
 Mbb.stats <- Mbb$glm.summary
 Mbb.stats$effect_col <- ifelse(test = Mbb.stats$effect_L <= 0 & Mbb.stats$effect_H >= 0,
-                                yes = "include", no = "exclude")
+                               yes = "include", no = "exclude")
 Mbb.stats <- Mbb.stats[order(abs(Mbb.stats$effect_mean), decreasing = F), ]
 Mbb.stats$gene_fac <- factor(x = Mbb.stats$gene_name,
-                              levels = Mbb.stats$gene_name)
+                             levels = Mbb.stats$gene_name)
 Mbb.stats <- merge(x = Mbb.stats, y = Mbb$test.stats, by = "gene_name")
 Mbb.stats$model <- "Beta-binomial"
 
 
-stats <- rbind(Mmix.stats, Mbb.stats)
+# Mzibb
+Mzibb <- get(load(file = "R/dev/ighv_hcv_zibb_model.RData"))
+Mzibb.stats <- Mzibb$glm.summary
+Mzibb.stats$effect_col <- ifelse(test = Mzibb.stats$effect_L <= 0 & Mzibb.stats$effect_H >= 0,
+                                 yes = "include", no = "exclude")
+Mzibb.stats <- Mzibb.stats[order(abs(Mzibb.stats$effect_mean), decreasing = F), ]
+Mzibb.stats$gene_fac <- factor(x = Mzibb.stats$gene_name,
+                               levels = Mzibb.stats$gene_name)
+Mzibb.stats <- merge(x = Mzibb.stats, y = Mzibb$test.stats, by = "gene_name")
+Mzibb.stats$model <- "ZIBB"
+
+
+stats <- rbind(Mbin.stats, Mbb.stats, Mzibb.stats)
+rm(Mbin.stats, Mbb.stats, Mzibb.stats)
 
 
 # visualize disruption effects on each gene
@@ -76,59 +99,50 @@ ggplot(data = stats)+
 
 
 
-# now select interesting genes
-# promising.genes <- c("IGHV1-3", "IGHV3-9", "IGHV4-30-4", "IGHV5-10-1")
-promising.genes <- stats$gene_name[order(abs(stats$effect_mean), decreasing = T)[1:20]]
-# promising.genes <- "IGHV3-9"
+
+
+
+####  LOO ####
+
+loo::loo(Mbin$glm)
+
+loo::loo(Mbb$glm)
+
+loo::loo(Mzibb$glm)
+
+
+loo::compare(loo::loo(Mbin$glm),
+             loo::loo(Mbb$glm),
+             loo::loo(Mzibb$glm))
+
 
 
 
 #### 3. Model predictions (gene level) ####
-# Mmix2.group <- Mmix2$group.ppc$group.ppc
-# Mmix2.group$model <- "Mix2"
-Mmix.group <- Mmix$group.ppc$group.ppc
-Mmix.group$model <- "Mix"
-Mbb.group <- Mbb$group.ppc$group.ppc
-Mbb.group$model <- "Beta-binomial"
-group <- rbind(Mmix.group, Mbb.group)#Mmix2.group
+# Mmix.individual <- Mmix$ppc
+# Mmix.individual$model <- "Mix"
 
+Mbin.individual <- Mbin$ppc
+Mbin.individual$model <- "Binomial"
 
-ggplot()+
-  geom_point(data = viz[viz$gene_name %in% promising.genes, ],
-             aes(x = gene_name, y = gene_usage_pct, fill = condition),
-             shape = 21, stroke = 0, alpha = 0.5, size = 2,
-             position = position_jitterdodge(jitter.width = 0.15,
-                                             dodge.width = 0.85,
-                                             jitter.height = 0))+
-  geom_errorbar(data = group[group$gene_name %in% promising.genes, ],
-                aes(x = gene_name, ymin = ppc.L,
-                    ymax = ppc.H, linetype = condition, col = model),
-                position = position_dodge(width = .8), width = 0.75)+
+Mzibb.individual <- Mzibb$ppc
+Mzibb.individual$model <- "ZIBB"
 
-  theme_bw(base_size = 9)+
-  theme(legend.position = "top")+
-  scale_fill_manual(values = c("black", "darkgray"))
-
-
-
-
-
-
-#### 4. Model predictions (individual level) ####
-Mmix.individual <- Mmix$ppc
-Mmix.individual$model <- "Mix"
 Mbb.individual <- Mbb$ppc
 Mbb.individual$model <- "Beta-binomial"
-individual <- rbind(Mmix.individual, Mbb.individual)
+
+individual <- rbind(Mbin.individual, Mbb.individual, Mzibb.individual)
+rm(Mbin.individual, Mbb.individual, Mzibb.individual)
+
 
 
 ggplot()+
   facet_grid(facets = model~gene_name, scales = "free_x")+
-  geom_errorbar(data = individual[individual$gene_name %in% promising.genes, ],
+  geom_errorbar(data = individual,
                 aes(x = sample_id, ymin = ppc.pct.L,
                     ymax = ppc.pct.H, col = condition),
                 position = position_dodge(width = .8), width = 0.75)+
-  geom_point(data = viz[viz$gene_name %in% promising.genes, ],
+  geom_point(data = viz,
              aes(x = sample_id, y = gene_usage_pct, fill = condition,
                  shape = condition))+
   theme_bw(base_size = 9)+
@@ -139,11 +153,67 @@ ggplot()+
 
 
 
-#### 5. loo ####
 
-loo::loo(Mbb$glm)
+#### 4. Model predictions (individual level) ####
+# Mmix.group <- Mmix$group.ppc$group.ppc
+# Mmix.group$model <- "Mix"
 
-loo::loo(Mmix$glm)
+Mbin.group <- Mbin$group.ppc$group.ppc
+Mbin.group$model <- "Binomial"
 
-loo::compare(loo::loo(Mbb$glm),
-             loo::loo(Mmix$glm))
+Mzibb.group <- Mzibb$group.ppc$group.ppc
+Mzibb.group$model <- "ZIBB"
+
+Mbb.group <- Mbb$group.ppc$group.ppc
+Mbb.group$model <- "Beta-binomial"
+
+group <- rbind(Mbin.group, Mzibb.group, Mbb.group)
+rm(Mbin.group, Mzibb.group, Mbb.group)
+
+
+
+g <- ggplot()+
+  geom_point(data = viz, aes(x = gene_name, y = gene_usage_pct, fill = condition),
+             shape = 21, stroke = 0, alpha = 0.5, size = 1.5,
+             position = position_jitterdodge(jitter.width = 0.15,
+                                             dodge.width = 0.85,
+                                             jitter.height = 0))+
+  geom_errorbar(data = group, aes(x = gene_name, ymin = ppc.L,
+                                  ymax = ppc.H, linetype = condition, col = model),
+                position = position_dodge(width = .8), width = 0.75)+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")+
+  scale_fill_manual(values = c("black", "darkgray"))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
+ggsave(filename = "Rplot.pdf", plot = g, device = "pdf", width = 30, height = 10)
+
+
+
+
+# compare slopes
+e.comp <- data.frame(bb = abs(Mbb$glm.summary$effect_mean),
+                     zibb = abs(Mzibb$glm.summary$effect_mean),
+                     gene_name = Mzibb$usage.data$gene_names)
+
+e.comp$delta <- e.comp$bb-e.comp$zibb
+
+ggplot(data = e.comp)+
+  geom_point(aes(x = bb, y = zibb))+
+  geom_text(aes(x = bb, y = zibb, label = gene_name))+
+  geom_abline(slope = 1, intercept = 0)+
+  theme_bw()
+
+ggplot()+
+  geom_point(data = viz[viz$gene_name %in% e.comp$gene_name[abs(e.comp$delta) > 0.2], ],
+             aes(x = gene_name, y = gene_usage_pct, fill = condition),
+             shape = 21, stroke = 0, alpha = 0.5, size = 1.5,
+             position = position_jitterdodge(jitter.width = 0.15,
+                                             dodge.width = 0.85,
+                                             jitter.height = 0))+
+  geom_errorbar(data = group[group$gene_name %in% e.comp$gene_name[abs(e.comp$delta) > 0.2], ],
+                aes(x = gene_name, ymin = ppc.L, ymax = ppc.H, linetype = condition, col = model),
+                position = position_dodge(width = .8), width = 0.75)+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")+
+  scale_fill_manual(values = c("black", "darkgray"))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))

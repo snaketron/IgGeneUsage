@@ -21,8 +21,8 @@ functions {
   }
 
   int zibb_rng(int y, int trials, real a, real b, real zi) {
-    if (y == 0) {
-      return (bernoulli_rng(zi));
+    if (bernoulli_rng(zi) == 1) {
+      return (0);
     } else {
       return (beta_binomial_rng(trials, a, b));
     }
@@ -38,6 +38,10 @@ data {
   int <lower = -1, upper = 1> X[N_sample]; // condition
 }
 
+transformed data {
+  real Nreal [N_sample];
+  Nreal = N;
+}
 
 parameters {
   real alpha_grand;
@@ -50,7 +54,7 @@ parameters {
   vector [N_gene] beta_gene_raw;
   real <lower = 0> phi;
   real<lower = 0> tau;
-  vector <lower=0,upper=1> [N_gene] z;  // zero-inflation probability
+  real <lower = 0, upper = 1> z;  // zero-inflation probability
 }
 
 
@@ -77,11 +81,11 @@ transformed parameters {
 model {
   for(i in 1:N_sample) {
     for(j in 1:N_gene) {
-      target += zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], z[j]);
+      target += zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], z);
     }
   }
 
-  alpha_grand ~ normal(0, 20);
+  alpha_grand ~ normal(0, 10);
   beta_grand ~ normal(0, 5);
 
   alpha_sigma ~ cauchy(0, 1);
@@ -96,7 +100,7 @@ model {
 
   phi ~ exponential(tau);
   tau ~ gamma(3, 0.1);
-  z ~ beta(1, 1);
+  z ~ beta(1, 3);
 }
 
 
@@ -105,20 +109,17 @@ generated quantities {
   real Yhat_individual [N_gene, N_sample];
   matrix [2, N_gene] Yhat_gene;
   matrix [N_gene, N_sample] log_lik;
-  real temp;
 
   for(j in 1:N_gene) {
     for(i in 1:N_sample) {
-      log_lik[j,i] = zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], z[j]);
-      temp = N[i];
-      Yhat[j, i] = zibb_rng(Y[j, i], N[i], a[i][j], b[i][j], z[j]);
+      log_lik[j,i] = zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], z);
+      Yhat[j, i] = zibb_rng(Y[j, i], N[i], a[i][j], b[i][j], z);
 
-
-      if(temp == 0.0) {
+      if(Nreal[i] == 0.0) {
         Yhat_individual[j, i] = 0;
       }
       else {
-        Yhat_individual[j, i] = Yhat[j,i]/temp*100.0;
+        Yhat_individual[j, i] = Yhat[j,i]/Nreal[i]*100.0;
       }
     }
     Yhat_gene[1, j] = inv_logit(alpha_gene[j]+beta_gene[j]*1.0)*100.0;

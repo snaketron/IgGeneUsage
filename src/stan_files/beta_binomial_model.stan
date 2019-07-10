@@ -6,6 +6,10 @@ data {
   int <lower = -1, upper = 1> X[N_sample]; // condition
 }
 
+transformed data {
+  real Nreal [N_sample];
+  Nreal = N;
+}
 
 parameters {
   real alpha_grand;
@@ -41,14 +45,11 @@ transformed parameters {
 
 
 model {
-  int Ytemp [N_gene];
-
   for(i in 1:N_sample) {
-    Ytemp = Y[, i];
-    Ytemp ~ beta_binomial(N[i], a[i], b[i]);
+    Y[, i] ~ beta_binomial(N[i], a[i], b[i]);
   }
 
-  alpha_grand ~ normal(0, 20);
+  alpha_grand ~ normal(0, 10);
   beta_grand ~ normal(0, 5);
 
   alpha_sigma ~ cauchy(0, 1);
@@ -71,21 +72,19 @@ generated quantities {
   real Yhat_individual [N_gene, N_sample];
   matrix [2, N_gene] Yhat_gene;
   matrix [N_gene, N_sample] log_lik;
-  real temp;
 
   for(j in 1:N_gene) {
     for(i in 1:N_sample) {
-      temp = N[i];
 
       log_lik[j,i] = beta_binomial_lpmf(Y[j,i] | N[i], a[i][j], b[i][j]);
       Yhat[j, i] = beta_binomial_rng(N[i], a[i][j], b[i][j]);
 
 
-      if(temp == 0.0) {
+      if(Nreal[i] == 0.0) {
         Yhat_individual[j, i] = 0;
       }
       else {
-        Yhat_individual[j, i] = Yhat[j,i]/temp*100.0;
+        Yhat_individual[j, i] = Yhat[j,i]/Nreal[i]*100.0;
       }
     }
     Yhat_gene[1, j] = inv_logit(alpha_gene[j]+beta_gene[j]*1.0)*100.0;
