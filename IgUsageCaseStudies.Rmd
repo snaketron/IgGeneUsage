@@ -137,10 +137,7 @@ This is the main method of IgGeneUsage for differential gene usage.
 #                max.treedepth = 13,
 #                dev.model = "src/stan_files/beta_binomial_model.stan")
 # save(M, file = "R/dev/saved_temp/M_IGHV_HCV.RData")
-# M <- get(load(file = "R/dev/saved_temp/M_IGHV_HCV.RData"))
-# M <- get(load(file = "R/dev/ighv_hcv_beta_binomial_model.RData"))
-M <- get(load(file = "R/dev/ighv_hcv_zmix_model.RData"))
-
+M <- get(load(file = "R/dev/ighv_hcv_zibb_model.RData"))
 ```
 
 
@@ -280,8 +277,8 @@ gene usage (%) and the estimated mean usage with error bars showing 95% HDI of
 mean for each gene and condition. 
 
 ```{r, fig.width=8, fig.height=4}
-# stats$gene_name[stats$effect_col == "exclude"]
-promising.genes <- c("IGHV1-3", "IGHV3-9", "IGHV4-30-4", "IGHV5-10-1")
+# promising.genes <- c("IGHV1-3", "IGHV3-9", "IGHV4-30-4", "IGHV5-10-1")
+promising.genes <- c("IGHV4-30-4", "IGHV3-30-3", "IGHV3-7", "IGHV3-23")
 
 group.ppc <- M$group.ppc$group.ppc
 group.ppc <- group.ppc[group.ppc$gene_name %in% promising.genes, ]
@@ -308,7 +305,8 @@ ggplot()+
 #### Promising results (original data)
 
 ```{r, fig.width=8, fig.height=4}
-promising.genes <- c("IGHV1-3", "IGHV3-9", "IGHV4-30-4", "IGHV5-10-1")
+# promising.genes <- c("IGHV1-3", "IGHV3-9", "IGHV4-30-4", "IGHV5-10-1")
+promising.genes <- c("IGHV4-30-4", "IGHV3-30-3", "IGHV3-7", "IGHV3-23")
 
 ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
   geom_point(aes(x = gene_name, y = gene_usage_count, 
@@ -517,7 +515,7 @@ This is the main method of IgGeneUsage for differential gene usage.
 #                max.treedepth = 13,
 #                dev.model = "src/stan_files/beta_binomial_model.stan")
 # save(M, file = "R/dev/saved_temp/M_IG.RData")
-M <- get(load(file = "R/dev/saved_temp/M_IG.RData"))
+M <- get(load(file = "R/dev/alakazam_zibb_model.RData"))
 ```
 
 

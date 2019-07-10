@@ -21,8 +21,8 @@ d <- d[, c("sample_id", "condition",
 
 
 # Ig from alakazam
-# d <- read.csv(file = "inst/Ig.csv", sep = " ", as.is = T)
-# d$gene_usage_count <- as.integer(d$gene_usage_count)
+# data("Ig")
+# d <- Ig
 
 
 
@@ -33,12 +33,11 @@ stan.files <- list.files(path = "src/stan_files/",
 stan.files.short <- list.files(path = "src/stan_files/",
                                pattern = "\\.stan",
                                full.names = F)
-m <- 6
 
-for(m in 1:length(stan.files)) {
+for(m in 2:length(stan.files)) {
   M <- diffUsage(usage.data = d,
-                 mcmc.warmup = 1000,
-                 mcmc.steps = 2500,
+                 mcmc.warmup = 500,
+                 mcmc.steps = 1500,
                  mcmc.chains = 4,
                  mcmc.cores = 4,
                  hdi.level = 0.95,
@@ -46,11 +45,11 @@ for(m in 1:length(stan.files)) {
                  max.treedepth = 13,
                  dev.model = stan.files[m])
 
-  # out <- paste("R/dev/alakazam_ighv_families_", gsub(pattern = "\\.stan",
-  #                                        replacement = '\\.RData',
-  #                                        x = stan.files.short[m]), sep = '')
-  out <- paste("R/dev/ighv_hcv_zmix_", gsub(pattern = "\\.stan",
-                                            replacement = '\\.RData',
-                                            x = stan.files.short[m]), sep = '')
+  out <- paste("R/dev/alakazam_", gsub(pattern = "\\.stan",
+                                       replacement = '\\.RData',
+                                       x = stan.files.short[m]), sep = '')
+  # out <- paste("R/dev/ighv_hcv_", gsub(pattern = "\\.stan",
+  #                                       replacement = '\\.RData',
+  #                                       x = stan.files.short[m]), sep = '')
   save(M, file = out)
 }

@@ -26,6 +26,16 @@ diffUsage <- function(usage.data,
   usage.data <- getUsageData(usage = usage.data.raw)
 
 
+
+  # subset for test
+  # gs <- which(usage.data$gene_names %in% c("IGHV1-3", "IGHV3-23", "IGHV3-9",
+  #                                          "IGHV4-30-4", "IGHV5-10-1"))
+  # usage.data$Y <- usage.data$Y[gs, ]
+  # usage.data$N_gene <- length(gs)
+  # usage.data$gene_names <- usage.data$gene_names[gs]
+
+
+
   model <- rstan::stan_model(file = dev.model)
   # model
   # model <- rstan::stan_model(file = "src/stan_files/zib_multiz.stan")
