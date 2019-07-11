@@ -58,5 +58,5 @@ g <- ggplot(data = viz)+
 
 g
 ggsave(filename = "R/dev/manuscript/usage.eps", plot = g,
-       device = "eps", width = 6, height = 2.5,
+       device = "eps", width = 7, height = 2.5,
        dpi = 600)
