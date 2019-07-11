@@ -9,9 +9,10 @@ source(file = "R/Usage.R")
 
 
 # HCV
-d <- read.csv(file = "inst/IGHV_HCV_CSM.csv", sep = " ", as.is = T)
-d <- d[, c("sample_id", "condition",
-           "gene_name", "gene_usage_count")]
+# d <- read.csv(file = "inst/IGHV_HCV_CSM.csv", sep = " ", as.is = T)
+# d <- d[, c("sample_id", "condition",
+#            "gene_name", "gene_usage_count")]
+
 
 # HIV
 # d <- read.csv(file = "inst/IGHV_HIV.csv", sep = " ", as.is = T)
@@ -25,6 +26,9 @@ d <- d[, c("sample_id", "condition",
 # d <- Ig
 
 
+data(CDR3_Epitopes)
+d <- CDR3_Epitopes
+
 
 
 stan.files <- list.files(path = "src/stan_files/",
@@ -34,7 +38,7 @@ stan.files.short <- list.files(path = "src/stan_files/",
                                pattern = "\\.stan",
                                full.names = F)
 
-for(m in 2:length(stan.files)) {
+for(m in 1:length(stan.files)) {
   M <- diffUsage(usage.data = d,
                  mcmc.warmup = 500,
                  mcmc.steps = 1500,
@@ -45,7 +49,7 @@ for(m in 2:length(stan.files)) {
                  max.treedepth = 13,
                  dev.model = stan.files[m])
 
-  out <- paste("R/dev/alakazam_", gsub(pattern = "\\.stan",
+  out <- paste("R/dev/epitopes_", gsub(pattern = "\\.stan",
                                        replacement = '\\.RData',
                                        x = stan.files.short[m]), sep = '')
   # out <- paste("R/dev/ighv_hcv_", gsub(pattern = "\\.stan",
