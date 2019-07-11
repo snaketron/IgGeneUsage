@@ -187,6 +187,7 @@ grid.arrange(rstan::stan_rhat(object = M$glm),
 ggplot(data = M$ppc)+
   facet_wrap(facets = ~sample_id, ncol = 6)+
   geom_abline(intercept = 0, slope = 1)+
+  geom_errorbar(aes(x = raw, y = ppc.raw.mean, ymin = ppc.raw.L, ymax = ppc.raw.H))+
   geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
   theme_bw(base_size = 9)+
   theme(legend.position = "top")+
@@ -450,6 +451,7 @@ ggplot(data = stats)+
 
 
 ## Case Study II
+
 A small example database subset from study evaluating vaccine-induced changes in
 B-cell populations [^3]. The IGHV family usage is reported in four B-cell
 populations (samples IgM, IgD, IgG and IgA) across two timepoints (conditions
@@ -458,6 +460,7 @@ the vaccine on the IGHV family usage.
 
 [^3]: Laserson U and Vigneault F, et al. High-resolution antibody dynamics of
 vaccine-induced immune responses. Proc Natl Acad Sci USA. 2014 111:4928-33.
+
 
 
 ### Input data
@@ -502,6 +505,7 @@ ggplot(data = viz)+
 ```
 
 ### Analysis with IgGeneUsage
+
 This is the main method of IgGeneUsage for differential gene usage.
 
 ```{r}
@@ -546,6 +550,7 @@ grid.arrange(rstan::stan_rhat(object = M$glm),
 ggplot(data = M$ppc)+
   facet_wrap(facets = ~sample_id, ncol = 4)+
   geom_abline(intercept = 0, slope = 1)+
+  geom_errorbar(aes(x = raw, y = ppc.raw.mean, ymin = ppc.raw.L, ymax = ppc.raw.H))+
   geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
   theme_bw(base_size = 9)+
   theme(legend.position = "top")+
@@ -714,3 +719,251 @@ ggplot(data = stats)+
   theme(legend.position = "top")+
   scale_color_discrete(name = '')
 ```
+
+
+
+
+
+
+
+## Case Study III
+
+The main purpose of using IgGeneUsage is to evaluate differential gene usage. 
+However, the tool can be used to analyze different repertoire properties such 
+as differential CDR3-sequence charge and length usage. In principle, all tasks 
+that fall under the scope of binomial regression can be tackled by IgGeneUsage.
+
+In the third case study we explain how to perform differential CDR3-sequence
+charge usage between two biological conditions (InfluenzaA and CSM infection), 
+using Human CDR3 sequence data downloaded from VDJdb [^4].
+
+We consider the amino acids K, R and H as +1 charged, while D and E as -1 
+charged. We computed the net charge of a CDR3 sequence by adding up the 
+individual charges. We consider the different sources (publications) as 
+different subjects (repertoires).
+
+[^4]: https://vdjdb.cdr3.net/
+
+
+### Input data
+
+```{r}
+data(CDR3_Epitopes)
+head(CDR3_Epitopes)
+```
+
+
+### Data visualization
+
+Lets look at the input data with ggplot2.
+
+```{r, fig.width=7, fig.height=4}
+# we can compute the total number of rearrangements per sample
+total.usage <- aggregate(gene_usage_count~sample_id+condition,
+                         FUN = sum, data = CDR3_Epitopes)
+total.usage$total <- total.usage$gene_usage_count
+total.usage$gene_usage_count <- NULL
+
+# merge it with the original data
+viz <- merge(x = CDR3_Epitopes, y = total.usage,
+             by = c("sample_id", "condition"),
+             all.x = TRUE)
+
+# compute %
+viz$gene_usage_pct <- viz$gene_usage_count/viz$total*100
+
+# visualize
+ggplot(data = viz)+
+  geom_point(aes(x = as.numeric(gene_name), y = gene_usage_pct, fill = condition, 
+                 shape = condition), stroke = 0, size = 2, alpha = 0.5,
+             position = position_jitterdodge(jitter.width = 0.15, 
+                                             dodge.width = 0.5))+
+  theme_bw(base_size = 9)+
+  ylab(label = "Usage [%]")+
+  xlab(label = '')+
+  theme(legend.position = "top",
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
+  scale_fill_manual(name = "Condition", values = c("orange", "#6666ff"))+
+  scale_shape_manual(name = "Condition", values = c(21, 22))+
+  scale_x_continuous(breaks = -7:7, labels = -7:7)
+```
+
+
+
+### Analysis with IgGeneUsage
+
+This is the main method of IgGeneUsage for differential gene usage.
+
+```{r}
+# M <- diffUsage(usage.data = CDR3_Epitopes,
+#                mcmc.warmup = 1000,
+#                mcmc.steps = 2500,
+#                mcmc.chains = 4,
+#                mcmc.cores = 4,
+#                hdi.level = 0.95,
+#                adapt.delta = 0.95,
+#                max.treedepth = 13,
+#                dev.model = "src/stan_files/zibb_model.stan")
+
+# save(M, file = "R/dev/epitopes_zibb_model.RData")
+M <- get(load(file = "R/dev/epitopes_zibb_model.RData"))
+```
+
+
+
+
+### Model checking
+
+#### Checking MCMC sampling
+
+  * divergences, tree-depth, energy
+
+```{r}
+rstan::check_hmc_diagnostics(M$glm)
+```
+
+  * Rhat and Neff
+
+```{r, fig.width=7, fig.height=3}
+grid.arrange(rstan::stan_rhat(object = M$glm),
+             rstan::stan_ess(object = M$glm),
+             nrow = 1)
+```
+
+
+#### Repertoire-specific PPC
+
+```{r, fig.height=6, fig.width=6}
+ggplot(data = M$ppc)+
+  facet_wrap(facets = ~sample_id, ncol = 4)+
+  geom_abline(intercept = 0, slope = 1)+
+  geom_errorbar(aes(x = raw, y = ppc.raw.mean, ymin = ppc.raw.L, ymax = ppc.raw.H))+
+  geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")+
+  scale_x_log10()+
+  scale_y_log10()+
+  xlab(label = "Observed usage [counts]")+
+  ylab(label = "Predicted usage [counts]")
+```
+
+
+
+
+#### Gene-specific PPC
+
+```{r, fig.width=3, fig.height=3}
+ggplot(data = M$group.ppc$group.ppc)+
+  geom_abline(intercept = 0, slope = 1)+
+  geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
+  geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")+
+  xlab(label = "Observed usage [%]")+
+  ylab(label = "Predicted usage [%]")
+```
+
+
+
+#### Leave-one-out comparison
+  * with R-package loo
+
+```{r}
+loo::loo(x = loo::extract_log_lik(stanfit = M$glm))
+```
+
+
+### Results
+
+```{r, fig.height=3, fig.width=5}
+# format data
+stats <- M$glm.summary
+stats$effect_col <- ifelse(test = stats$effect_L <= 0 & stats$effect_H >= 0,
+                           yes = "include", no = "exclude")
+stats <- stats[order(abs(stats$effect_mean), decreasing = F), ]
+stats$gene_fac <- factor(x = stats$gene_name,
+                         levels = stats$gene_name)
+
+stats <- merge(x= stats, y = M$test.stats, by = "gene_name")
+
+# visualize disruption effects on each gene
+ggplot(data = stats)+
+  geom_vline(xintercept = 0, linetype = "dashed", col = "darkgray")+
+  geom_errorbarh(aes(y = as.numeric(as.character(gene_fac)), xmin = effect_L, 
+                     xmax = effect_H, col = effect_col))+
+  geom_point(aes(y = as.numeric(as.character(gene_fac)), x = effect_mean))+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")+
+  scale_color_manual(name = '', values = c("exclude"="red", "include"="black"))+
+  xlab(label = "Mean effect")+
+  ylab(label = "Net Charge")
+```
+
+
+
+
+
+#### Comparison with the t-test
+We again compare the effect sizes obtained from the Bayesian analysis with the 
+p-values obtained from the t-test. Legend:
+
+  * y-axis: FDR-corrected p-value shown on -log10 scale. Dashed lines represent 
+  the significance levels of 0.05 and 0.01. 
+  * x-axis: probability of differential gene usage
+  * color: effect size excludes null. 
+  
+We can notice one deviation between the two tests, namely the gene family IGHV5.
+Lets inspect this gene more closely.
+
+```{r, fig.width=8, fig.height=5}
+ggplot(data = stats)+
+  geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), linetype = "dashed")+
+  geom_point(aes(x = pmax, y = -log10(t.test.fdr.pvalue), col = effect_col), 
+             size = 1.5)+
+  geom_text_repel(aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
+                label = gene_name, col = effect_col), size = 2.5)+
+  xlim(0.5, 1)+
+  ylab(label = "-log10(p-value) from t-test [FDR corrected]")+
+  xlab(label = "pmax")+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")+
+  scale_color_discrete(name = '')
+```
+
+
+
+
+
+
+
+
+#### Comparison with the Wilcoxon rank-sum test (U-test)
+We again compare the effect sizes obtained from the Bayesian analysis with the 
+p-values obtained from the U-test. Legend:
+
+  * y-axis: FDR-corrected p-value shown on -log10 scale. Dashed lines represent 
+  the significance levels of 0.05 and 0.01. 
+  * x-axis: probability of differential gene usage
+  * color: effect size excludes null. 
+
+Both methods report no significant differential gene usages.
+
+```{r, fig.width=8, fig.height=5}
+ggplot(data = stats)+
+  geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), linetype = "dashed")+
+  geom_point(aes(x = pmax, y = -log10(u.test.fdr.pvalue), col = effect_col), 
+             size = 1.5)+
+  geom_text_repel(aes(x = pmax, y = -log10(u.test.fdr.pvalue), 
+                label = gene_name, col = effect_col), size = 2.5)+
+  xlim(0.5, 1)+
+  ylab(label = "-log10(p-value) from U-test [FDR corrected]")+
+  xlab(label = "pmax")+
+  theme_bw(base_size = 9)+
+  theme(legend.position = "top")+
+  scale_color_discrete(name = '')
+```
+
+
+
+
+

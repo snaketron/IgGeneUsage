@@ -13,13 +13,13 @@ getUsageData <- function(usage) {
                        value.var = "gene_usage_count",
                        fill = 0,
                        fun.aggregate = sum)
-
   sample_ids <- colnames(Y)
   gene_names <- rownames(Y)
 
   # get N data
   N.data <- aggregate(gene_usage_count~sample_id,
-                      data = usage, FUN = sum)
+                      data = usage, FUN = sum,
+                      drop = FALSE)
   N <- N.data$gene_usage_count
   names(N) <- N.data$sample_id
   rm(N.data)
@@ -27,6 +27,9 @@ getUsageData <- function(usage) {
 
 
   # get X data
+  usage <-  usage[usage$sample_id %in% sample_ids, ]
+  usage <- usage[duplicated(usage[, c("sample_id")]) == FALSE, ]
+
   X.data <- aggregate(condition~sample_id,
                       data = usage, FUN = unique)
   X <- X.data$condition
