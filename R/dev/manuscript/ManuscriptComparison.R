@@ -96,28 +96,10 @@ ggsave(filename = "R/dev/manuscript/utest.eps", plot = g,
 
 
 
-group.ppc <- M$group.ppc$group.ppc
-group.ppc <- group.ppc[group.ppc$gene_name %in% promising.genes, ]
 
-point.data <- M$group.ppc$individual.pct.data
-point.data <- point.data[point.data$gene_name %in% promising.genes, ]
-
-ggplot()+
-  geom_errorbar(data = group.ppc,
-                aes(x = gene_name, ymin = ppc.L,
-                    ymax = ppc.H, col = condition),
-                position = position_dodge(width = .8), width = 0.75)+
-  geom_point(data = point.data,
-             aes(x = gene_name, y = gene_usage_pct, col = condition),
-             shape = 21, size = 1.5, fill = "black",
-             position = position_jitterdodge(jitter.width = 0.15,
-                                             jitter.height = 0,
-                                             dodge.width = 0.8))+
-  theme_bw(base_size = 9)+
-  theme(legend.position = "top")
-
-
-promising.genes <- c("IGHV1-58", "IGHV3-72", "IGHV4-30-4", "IGHV3-30-3", "IGHV3-23", "IGHV3-7")
+# RAW COUNTS
+# promising.genes <- c("IGHV1-58", "IGHV3-72", "IGHV4-30-4", "IGHV3-30-3", "IGHV3-23", "IGHV3-7")
+promising.genes <- c("IGHV1-58", "IGHV3-72", "IGHV3-30-3")
 
 
 g <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
@@ -137,6 +119,58 @@ g <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
 
 g
 ggsave(filename = "R/dev/manuscript/results.eps", plot = g,
-       device = "eps", width = 2.5, height = 5, dpi = 600)
+       device = "eps", width = 2.5, height = 5.25, dpi = 600)
+
+
+g <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
+  facet_wrap(facets = ~gene_name_fig, ncol = 2, scales = "free")+
+  geom_point(aes(x = '', y = gene_usage_count, fill = condition, shape = condition, size = total/10^3),
+             position = position_jitterdodge(dodge.width = 1, jitter.width = 0.35, jitter.height = 0),
+             stroke = 0.5)+
+  theme_bw(base_size = 9)+
+  ylab(label = "Usage [count]")+
+  xlab(label = '')+
+  theme(legend.position = "top")+
+  scale_fill_manual(name = "Condition", values = c("orange", "#a4c0ed"))+
+  scale_shape_manual(name = "Condition", values = c(21, 22))+
+  scale_size_continuous(name = "N (in thousands)", range = c(0.75, 2.5))+
+  guides(size = guide_legend(nrow = 2, byrow = TRUE))
+
+ggsave(filename = "R/dev/manuscript/results_legend.eps", plot = g,
+       device = "eps", width = 7, height = 5.25, dpi = 600)
+
+
+
+
+
+
+
+
+
+
+
+
+# RAW PCT
+# promising.genes <- c("IGHV1-58", "IGHV3-72", "IGHV4-30-4", "IGHV3-30-3", "IGHV3-23", "IGHV3-7")
+promising.genes <- c("IGHV1-58", "IGHV3-72", "IGHV3-30-3")
+
+
+g <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
+  facet_wrap(facets = ~gene_name_fig, ncol = 1, scales = "free")+
+  geom_point(aes(x = '', y = gene_usage_pct, fill = condition, shape = condition),
+             position = position_jitterdodge(dodge.width = 1, jitter.width = 0.35, jitter.height = 0),
+             stroke = 0.5)+
+  theme_bw(base_size = 9)+
+  ylab(label = "Usage [count]")+
+  xlab(label = '')+
+  theme(legend.position = "top")+
+  scale_fill_manual(name = "Condition", values = c("orange", "#a4c0ed"))+
+  scale_shape_manual(name = "Condition", values = c(21, 22))+
+  guides(size = guide_legend(nrow = 1, byrow = TRUE))
+
+
+g
+ggsave(filename = "R/dev/manuscript/results_pct.eps", plot = g,
+       device = "eps", width = 1.25, height = 5.25, dpi = 600)
 
 
