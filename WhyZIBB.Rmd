@@ -1,5 +1,5 @@
 ---
-title: "Why do we use zero-inflated beta-binomial (ZIBB) regression?"
+title: "Why do we use a zero-inflated beta-binomial model for regression?"
 author: "SK"
 date: "June 25, 2019"
 output: 
@@ -40,25 +40,21 @@ to sample a limited amount of cells from each patient. This leads to additional
 variability in the data, which is manifested by over-dispersion of gene usage 
 within a biological condition, or by misdetection (zero-inflation) of genes 
 which are systematically used at a low probability by the rearrangement process. 
-Bayesian hierarcical models for ZIBB regression are a solution to this problem. 
-Here we show the pitfalls of not accounting for the overdispersion while 
-performing differential gene usage analysis.
 
-We data from from Case Study I (explained in vignette 'IgUsageCaseStudies'). We
-analyze the data with ZIBB model and a Beta-binomial (BB) model.
+Bayesian hierarcical models for ZIBB regression represent a solution to this 
+problem. The ZIBB model describes the data using two components: 1) zero 
+generating process that accounts for the excess zeros; 2) beta-binomial 
+process that can also account for over-dispersion. In this vignette we show the 
+pitfalls of not accounting for the over-dispersion while evaluating differential
+gene usage.
 
+The data used in this vignette is taken from Case Study I (explained in vignette 
+'IgUsageCaseStudies'). We analyze the data with the following three models and
+compare the results:
 
-
-# Case Studies
-## Case Study I
-The IgGeneUsage package comes with built-in datasets of gene usage. In the first 
-case study we will evaluate disruptions in the IGHV-segment usage of class 
-switched (CS) memory B-cells between HCV+ (N = 22) and healthy individuals 
-(N = 7)[^1].
-
-[^1]: Tucci, Felicia A., et al. "Biased IGH VDJ gene repertoire and clonal 
-expansions in B cells of chronically hepatitis C virus–infected individuals." 
-Blood 131.5 (2018): 546-557.]
+  * Binomial (B)
+  * Beta-binomial (BB)
+  * Zero-inflated beta-binomial (ZIBB)
 
 
 
@@ -94,51 +90,87 @@ Mzibb.group <- Mzibb$group.ppc$group.ppc
 Mzibb.group$model <- "ZIBB"
 
 Mbb.group <- Mbb$group.ppc$group.ppc
-Mbb.group$model <- "Beta-Binomial"
+Mbb.group$model <- "BB"
 
 Mb.group <- Mb$group.ppc$group.ppc
-Mb.group$model <- "Binomial"
+Mb.group$model <- "B"
 
 group.stats <- rbind(Mzibb.group, Mbb.group, Mb.group)
 rm(Mzibb.group, Mbb.group, Mb.group)
 ```
 
 
-```{r, fig.width=8, fig.height=8}
+
+# Comparison of coefficients for differential gene usage 
+
+Comparisons:
+
+  * ZIBB vs BB
+  * ZIBB vs B
+  * BB vs B
+
+Note that the binomial model is too optimistic, i.e. it over-estimates the 
+coefficient of differnetial gene usage. This because the binomial model ignores 
+the over-dispersion in the data. There is a lot of discordance between models
+ZIBB and BB as well (many genes are shown far away from the diagnoal). Next, 
+lets look at the 10 genes which are far away from the diagnoal in the comparison
+between ZIBB and BB.
+
+```{r, fig.width=9, fig.height=8}
 grid.arrange(
   ggplot(data = effect.comparsion)+
     geom_point(aes(x = zibb, y = bb))+
     geom_text_repel(data = effect.comparsion[effect.comparsion$rank.zibb.bb <= 10, ],
-                    aes(x = zibb, y = bb, label = gene_name), size = 2)+
-    geom_abline(intercept = 0, slope = 1)+
-    theme_bw(),
+                    aes(x = zibb, y = bb, label = gene_name), 
+                    size = 2, min.segment.length = 0.1)+
+    geom_abline(intercept = 0, slope = 1, col = "darkgray", linetype = "dashed")+
+    theme_bw()+
+    xlab(label = "ZIBB")+
+    ylab(label = "BB"),
   ggplot(data = effect.comparsion)+
     geom_point(aes(x = zibb, y = b))+
     geom_text_repel(data = effect.comparsion[effect.comparsion$rank.zibb.b <= 10, ],
-                    aes(x = zibb, y = b, label = gene_name), size = 2)+
-    geom_abline(intercept = 0, slope = 1)+
-    theme_bw(),
+                    aes(x = zibb, y = b, label = gene_name), 
+                    size = 2, min.segment.length = 0.1)+
+    geom_abline(intercept = 0, slope = 1, col = "darkgray", linetype = "dashed")+
+    theme_bw()+
+    xlab(label = "ZIBB")+
+    ylab(label = "B"),
   ggplot(data = effect.comparsion)+
     geom_point(aes(x = bb, y = b))+
     geom_text_repel(data = effect.comparsion[effect.comparsion$rank.bb.b <= 10, ],
-                    aes(x = bb, y = b, label = gene_name), size = 2)+
-    geom_abline(intercept = 0, slope = 1)+
-    geom_abline(intercept = 0, slope = 1)+
-    theme_bw(),
+                    aes(x = bb, y = b, label = gene_name), 
+                    size = 2, min.segment.length = 0.1)+
+    geom_abline(intercept = 0, slope = 1, col = "darkgray", linetype = "dashed")+
+    geom_abline(intercept = 0, slope = 1, col = "darkgray", linetype = "dashed")+
+    theme_bw()+
+    xlab(label = "BB")+
+    ylab(label = "B"),
   nrow = 2)
 ```
 
 
 
-```{r}
+
+# Reality Check
+The discordant genes have gene usage which is inflated by zeros, i.e. the 
+distribution of gene usage is made up of two components, namely a zero component 
+and non-zero component. 
+
+The models B and BB handle the data as originating from one component. Their 
+resulting estimate of gene usage are a compromise between both components. The 
+ZIBB model does not suffer from this problem and correctly estimates the mean
+usage in such a case.
+
+Noteable examples:
+
+  * IGHV3-9
+  * IGHV3-66
+  * IGHV5-10-1
+
+```{r, fig.width=10, fig.height=4}
 data("IGHV_HCV")
-```
 
-
-### Data visualization
-Lets look at the input data with ggplot2.
-
-```{r, fig.width=9, fig.height=4}
 # we can compute the total number of rearrangements per sample
 total.usage <- aggregate(gene_usage_count~sample_id+condition, 
                          FUN = sum, data = IGHV_HCV)
@@ -164,13 +196,12 @@ ggplot(data = viz[viz$gene_name %in% interesting.genes, ])+
              position = position_jitterdodge(dodge.width = 0.75, jitter.width = 0.15))+
   geom_errorbar(data = group.stats[group.stats$gene_name %in% interesting.genes, ],
                 aes(x = gene_name, ymin = ppc.L, ymax = ppc.H, linetype = condition, col = model),
-                position = position_dodge(width = .75), width = 0.75, size = .75)+
+                position = position_dodge(width = 0.75), width = 0.35, size = 0.75)+
   theme_bw(base_size = 9)+
   ylab(label = "Usage [%]")+
   xlab(label = '')+
-  theme(legend.position = "top",
-        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
-  scale_fill_manual(name = "Condition", values = c("gray", "black"))+
+  theme(legend.position = "top", axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1))+
+  scale_fill_manual(name = "Condition", values = c("darkgray", "black"))+
   scale_shape_manual(name = "Condition", values = c(21, 22))
 ```
 
