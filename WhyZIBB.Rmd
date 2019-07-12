@@ -1,12 +1,13 @@
 ---
-title: "Why do we use a zero-inflated beta-binomial model for regression?"
+title: "Motivation for using zero-inflated beta-binomial model for regression"
 author: "SK"
 date: "June 25, 2019"
-output: 
-  html_document: 
-    highlight: tango
-    theme: journal
-    toc: yes
+output:
+  BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{Motivation for using zero-inflated beta-binomial model for regression}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 
@@ -120,34 +121,34 @@ ZIBB and BB as well (many genes are shown far away from the diagnoal). Next,
 lets look at the 10 genes which are far away from the diagnoal in the comparison
 between ZIBB and BB.
 
-```{r, fig.width=10, fig.height=3}
+```{r, fig.wide = TRUE, fig.height=5}
 grid.arrange(
   ggplot(data = effect.comparsion)+
     geom_point(aes(x = zibb, y = bb))+
     geom_text_repel(data = effect.comparsion[effect.comparsion$rank.zibb.bb <= 10, ],
                     aes(x = zibb, y = bb, label = gene_name), 
-                    size = 2, min.segment.length = 0.1)+
+                    size = 3, min.segment.length = 0.1)+
     geom_abline(intercept = 0, slope = 1, col = "darkgray", linetype = "dashed")+
-    theme_bw()+
+    theme_bw(base_size = 12)+
     xlab(label = "ZIBB")+
     ylab(label = "BB"),
   ggplot(data = effect.comparsion)+
     geom_point(aes(x = zibb, y = b))+
     geom_text_repel(data = effect.comparsion[effect.comparsion$rank.zibb.b <= 10, ],
                     aes(x = zibb, y = b, label = gene_name), 
-                    size = 2, min.segment.length = 0.1)+
+                    size = 3, min.segment.length = 0.1)+
     geom_abline(intercept = 0, slope = 1, col = "darkgray", linetype = "dashed")+
-    theme_bw()+
+    theme_bw(base_size = 12)+
     xlab(label = "ZIBB")+
     ylab(label = "B"),
   ggplot(data = effect.comparsion)+
     geom_point(aes(x = bb, y = b))+
     geom_text_repel(data = effect.comparsion[effect.comparsion$rank.bb.b <= 10, ],
                     aes(x = bb, y = b, label = gene_name), 
-                    size = 2, min.segment.length = 0.1)+
+                    size = 3, min.segment.length = 0.1)+
     geom_abline(intercept = 0, slope = 1, col = "darkgray", linetype = "dashed")+
     geom_abline(intercept = 0, slope = 1, col = "darkgray", linetype = "dashed")+
-    theme_bw()+
+    theme_bw(base_size = 12)+
     xlab(label = "BB")+
     ylab(label = "B"),
   nrow = 1)
@@ -172,7 +173,7 @@ Noteable examples:
   * IGHV3-66
   * IGHV5-10-1
 
-```{r, fig.width=10, fig.height=4}
+```{r, fig.wide = TRUE, fig.height = 5}
 data("IGHV_HCV")
 
 # we can compute the total number of rearrangements per sample
@@ -201,7 +202,7 @@ ggplot(data = viz[viz$gene_name %in% interesting.genes, ])+
   geom_errorbar(data = group.stats[group.stats$gene_name %in% interesting.genes, ],
                 aes(x = gene_name, ymin = ppc.L, ymax = ppc.H, linetype = condition, col = model),
                 position = position_dodge(width = 0.75), width = 0.35, size = 0.75)+
-  theme_bw(base_size = 9)+
+  theme_bw(base_size = 12)+
   ylab(label = "Usage [%]")+
   xlab(label = '')+
   theme(legend.position = "top", axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1))+

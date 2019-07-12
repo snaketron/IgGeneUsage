@@ -2,11 +2,12 @@
 title: "Model Overview"
 author: "SK"
 date: "June 25, 2019"
-output: 
-  html_document: 
-    highlight: tango
-    theme: journal
-    toc: yes
+output:
+  BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{Model Overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include = FALSE, warning = FALSE}
@@ -50,7 +51,7 @@ source(file = "R/Util.R")
 * $\tau \sim \operatorname{Gamma}(3, 0.1)$
 
 ## ZIBB: Zero-Inflated Beta-Binomial
-* $Y_{ij} \sim $
+* $Y_{ij} \sim$
     * $0$, with prob. $\pi$
     * $\operatorname{Beta-Binomial}(N_{i}, \theta_{ij} \cdot \phi, (1 - \theta_{ij}) \cdot \phi)$, with prob. $1-\pi$
 * $\theta_{ij} = \operatorname{logit^{-1}} (\alpha_{j} + \beta_{ij} \cdot X_{i})$

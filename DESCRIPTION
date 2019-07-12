@@ -22,6 +22,8 @@ LinkingTo:
     RcppEigen (>= 0.3.3.5.0),
     rstan (>= 2.18.2),
     StanHeaders (>= 2.18.1-10)
+VignetteBuilder: knitr
+Suggests: BiocStyle, knitr, rmarkdown
 Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
