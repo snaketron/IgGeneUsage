@@ -103,7 +103,7 @@ promising.genes <- c("IGHV1-58", "IGHV3-72", "IGHV3-30-3")
 
 
 g <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
-  facet_wrap(facets = ~gene_name_fig, ncol = 2, scales = "free")+
+  facet_wrap(facets = ~gene_name_fig, ncol = 1, scales = "free")+
   geom_point(aes(x = '', y = gene_usage_count, fill = condition, shape = condition, size = total/10^3),
              position = position_jitterdodge(dodge.width = 1, jitter.width = 0.35, jitter.height = 0),
              stroke = 0.5)+
@@ -119,7 +119,7 @@ g <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
 
 g
 ggsave(filename = "R/dev/manuscript/results.eps", plot = g,
-       device = "eps", width = 2.5, height = 5.25, dpi = 600)
+       device = "eps", width = 1.25, height = 5.25, dpi = 600)
 
 
 g <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
@@ -161,7 +161,7 @@ g <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
              position = position_jitterdodge(dodge.width = 1, jitter.width = 0.35, jitter.height = 0),
              stroke = 0.5)+
   theme_bw(base_size = 9)+
-  ylab(label = "Usage [count]")+
+  ylab(label = "Usage [%]")+
   xlab(label = '')+
   theme(legend.position = "top")+
   scale_fill_manual(name = "Condition", values = c("orange", "#a4c0ed"))+
