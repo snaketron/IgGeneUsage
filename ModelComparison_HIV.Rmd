@@ -28,6 +28,7 @@ source(file = "R/Util.R")
 # Model Comparison
 
 We compare three models:
+
   * Binomial (B)
   * Beta-Binomial (BB)
   * Zero-inflated Beta-Binomial (ZIBB)
@@ -38,11 +39,7 @@ See vignette 'ModelOverview' to inspect the different models.
 B <- get(load(file = "R/dev/ighv_hiv_binomial.RData"))
 BB <- get(load(file = "R/dev/ighv_hiv_beta_binomial_model.RData"))
 ZIBB <- get(load(file = "R/dev/ighv_hiv_zibb_model.RData"))
-rm(usage.hiv.csm, M)
-
-B$glm@model_name <- "M0"
-BB$glm@model_name <- "M1"
-ZIBB$glm@model_name <- "M2"
+rm(M)
 ```
 
 

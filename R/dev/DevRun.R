@@ -28,7 +28,7 @@ data("CDR3_Epitopes")
 
 
 
-d <- IGHV_HIV
+d <- CDR3_Epitopes
 
 
 
@@ -52,14 +52,17 @@ for(m in 1:length(stan.files)) {
                  max.treedepth = 13,
                  dev.model = stan.files[m])
 
+  out <- paste("R/dev/epitopes_", gsub(pattern = "\\.stan",
+                                       replacement = '\\.RData',
+                                       x = stan.files.short[m]), sep = '')
   # out <- paste("R/dev/ighv_hiv_", gsub(pattern = "\\.stan",
-  #                                      replacement = '\\.RData',
-  #                                      x = stan.files.short[m]), sep = '')
-  # out <- paste("R/dev/epitopes_", gsub(pattern = "\\.stan",
   #                                      replacement = '\\.RData',
   #                                      x = stan.files.short[m]), sep = '')
   # out <- paste("R/dev/ighv_hcv_", gsub(pattern = "\\.stan",
   #                                       replacement = '\\.RData',
   #                                       x = stan.files.short[m]), sep = '')
+  # out <- paste("R/dev/alakazam_", gsub(pattern = "\\.stan",
+  #                                      replacement = '\\.RData',
+  #                                      x = stan.files.short[m]), sep = '')
   save(M, file = out)
 }

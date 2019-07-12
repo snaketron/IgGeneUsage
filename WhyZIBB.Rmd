@@ -56,8 +56,12 @@ compare the results:
   * Beta-binomial (BB)
   * Zero-inflated beta-binomial (ZIBB)
 
-To see an example where ZIBB is not preferred to BB or B, see the vignette 
-'ModelComparison_Alakazam'.
+See vignette 'ModelOVerview' for details about each model. To see an example 
+where ZIBB is not preferred to BB, please see the following vignettes: 
+
+  * 'ModelComparison_Alakazam'
+  * 'ModelComparison_CDR3Charge'
+  * 'ModelComparison_HIV'
 
 ```{r}
 Mzibb <- get(load(file = "R/dev/ighv_hcv_zibb_model.RData"))
