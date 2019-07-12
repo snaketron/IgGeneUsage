@@ -47,6 +47,7 @@ diffUsage <- function(usage.data,
                          cores = mcmc.cores,
                          iter = mcmc.steps,
                          warmup = mcmc.warmup,
+                         refresh = 500,
                          control = list(adapt_delta = adapt.delta,
                                         max_treedepth = max.treedepth))
 
