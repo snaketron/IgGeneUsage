@@ -1,0 +1,357 @@
+---
+title: "Model Comparison (Data: IGHV HIV)"
+author: "SK"
+date: "June 25, 2019"
+output:
+  BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{Model Comparison (Data: IGHV HIV)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, comment = FALSE, 
+                      warning = FALSE, message = FALSE)
+```
+
+
+```{r}
+require(ggplot2)
+require(ggforce)
+require(gridExtra)
+require(ggrepel)
+# source(file = "R/Util.R")
+```
+
+
+
+# Model comparison
+
+We compare three models:
+
+  * Binomial (B)
+  * Beta-Binomial (BB)
+  * Zero-inflated Beta-Binomial (ZIBB)
+  
+See vignette 'ModelOverview' to inspect the different models.
+
+```{r}
+B <- get(load(file = "R/dev/ighv_hiv_binomial.RData"))
+BB <- get(load(file = "R/dev/ighv_hiv_beta_binomial_model.RData"))
+ZIBB <- get(load(file = "R/dev/ighv_hiv_zibb_model.RData"))
+rm(M)
+```
+
+
+# LOO
+
+## B
+
+```{r}
+print(loo::loo(loo::extract_log_lik(B$glm)))
+```
+
+
+## BB
+
+```{r}
+print(loo::loo(loo::extract_log_lik(BB$glm)))
+```
+
+
+## ZIBB
+
+```{r}
+print(loo::loo(loo::extract_log_lik(ZIBB$glm)))
+```
+
+
+## Compare all three models
+
+```{r}
+loo::compare(loo::loo(loo::extract_log_lik(B$glm)),
+             loo::loo(loo::extract_log_lik(BB$glm)),
+             loo::loo(loo::extract_log_lik(ZIBB$glm)))
+```
+
+
+# Posterior predictive checks
+
+## Prediction of gene usage within repertoires [count]
+  * Usage in raw counts
+  * Error bars represent 95% HDI
+  
+```{r, fig.height=4.5, fig.wide = TRUE}
+grid.arrange(
+  ggplot(data = B$ppc)+
+    geom_abline(intercept = 0, slope = 1)+
+    geom_errorbar(aes(x = raw, ymin = ppc.raw.L, ymax = ppc.raw.H))+
+    geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
+    theme_bw(base_size = 12)+
+    theme(legend.position = "top")+
+    xlab(label = "Observed mean usage [count]")+
+    ylab(label = "Predicted mean usage [count]")+
+    ggtitle(label = "B"),
+  ggplot(data = BB$ppc)+
+    geom_abline(intercept = 0, slope = 1)+
+    geom_errorbar(aes(x = raw, ymin = ppc.raw.L, ymax = ppc.raw.H))+
+    geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
+    theme_bw(base_size = 12)+
+    theme(legend.position = "top")+
+    xlab(label = "Observed mean usage [count]")+
+    ylab(label = "Predicted mean usage [count]")+
+    ggtitle(label = "BB"),
+  ggplot(data = ZIBB$ppc)+
+    geom_abline(intercept = 0, slope = 1)+
+    geom_errorbar(aes(x = raw, ymin = ppc.raw.L, ymax = ppc.raw.H))+
+    geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), shape = 21)+
+    theme_bw(base_size = 12)+
+    theme(legend.position = "top")+
+    xlab(label = "Observed mean usage [count]")+
+    ylab(label = "Predicted mean usage [count]")+
+    ggtitle(label = "ZIBB"),
+  nrow = 1)
+```
+
+
+## Prediction of gene usage within repertoires [%]
+  * Usage in %
+  * Error bars represent 95% HDI
+
+```{r, fig.height=70, fig.wide = TRUE}
+B.ppc <- B$ppc
+B.ppc$model <- "B"
+BB.ppc <- BB$ppc
+BB.ppc$model <- "BB"
+ZIBB.ppc <- ZIBB$ppc
+ZIBB.ppc$model <- "ZIBB"
+
+ppc <- rbind(B.ppc, BB.ppc, ZIBB.ppc)
+rm(B.ppc, BB.ppc, ZIBB.ppc)
+
+ppc$ppc.raw.mean <- as.numeric(ppc$ppc.raw.mean)
+
+ggplot(data = ppc)+
+  facet_grid(facets = gene_name~model)+
+  geom_errorbar(aes(x = sample_id, y = ppc.pct.mean, 
+                    ymin = ppc.pct.L, ymax = ppc.pct.H))+
+  geom_point(aes(x = sample_id, y = raw.pct, fill = condition), shape = 21)+
+  theme_bw(base_size = 12)+
+  theme(legend.position = "top")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
+  ylab(label = "Predicted usage [%]")
+```
+
+
+
+
+
+
+
+## Prediction error at a repertoire level
+  * e[%] = |Yhat[%] - Y[%| or 
+  * e[raw count] = |Yhat[count] - Y[count]| 
+
+```{r, fig.height=4, fig.wide = TRUE}
+grid.arrange(
+  ggplot()+
+    geom_sina(data = B$ppc, aes(x = "B [%]", y = abs(raw.pct-ppc.pct.mean)),
+              shape = 21, fill = "white")+
+    geom_sina(data = BB$ppc, aes(x = "BB [%]", y = abs(raw.pct-ppc.pct.mean)),
+              shape = 21, fill = "white")+
+    geom_sina(data = ZIBB$ppc, aes(x = "ZIBB [%]", y = abs(raw.pct-ppc.pct.mean)),
+              shape = 21, fill = "white")+
+    theme_bw(base_size = 12)+
+    theme(legend.position = "top")+
+    ylab(label = "e[%]")+
+    xlab(label = "")+
+    scale_y_log10(),
+  ggplot()+
+    geom_sina(data = B$ppc, aes(x = "B [count]", y = abs(raw-ppc.raw.mean)),
+              shape = 21, fill = "white")+
+    geom_sina(data = BB$ppc, aes(x = "BB [count]", y = abs(raw-ppc.raw.mean)),
+              shape = 21, fill = "white")+
+    geom_sina(data = ZIBB$ppc, aes(x = "ZIBB [count]", y = abs(raw-ppc.raw.mean)),
+              shape = 21, fill = "white")+
+    theme_bw(base_size = 12)+
+    theme(legend.position = "top")+
+    ylab(label = "e [raw count]")+
+    xlab(label = '')+
+    scale_y_log10(),
+  nrow = 1)
+```
+
+
+## Prediction of overall gene usage [%]
+  * Error bars represent 95% HDI
+  
+```{r, fig.height = 4, fig.wide = TRUE}
+grid.arrange(
+  ggplot(data = B$group.ppc$group.ppc)+
+    geom_abline(intercept = 0, slope = 1)+
+    geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
+    geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
+    theme_bw(base_size = 12)+
+    theme(legend.position = "top")+
+    xlab(label = "Observed mean usage [%]")+
+    ylab(label = "Predicted mean usage [%]")+
+    ggtitle(label = "B"),
+  ggplot(data = BB$group.ppc$group.ppc)+
+    geom_abline(intercept = 0, slope = 1)+
+    geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
+    geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
+    theme_bw(base_size = 12)+
+    theme(legend.position = "top")+
+    xlab(label = "Observed mean usage [%]")+
+    ylab(label = "Predicted mean usage [%]")+
+    ggtitle(label = "BB"),
+  ggplot(data = ZIBB$group.ppc$group.ppc)+
+    geom_abline(intercept = 0, slope = 1)+
+    geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H))+
+    geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
+    theme_bw(base_size = 12)+
+    theme(legend.position = "top")+
+    xlab(label = "Observed mean usage [%]")+
+    ylab(label = "Predicted mean usage [%]")+
+    ggtitle(label = "ZIBB"),
+  nrow = 1)
+```
+
+
+
+```{r}
+effect.comparsion <- data.frame(zibb = abs(ZIBB$glm.summary$effect_mean),
+                                bb = abs(BB$glm.summary$effect_mean),
+                                b = abs(B$glm.summary$effect_mean),
+                                gene_name = ZIBB$usage.data$gene_names,
+                                stringsAsFactors = FALSE)
+
+effect.comparsion$delta.zibb.bb <- abs(effect.comparsion$zibb-effect.comparsion$bb)
+effect.comparsion$rank.zibb.bb[order(effect.comparsion$delta.zibb.bb, 
+                                     decreasing = T)] <- 1:nrow(effect.comparsion)
+
+effect.comparsion$delta.zibb.b <- abs(effect.comparsion$zibb-effect.comparsion$b)
+effect.comparsion$rank.zibb.b[order(effect.comparsion$delta.zibb.b, 
+                                    decreasing = T)] <- 1:nrow(effect.comparsion)
+
+effect.comparsion$delta.bb.b <- abs(effect.comparsion$bb-effect.comparsion$b)
+effect.comparsion$rank.bb.b[order(effect.comparsion$delta.bb.b, 
+                                  decreasing = T)] <- 1:nrow(effect.comparsion)
+
+
+
+# get group PPC
+ZIBB.group <- ZIBB$group.ppc$group.ppc
+ZIBB.group$model <- "ZIBB"
+
+BB.group <- BB$group.ppc$group.ppc
+BB.group$model <- "BB"
+
+B.group <- B$group.ppc$group.ppc
+B.group$model <- "B"
+
+group.stats <- rbind(ZIBB.group, BB.group, B.group)
+rm(ZIBB.group, BB.group, B.group)
+```
+
+
+
+
+# Comparison of coefficients for differential gene usage 
+
+Comparisons:
+
+  * ZIBB vs BB
+  * ZIBB vs B
+  * BB vs B
+
+Five genes for which the pairwise models inferred most discrepant usage 
+coefficients are annotated.
+
+```{r, fig.height=3, fig.wide = TRUE}
+grid.arrange(
+  ggplot(data = effect.comparsion)+
+    geom_point(aes(x = zibb, y = bb))+
+    geom_text_repel(data = effect.comparsion[effect.comparsion$rank.zibb.bb <= 5, ],
+                    aes(x = zibb, y = bb, label = gene_name), 
+                    size = 3, min.segment.length = 0.1)+
+    geom_abline(intercept = 0, slope = 1, col = "darkgray", linetype = "dashed")+
+    theme_bw(base_size = 12)+
+    xlab(label = "ZIBB")+
+    ylab(label = "BB"),
+  ggplot(data = effect.comparsion)+
+    geom_point(aes(x = zibb, y = b))+
+    geom_text_repel(data = effect.comparsion[effect.comparsion$rank.zibb.b <= 5, ],
+                    aes(x = zibb, y = b, label = gene_name), 
+                    size = 3, min.segment.length = 0.1)+
+    geom_abline(intercept = 0, slope = 1, col = "darkgray", linetype = "dashed")+
+    theme_bw(base_size = 12)+
+    xlab(label = "ZIBB")+
+    ylab(label = "B"),
+  ggplot(data = effect.comparsion)+
+    geom_point(aes(x = bb, y = b))+
+    geom_text_repel(data = effect.comparsion[effect.comparsion$rank.bb.b <= 5, ],
+                    aes(x = bb, y = b, label = gene_name), 
+                    size = 3, min.segment.length = 0.1)+
+    geom_abline(intercept = 0, slope = 1, col = "darkgray", linetype = "dashed")+
+    geom_abline(intercept = 0, slope = 1, col = "darkgray", linetype = "dashed")+
+    theme_bw(base_size = 12)+
+    xlab(label = "BB")+
+    ylab(label = "B"),
+  nrow = 1)
+```
+
+
+
+
+
+## Reality Check
+
+```{r, fig.height=6, fig.wide = TRUE}
+data("IGHV_HIV")
+
+# we can compute the total number of rearrangements per sample
+total.usage <- aggregate(gene_usage_count~sample_id+condition, 
+                         FUN = sum, data = IGHV_HIV)
+total.usage$total <- total.usage$gene_usage_count
+total.usage$gene_usage_count <- NULL
+
+# merge it with the original data
+viz <- merge(x = IGHV_HIV, y = total.usage, 
+                  by = c("sample_id", "condition"), 
+                  all.x = TRUE)
+
+# compute %
+viz$gene_usage_pct <- viz$gene_usage_count/viz$total*100
+
+
+# interesting genes
+interesting.genes <- effect.comparsion$gene_name[effect.comparsion$rank.zibb.bb <= 5 | 
+                                                   effect.comparsion$rank.zibb.b <= 5 | 
+                                                   effect.comparsion$rank.bb.b <= 5]
+interesting.genes <- unique(interesting.genes)
+
+# visualize
+ggplot(data = viz[viz$gene_name %in% interesting.genes, ])+
+  geom_point(aes(x = gene_name, y = gene_usage_pct, fill = condition, shape = condition), 
+             alpha = 0.5, stroke = 0, size = 2, 
+             position = position_jitterdodge(dodge.width = 0.75, jitter.width = 0.15))+
+  geom_errorbar(data = group.stats[group.stats$gene_name %in% interesting.genes, ],
+                aes(x = gene_name, ymin = ppc.L, ymax = ppc.H, linetype = condition, col = model),
+                position = position_dodge(width = 0.75), width = 0.35, size = 0.75)+
+  theme_bw(base_size = 12)+
+  ylab(label = "Usage [%]")+
+  xlab(label = '')+
+  theme(legend.position = "top", axis.text.x = element_text(angle = 60, hjust = 1, vjust = 1))+
+  scale_fill_manual(name = "Condition", values = c("darkgray", "black"))+
+  scale_shape_manual(name = "Condition", values = c(21, 22))
+```
+
+
+
+
+
+
+
+

@@ -4,4 +4,12 @@ import(Rcpp)
 import(methods)
 import(rstantools)
 importFrom(rstan,sampling)
+importFrom(rstan,extract)
+importFrom(rstan,summary)
+importFrom(stats, mean)
+importFrom(stats, median)
+importFrom(stats, aggregate)
+
+
+
 useDynLib(IgGeneUsage, .registration = TRUE)
