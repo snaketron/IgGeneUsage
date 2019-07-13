@@ -21,35 +21,32 @@ diffUsage <- function(usage.data,
 
 
 
-  usage.data.raw <- usage.data
   # format input usage
+  usage.data.raw <- usage.data
   usage.data <- getUsageData(usage = usage.data.raw)
 
 
-
-  # subset for test
-  # gs <- which(usage.data$gene_names %in% c("IGHV1-3", "IGHV3-23", "IGHV3-9",
-  #                                          "IGHV4-30-4", "IGHV5-10-1"))
-  # usage.data$Y <- usage.data$Y[gs, ]
-  # usage.data$N_gene <- length(gs)
-  # usage.data$gene_names <- usage.data$gene_names[gs]
-
-
-
-  model <- rstan::stan_model(file = dev.model)
   # model
-  # model <- rstan::stan_model(file = "src/stan_files/zib_multiz.stan")
+  # model <- rstan::stan_model(file = dev.model)
+  model <- stanmodels$zibb_model
+
+
+
+
+  # setup control list
+  control.list <- list(adapt_delta = adapt.delta,
+                       max_treedepth = max.treedepth)
+
 
   # stan sampling
-  glm <- rstan::sampling(object = model, #stanmodels$model
+  glm <- rstan::sampling(object = model,
                          data = usage.data,
                          chains = mcmc.chains,
                          cores = mcmc.cores,
                          iter = mcmc.steps,
                          warmup = mcmc.warmup,
-                         refresh = 500,
-                         control = list(adapt_delta = adapt.delta,
-                                        max_treedepth = max.treedepth))
+                         refresh = 500, # let user define as well?
+                         control = control.list)
 
 
   # get summary
@@ -59,7 +56,8 @@ diffUsage <- function(usage.data,
   glm.summary <- data.frame(glm.summary)
   colnames(glm.summary) <- c("effect_mean", "effect_mean_se",
                              "effect_sd", "effect_median",
-                             "effect_L", "effect_H", "Neff", "Rhat")
+                             "effect_L", "effect_H",
+                             "Neff", "Rhat")
 
 
   # extract data
@@ -69,12 +67,6 @@ diffUsage <- function(usage.data,
 
   # get pmax
   glm.summary$pmax <- getPmax(glm.ext = glm.ext)
-
-
-
-  # Depreceated: bc
-  # glm.summary$bc <- getBcStats(glm.ext = glm.ext,
-  #                              usage.data = usage.data)
 
 
 
@@ -99,8 +91,7 @@ diffUsage <- function(usage.data,
   # frequentist tests, merge data
   t.test.stats <- getTTestStats(usage.data = usage.data)
   u.test.stats <- getManUStats(usage.data = usage.data)
-  test.stats <- merge(x = t.test.stats, y = u.test.stats,
-                      by = "gene_name")
+  test.stats <- merge(x = t.test.stats, y = u.test.stats, by = "gene_name")
 
 
   # result

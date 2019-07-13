@@ -5,6 +5,16 @@
 # Parse input data
 getUsageData <- function(usage) {
 
+
+  # if the same sample_id is present in both conditions
+  key <- paste(usage$sample_id, usage$condition, sep = '_')
+  if(length(unique(key)) != length(unique(usage$sample_id))) {
+    warning("Same sample_id in both conditions, sample_id's extra coded")
+    usage$sample_id <- key
+    rm(key)
+  }
+
+
   # get Y data
   # fill empty combinations with 0
   Y <- reshape2::acast(data = usage,
@@ -16,10 +26,11 @@ getUsageData <- function(usage) {
   sample_ids <- colnames(Y)
   gene_names <- rownames(Y)
 
+
   # get N data
-  N.data <- aggregate(gene_usage_count~sample_id,
-                      data = usage, FUN = sum,
-                      drop = FALSE)
+  N.data <- stats::aggregate(gene_usage_count~sample_id,
+                             data = usage, FUN = sum,
+                             drop = FALSE)
   N <- N.data$gene_usage_count
   names(N) <- N.data$sample_id
   rm(N.data)
@@ -30,8 +41,8 @@ getUsageData <- function(usage) {
   usage <-  usage[usage$sample_id %in% sample_ids, ]
   usage <- usage[duplicated(usage[, c("sample_id")]) == FALSE, ]
 
-  X.data <- aggregate(condition~sample_id,
-                      data = usage, FUN = unique)
+  X.data <- stats::aggregate(condition~sample_id,
+                             data = usage, FUN = unique)
   X <- X.data$condition
   names(X) <- X.data$sample_id
   rm(X.data)
@@ -45,7 +56,7 @@ getUsageData <- function(usage) {
   Xmap <- numeric(length = length(X))
   Xmap[x1] <- 1
   Xmap[x2] <- -1
-  if(runif(n = 1, min = 0, max = 1) >= 0.5) {
+  if(stats::runif(n = 1, min = 0, max = 1) >= 0.5) {
     Xmap[x1] <- -1
     Xmap[x2] <- 1
   }
@@ -423,12 +434,12 @@ getPpc <- function(glm.ext,
                         condition = usage.data$Xorg[i],
                         raw = usage.data$Y[j,i],
                         raw.pct = usage.data$Y[j,i]/usage.data$N[i]*100,
-                        ppc.raw.mean = mean(yhat.i.raw),
-                        ppc.raw.median = median(yhat.i.raw),
+                        ppc.raw.mean = stats::mean(yhat.i.raw),
+                        ppc.raw.median = stats::median(yhat.i.raw),
                         ppc.raw.L = hdi.raw[1],
                         ppc.raw.H = hdi.raw[2],
-                        ppc.pct.mean = mean(yhat.i.pct),
-                        ppc.pct.median = median(yhat.i.pct),
+                        ppc.pct.mean = stats::mean(yhat.i.pct),
+                        ppc.pct.median = stats::median(yhat.i.pct),
                         ppc.pct.L = hdi.pct[1],
                         ppc.pct.H = hdi.pct[2])
 
@@ -438,95 +449,6 @@ getPpc <- function(glm.ext,
 
   return (ppc)
 }
-
-
-
-
-
-getBcStats <- function(glm.ext,
-                       usage.data) {
-
-  # Description:
-  # Bhattacharyya Coefficient of two distribution
-  # Taken from: source("http://tguillerme.github.io/R/bhatt.coef.R")
-  getBCoef <- function(x, y, bw = bw.nrd0, ...) {
-    #SANITIZING
-    #x
-    if(class(x) != 'numeric') {
-      stop("'x' must be numeric.")
-    }
-    if(length(x) < 2) {
-      stop("'x' need at least two data points.")
-    }
-
-    #y
-    if(class(y) != 'numeric') {
-      stop("'y' must be numeric.")
-    }
-    if(length(y) < 2) {
-      stop("'y' need at least two data points.")
-    }
-
-    #bw
-    if(length(bw) != 1) {
-      stop("'bw' must be either a single numeric value or a single function.")
-    }
-    if(class(bw) != 'function') {
-      if(class(bw) != 'numeric') {
-        stop("'bw' must be either a single numeric value or a single function.")
-      }
-    }
-    #Avoiding non-entire numbers
-    if(class(bw) == 'numeric') {
-      bw<-round(bw)
-    }
-
-    #BHATTACHARYYA COEFFICIENT
-    #sum(sqrt(x relative counts in bin_i * y relative counts in bin_i))
-
-    #Setting the right number of bins (i)
-    if(class(bw) == 'function') {
-      #Bin width
-      band.width<-bw(c(x,y), ...)
-      #Bin breaks
-      bin.breaks<-seq(from=min(c(x,y)), to=max(c(x,y)+band.width), by=band.width) #adding an extra bandwith to the max to be sure to include all the data
-      #Number of bins
-      bin.n<-length(bin.breaks)-1
-    } else {
-      #Bin breaks
-      bin.breaks<-hist(c(x,y), breaks=bw, plot=F)$breaks
-      #Bin width
-      band.width<-diff(bin.breaks)[1]
-      #Number of bins
-      bin.n<-bw
-    }
-
-    #Counting the number of elements per bin
-    histx<-hist(x, breaks=bin.breaks, plot=FALSE)[[2]]
-    histy<-hist(y, breaks=bin.breaks, plot=FALSE)[[2]]
-    #Relative counts
-    rel.histx<-histx/sum(histx)
-    rel.histy<-histy/sum(histy)
-
-    #Calculating the Bhattacharyya Coefficient (sum of the square root of the multiple of the relative counts of both distributions)
-    bhatt.coeff<-sum(sqrt(rel.histx*rel.histy))
-    return(bhatt.coeff)
-    #End
-  }
-
-
-  getBc <- function(x, yhat.gene) {
-    return(getBCoef(x = yhat.gene[,1,x],
-                    y = yhat.gene[,2,x]))
-  }
-
-
-  bc <- sapply(X = 1:usage.data$N_gene, FUN = getBc,
-               yhat.gene = glm.ext$Yhat_gene)
-
-  return (bc)
-}
-
 
 
 
@@ -563,17 +485,17 @@ getGroupStats <- function(glm.ext,
 
 
     return(rbind(data.frame(gene_name = gene.names[x],
-                            ppc.M = mean(yhat.gene[,1,x]),
+                            ppc.M = stats::mean(yhat.gene[,1,x]),
                             ppc.L = hdi.1[1],
                             ppc.H = hdi.1[2],
-                            raw.M = mean(real.pct.1),
+                            raw.M = stats::mean(real.pct.1),
                             condition = conditions[1],
                             stringsAsFactors = FALSE),
                  data.frame(gene_name = gene.names[x],
-                            ppc.M = mean(yhat.gene[,2,x]),
+                            ppc.M = stats::mean(yhat.gene[,2,x]),
                             ppc.L = hdi.2[1],
                             ppc.H = hdi.2[2],
-                            raw.M = mean(real.pct.2),
+                            raw.M = stats::mean(real.pct.2),
                             condition = conditions[2],
                             stringsAsFactors = FALSE)))
   }
@@ -624,7 +546,7 @@ getGroupStats <- function(glm.ext,
 # two sided t.test
 getTTestStats <- function(usage.data) {
   getTTest <- function(x, Ys, Xs, Ns) {
-    return(try(t.test(Ys[x, ]/Ns*100~Xs)))
+    return(try(stats::t.test(Ys[x, ]/Ns*100~Xs)))
   }
   getTTestSummary <- function(x) {
     if(class(x) == "try-error") {
@@ -651,10 +573,10 @@ getTTestStats <- function(usage.data) {
   tout.summary$gene_name <- usage.data$gene_names
 
   # multiple correction
-  tout.summary$t.test.fdr.pvalue <- p.adjust(p = tout.summary$t.test.pvalue,
-                                             method = "fdr")
-  tout.summary$t.test.bonf.pvalue <- p.adjust(p = tout.summary$t.test.pvalue,
-                                              method = "bonferroni")
+  tout.summary$t.test.fdr.pvalue <- stats::p.adjust(
+    p = tout.summary$t.test.pvalue, method = "fdr")
+  tout.summary$t.test.bonf.pvalue <- stats::p.adjust(
+    p = tout.summary$t.test.pvalue, method = "bonferroni")
 
   return (tout.summary)
 }
@@ -666,7 +588,7 @@ getTTestStats <- function(usage.data) {
 getManUStats <- function(usage.data) {
 
   getMTest <- function(x, Ys, Xs, Ns) {
-    return(try(wilcox.test(Ys[x, ]/Ns*100~Xs)))
+    return(try(stats::wilcox.test(Ys[x, ]/Ns*100~Xs)))
   }
 
   getMSummary <- function(x) {
@@ -690,10 +612,10 @@ getManUStats <- function(usage.data) {
   mout.summary$gene_name <- usage.data$gene_names
 
   # multiple correction
-  mout.summary$u.test.fdr.pvalue <- p.adjust(p = mout.summary$u.test.pvalue,
-                                             method = "fdr")
-  mout.summary$u.test.bonf.pvalue <- p.adjust(p = mout.summary$u.test.pvalue,
-                                              method = "bonferroni")
+  mout.summary$u.test.fdr.pvalue <- stats::p.adjust(
+    p = mout.summary$u.test.pvalue, method = "fdr")
+  mout.summary$u.test.bonf.pvalue <- stats::p.adjust(
+    p = mout.summary$u.test.pvalue, method = "bonferroni")
 
   return (mout.summary)
 }

@@ -1,5 +1,6 @@
 Package: IgGeneUsage
-Title: What the Package Does (One Line, Title Case)
+Type: Package
+Title: Differential gene usage in immune repertoires
 Version: 0.99
 Authors@R: 
     person(given = "Simo",
@@ -7,7 +8,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "simo.kitanovski@uni-due.de")
 Description: Differential gene usage in immune repertoires such 
-    as B-cell and T-cell receptor repertoires
+    as B-cell and T-cell receptor repertoires.
 License: GPL (>=3)
 Depends: 
     methods,
@@ -15,7 +16,9 @@ Depends:
     Rcpp (>= 1.0.1)
 Imports: 
     rstan (>= 2.18.2),
-    rstantools (>= 1.5.1)
+    rstantools (>= 1.5.1),
+    parallel (>= 3.6.0),
+    reshape2 (>= 1.4.3)
 LinkingTo: 
     BH (>= 1.69.0-1),
     Rcpp (>= 1.0.1),
@@ -23,9 +26,11 @@ LinkingTo:
     rstan (>= 2.18.2),
     StanHeaders (>= 2.18.1-10)
 VignetteBuilder: knitr
-Suggests: BiocStyle, knitr, rmarkdown
+Suggests: BiocStyle, knitr, rmarkdown, testthat, ggplot2, ggforce, 
+    gridExtra, ggrepel
 Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
 SystemRequirements: GNU make
 RoxygenNote: 6.1.1
+biocViews: Regression, Genetics, Bayesian
