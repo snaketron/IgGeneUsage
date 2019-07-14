@@ -17,9 +17,6 @@ IgM, IgD, IgG and IgA) across two timepoints (conditions = -1 hour and +7 days).
   "gene_usage_count". The format of the data is suitible to be used as input in
   IgGeneUsage
 }
-\details{
-%%  ~~ If necessary, more details than the __description__ above ~~
-}
 \source{
 R package: alakazam version 0.2.11
 }

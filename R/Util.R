@@ -235,7 +235,7 @@ checkInput <- function(usage.data,
                        hdi.level) {
 
   checkUsageData <- function(usage.data) {
-    if(class(usage.data) != "data.frame") {
+    if(is.data.frame(usage.data) == FALSE) {
       stop("usage.data must be data.frame")
     }
 
@@ -402,9 +402,10 @@ getPmax <- function(glm.ext) {
   }
 
   beta.data <- glm.ext$beta_gene
-  pmax <- sapply(X = 1:ncol(beta.data),
+  pmax <- vapply(X = 1:ncol(beta.data),
                  FUN = getPmaxGene,
-                 beta.data = beta.data)
+                 beta.data = beta.data,
+                 FUN.VALUE = numeric(length = 1))
 
   return(pmax)
 }
@@ -434,11 +435,11 @@ getPpc <- function(glm.ext,
                         condition = usage.data$Xorg[i],
                         raw = usage.data$Y[j,i],
                         raw.pct = usage.data$Y[j,i]/usage.data$N[i]*100,
-                        ppc.raw.mean = stats::mean(yhat.i.raw),
+                        ppc.raw.mean = mean(yhat.i.raw),
                         ppc.raw.median = stats::median(yhat.i.raw),
                         ppc.raw.L = hdi.raw[1],
                         ppc.raw.H = hdi.raw[2],
-                        ppc.pct.mean = stats::mean(yhat.i.pct),
+                        ppc.pct.mean = mean(yhat.i.pct),
                         ppc.pct.median = stats::median(yhat.i.pct),
                         ppc.pct.L = hdi.pct[1],
                         ppc.pct.H = hdi.pct[2])
@@ -485,17 +486,17 @@ getGroupStats <- function(glm.ext,
 
 
     return(rbind(data.frame(gene_name = gene.names[x],
-                            ppc.M = stats::mean(yhat.gene[,1,x]),
+                            ppc.M = mean(yhat.gene[,1,x]),
                             ppc.L = hdi.1[1],
                             ppc.H = hdi.1[2],
-                            raw.M = stats::mean(real.pct.1),
+                            raw.M = mean(real.pct.1),
                             condition = conditions[1],
                             stringsAsFactors = FALSE),
                  data.frame(gene_name = gene.names[x],
-                            ppc.M = stats::mean(yhat.gene[,2,x]),
+                            ppc.M = mean(yhat.gene[,2,x]),
                             ppc.L = hdi.2[1],
                             ppc.H = hdi.2[2],
-                            raw.M = stats::mean(real.pct.2),
+                            raw.M = mean(real.pct.2),
                             condition = conditions[2],
                             stringsAsFactors = FALSE)))
   }
@@ -549,7 +550,7 @@ getTTestStats <- function(usage.data) {
     return(try(stats::t.test(Ys[x, ]/Ns*100~Xs)))
   }
   getTTestSummary <- function(x) {
-    if(class(x) == "try-error") {
+    if(inherits(x = x, what = 'try-error') == TRUE) {
       return(data.frame(t.test.pvalue = NA,
                         t.test.tvalue = NA,
                         t.test.L95 = NA,
@@ -592,7 +593,7 @@ getManUStats <- function(usage.data) {
   }
 
   getMSummary <- function(x) {
-    if(class(x) == "try-error") {
+    if(inherits(x = x, what = "try-error") == TRUE) {
       return(data.frame(u.test.pvalue = NA,
                         u.test.wvalue = NA,
                         stringsAsFactors = FALSE))
