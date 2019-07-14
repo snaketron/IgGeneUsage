@@ -38,9 +38,9 @@ We compare three models:
 See vignette 'ModelOverview' to inspect the different models.
 
 ```{r}
-B <- get(load(file = "R/dev/alakazam_binomial.RData"))
-BB <- get(load(file = "R/dev/alakazam_beta_binomial_model.RData"))
-ZIBB <- get(load(file = "R/dev/alakazam_zibb_model.RData"))
+B <- get(load(file = "dev/alakazam_binomial.RData"))
+BB <- get(load(file = "dev/alakazam_beta_binomial_model.RData"))
+ZIBB <- get(load(file = "dev/alakazam_zibb_model.RData"))
 rm(M)
 ```
 
