@@ -36,9 +36,9 @@ We compare three models:
 See vignette 'ModelOverview' to inspect the different models.
 
 ```{r}
-B <- get(load(file = "R/dev/ighv_hcv_binomial.RData"))
-BB <- get(load(file = "R/dev/ighv_hcv_beta_binomial_model.RData"))
-ZIBB <- get(load(file = "R/dev/ighv_hcv_zibb_model.RData"))
+B <- get(load(file = "dev/ighv_hcv_binomial.RData"))
+BB <- get(load(file = "dev/ighv_hcv_beta_binomial_model.RData"))
+ZIBB <- get(load(file = "dev/ighv_hcv_zibb_model.RData"))
 rm(M)
 ```
 
