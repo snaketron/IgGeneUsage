@@ -48,10 +48,11 @@ diffUsage <- function(usage.data,
                          refresh = 500, # let user define as well?
                          control = control.list)
 
-
   # get summary
-  glm.summary <- summary(object = glm, digits = 4, pars = "beta_gene",
-                         prob = c(0.5, (1-hdi.level)/2, 1-(1-hdi.level)/2))
+  glm.summary <- rstan::summary(object = glm, digits = 4,
+                                pars = "beta_gene",
+                         prob = c(0.5, (1-hdi.level)/2,
+                                  1-(1-hdi.level)/2))
   glm.summary <- glm.summary$summary
   glm.summary <- data.frame(glm.summary)
   colnames(glm.summary) <- c("effect_mean", "effect_mean_se",
@@ -104,5 +105,3 @@ diffUsage <- function(usage.data,
 
   return (result)
 }
-
-

@@ -43,4 +43,4 @@ R/dev/*.RData
 *.rds
 
 
-R/dev/saved_temp/
+dev/*.RData

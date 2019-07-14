@@ -24,14 +24,8 @@ of a CDR3 sequence by adding up the individual residue charges.
 
   gene_name = net charge group
 }
-\details{
-%%  ~~ If necessary, more details than the __description__ above ~~
-}
 \source{
 https://vdjdb.cdr3.net/
-}
-\references{
-%%  ~~ possibly secondary sources and usages ~~
 }
 \examples{
 data(CDR3_Epitopes)

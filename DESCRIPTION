@@ -1,7 +1,7 @@
 Package: IgGeneUsage
 Type: Package
 Title: Differential gene usage in immune repertoires
-Version: 0.99
+Version: 0.99.0
 Authors@R: 
     person(given = "Simo",
            family = "Kitanovski",
@@ -12,25 +12,24 @@ Description: Differential gene usage in immune repertoires such
 License: GPL (>=3)
 Depends: 
     methods,
-    R (>= 3.4.0),
+    R (>= 3.6.0),
     Rcpp (>= 1.0.1)
 Imports: 
     rstan (>= 2.18.2),
     rstantools (>= 1.5.1),
-    parallel (>= 3.6.0),
-    reshape2 (>= 1.4.3)
+    reshape2 (>= 1.4.3),
 LinkingTo: 
     BH (>= 1.69.0-1),
     Rcpp (>= 1.0.1),
     RcppEigen (>= 0.3.3.5.0),
     rstan (>= 2.18.2),
     StanHeaders (>= 2.18.1-10)
-VignetteBuilder: knitr
 Suggests: BiocStyle, knitr, rmarkdown, testthat, ggplot2, ggforce, 
-    gridExtra, ggrepel
+    gridExtra, ggrepel, loo
 Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
 SystemRequirements: GNU make
-RoxygenNote: 6.1.1
 biocViews: Regression, Genetics, Bayesian
+RoxygenNote: 6.1.1
+VignetteBuilder: knitr

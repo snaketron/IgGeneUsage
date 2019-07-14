@@ -14,16 +14,10 @@ Publicly available dataset of IGHV segment usage in memory B-cells of 22 HCV+ in
   "gene_usage_count". The format of the data is suitible to be used as input in
   IgGeneUsage
 }
-\details{
-%%  ~~ If necessary, more details than the __description__ above ~~
-}
 \source{
 Tucci, Felicia A., et al. "Biased IGH VDJ gene repertoire and clonal
 expansions in B cells of chronically hepatitis C virus–infected individuals."
 Blood 131.5 (2018): 546-557.
-}
-\references{
-%%  ~~ possibly secondary sources and usages ~~
 }
 \examples{
 data(IGHV_HCV)
