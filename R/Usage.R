@@ -59,6 +59,8 @@ diffUsage <- function(usage.data,
                              "effect_sd", "effect_median",
                              "effect_L", "effect_H",
                              "Neff", "Rhat")
+  glm.summary[, c("Rhat", "Neff")] <- NULL
+
 
 
   # extract data
@@ -71,21 +73,20 @@ diffUsage <- function(usage.data,
 
 
 
+
   # add gene id
   glm.summary$gene_name <- usage.data$gene_names
 
 
 
   # ppc
-  ppc <- getPpc(glm.ext = glm.ext,
-                usage.data = usage.data,
-                hdi.level = hdi.level)
-
-
-  # group ppc
-  group.ppc <- getGroupStats(glm.ext = glm.ext,
+  ppc.data <- list(
+    ppc.repertoire = getPpc(glm.ext = glm.ext,
+                            usage.data = usage.data,
+                            hdi.level = hdi.level),
+    ppc.gene = getGroupStats(glm.ext = glm.ext,
                              usage.data = usage.data,
-                             hdi.level = hdi.level)
+                             hdi.level = hdi.level))
 
 
 
@@ -98,8 +99,7 @@ diffUsage <- function(usage.data,
   # result
   result <- list(glm = glm,
                  glm.summary = glm.summary,
-                 group.ppc = group.ppc,
-                 ppc = ppc,
+                 ppc.data = ppc.data,
                  usage.data = usage.data,
                  test.stats = test.stats)
 

@@ -7,8 +7,8 @@ Authors@R:
            family = "Kitanovski",
            role = c("aut", "cre"),
            email = "simo.kitanovski@uni-due.de")
-Description: Differential gene usage in immune repertoires such 
-    as B-cell and T-cell receptor repertoires.
+Description: Analysis of differential gene usage in immune repertoires such 
+    as B cells and T cells with Bayesian hierarchical models.
 License: GPL (>=3)
 Depends: 
     methods,
@@ -25,7 +25,7 @@ LinkingTo:
     rstan (>= 2.18.2),
     StanHeaders (>= 2.18.1-10)
 Suggests: BiocStyle, knitr, rmarkdown, testthat, ggplot2, ggforce, 
-    gridExtra, ggrepel, loo
+    gridExtra, ggrepel
 Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
