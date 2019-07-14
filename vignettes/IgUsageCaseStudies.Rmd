@@ -138,7 +138,7 @@ M <- diffUsage(usage.data = IGHV_HCV,
                adapt.delta = 0.95,
                max.treedepth = 13,
                dev.model = "")
-# M <- get(load(file = "R/dev/ighv_hcv_zibb_model.RData"))
+# M <- get(load(file = "../dev/ighv_hcv_zibb_model.RData"))
 ```
 
 
