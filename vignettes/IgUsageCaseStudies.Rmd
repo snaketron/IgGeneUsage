@@ -25,7 +25,6 @@ require(ggforce)
 require(gridExtra)
 require(ggrepel)
 require(rstan)
-require(loo)
 require(reshape2)
 rstan_options(auto_write = TRUE)
 ```
@@ -139,7 +138,6 @@ M <- diffUsage(usage.data = IGHV_HCV,
                adapt.delta = 0.95,
                max.treedepth = 13,
                dev.model = "")
-# save(M, file = "R/dev/saved_temp/M_IGHV_HCV.RData")
 # M <- get(load(file = "R/dev/ighv_hcv_zibb_model.RData"))
 ```
 
@@ -187,12 +185,13 @@ grid.arrange(rstan::stan_rhat(object = M$glm),
   * If the point lies on the the diagnoal $\rightarrow$ accurate prediction.
 
 ```{r, fig.height = 12, fig.wide = TRUE}
-ggplot(data = M$ppc)+
-  facet_wrap(facets = ~sample_id, ncol = 5)+
+ggplot(data = M$ppc.data$ppc.repertoire)+
+  facet_wrap(facets = ~sample_id, ncol = 6)+
   geom_abline(intercept = 0, slope = 1)+
-  geom_errorbar(aes(x = raw, y = ppc.raw.mean, ymin = ppc.raw.L, 
-                    ymax = ppc.raw.H), col = "darkgray")+
-  geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), 
+  geom_errorbar(aes(x = observed.count, y = ppc.count.mean, 
+                    ymin = ppc.count.L, ymax = ppc.count.H), 
+                col = "darkgray")+
+  geom_point(aes(x = observed.count, y = ppc.count.mean, fill = condition), 
              shape = 21, size = 2)+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
@@ -218,10 +217,12 @@ ggplot(data = M$ppc)+
   this plot, the usage is shown as % usage.
 
 ```{r, fig.height=5, fig.width = 6}
-ggplot(data = M$group.ppc$group.ppc)+
+ggplot(data = M$ppc.data$ppc.gene)+
   geom_abline(intercept = 0, slope = 1)+
-  geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H), col = "darkgray")+
-  geom_point(aes(x = raw.M, y = ppc.M, fill = condition), shape = 21)+
+  geom_errorbar(aes(x = observed.mean, ymin = ppc.L, ymax = ppc.H), 
+                col = "darkgray")+
+  geom_point(aes(x = observed.mean, y = ppc.mean, fill = condition), 
+             shape = 21, size = 2)+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
   xlab(label = "Observed usage [%]")+
@@ -234,7 +235,7 @@ ggplot(data = M$group.ppc$group.ppc)+
   * with R-package loo
   
 ```{r}
-loo::loo(x = loo::extract_log_lik(stanfit = M$glm))
+rstan::loo(x = M$glm)
 ```
 
 
@@ -273,18 +274,14 @@ differential gene usage ($\pi > 0.95$). Here we show the gene usage in %.
 ```{r, fig.height = 5, fig.wide = TRUE}
 promising.genes <- stats$gene_name[stats$pmax >= 0.95]
 
-group.ppc <- M$group.ppc$group.ppc
-group.ppc <- group.ppc[group.ppc$gene_name %in% promising.genes, ]
-
-point.data <- M$group.ppc$individual.pct.data
-point.data <- point.data[point.data$gene_name %in% promising.genes, ]
+ppc.gene <- M$ppc.data$ppc.gene
+ppc.gene <- ppc.gene[ppc.gene$gene_name %in% promising.genes, ]
 
 ggplot()+
-  geom_errorbar(data = group.ppc,
-                aes(x = gene_name, ymin = ppc.L, 
-                    ymax = ppc.H, col = condition),
+  geom_errorbar(data = ppc.gene, aes(x = gene_name, ymin = ppc.L, 
+                                     ymax = ppc.H, col = condition),
                 position = position_dodge(width = .8), width = 0.75)+
-  geom_point(data = point.data,
+  geom_point(data = viz[viz$gene_name %in% promising.genes, ],
              aes(x = gene_name, y = gene_usage_pct, col = condition),
              shape = 21, size = 1.5, fill = "black",
              position = position_jitterdodge(jitter.width = 0.15, 
@@ -305,8 +302,8 @@ usage in each repertoire.
 promising.genes <- stats$gene_name[stats$pmax >= 0.95]
 
 ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
-  geom_point(aes(x = gene_name, y = gene_usage_count, 
-                 fill = condition, size = total/10^3, alpha = 0.5), shape = 21,
+  geom_point(aes(x = gene_name, y = gene_usage_count, fill = condition, 
+                 size = total/10^3, alpha = 0.5), shape = 21,
              position = position_jitterdodge(dodge.width = 0.75,
                                              jitter.width = 0.2))+
   theme_bw(base_size = 12)+
@@ -316,7 +313,9 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
   scale_fill_manual(name = "Condition", values = c("orange", "#6666ff"))+
   scale_size_continuous(name = "N (10^3)", range = c(2, 6))+
   ylab(label = "Gene usage [count]")+
-  xlab(label = '')
+  xlab(label = '')+
+  scale_y_log10()+
+  annotation_logticks(base = 10, sides = "l")
 ```
 
 
@@ -350,9 +349,10 @@ ggplot()+
              linetype = "dashed", col = "darkgray")+
   geom_point(data = stats,
              aes(x = pmax, y = -log10(t.test.fdr.pvalue)), size = 2)+
-  geom_text_repel(data = stats[stats$pmax >= 0.8, ],
-                  aes(x = pmax, y = -log10(t.test.fdr.pvalue), label=gene_name), 
-                  size = 4, min.segment.length = 0.1)+
+  geom_text_repel(data = stats[stats$pmax >= 0.8, ], 
+                  aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
+                      label = gene_name), size = 4, 
+                  min.segment.length = 0.1)+
   xlim(0.5, 1)+
   ylab(label = "-log10 (P-value) from t-test [FDR corrected]")+
   xlab(label = expression(pi))+
@@ -376,23 +376,19 @@ propoertions is innapropriate.
 ```{r, fig.height = 6, fig.wide = TRUE}
 promising.genes <- c("IGHV1-58", "IGHV3-72")
 
-group.ppc <- M$group.ppc$group.ppc
-group.ppc <- group.ppc[group.ppc$gene_name %in% promising.genes, ]
-
-point.data <- M$group.ppc$individual.pct.data
-point.data <- point.data[point.data$gene_name %in% promising.genes, ]
+ppc.gene <- M$ppc.data$ppc.gene
+ppc.gene <- ppc.gene[ppc.gene$gene_name %in% promising.genes, ]
 
 ggplot()+
-  geom_errorbar(data = group.ppc,
-                aes(x = gene_name, ymin = ppc.L, 
-                    ymax = ppc.H, col = condition),
+  geom_errorbar(data = ppc.gene, aes(x = gene_name, ymin = ppc.L, 
+                                     ymax = ppc.H, col = condition),
                 position = position_dodge(width = .8), width = 0.75)+
-  geom_point(data = point.data,
+  geom_point(data = viz[viz$gene_name %in% promising.genes, ],
              aes(x = gene_name, y = gene_usage_pct, col = condition),
              shape = 21, size = 1.5, fill = "black",
-             position = position_jitterdodge(jitter.width = 0.2, 
+             position = position_jitterdodge(jitter.width = 0.15, 
                                              jitter.height = 0, 
-                                             dodge.width = 0.75))+
+                                             dodge.width = 0.8))+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
   ylab(label = "Gene usage [%]")+
@@ -406,8 +402,8 @@ ggplot()+
 promising.genes <- c("IGHV1-58", "IGHV3-72")
 
 ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
-  geom_point(aes(x = gene_name, y = gene_usage_count, 
-                 fill = condition, size = total/10^3, alpha = 0.5), shape = 21,
+  geom_point(aes(x = gene_name, y = gene_usage_count, fill = condition, 
+                 size = total/10^3, alpha = 0.5), shape = 21,
              position = position_jitterdodge(dodge.width = 0.75,
                                              jitter.width = 0.2))+
   theme_bw(base_size = 12)+
@@ -448,8 +444,8 @@ ggplot()+
   geom_point(data = stats,
              aes(x = pmax, y = -log10(u.test.fdr.pvalue)), size = 2)+
   geom_text_repel(data = stats[stats$pmax >= 0.8, ],
-                  aes(x = pmax, y = -log10(u.test.fdr.pvalue), label=gene_name), 
-                  size = 3, min.segment.length = 0.1)+
+                  aes(x = pmax, y = -log10(u.test.fdr.pvalue), 
+                      label=gene_name), size = 3, min.segment.length = 0.1)+
   xlim(0.5, 1)+
   ylab(label = "-log10 (P-value) from U-test [FDR corrected]")+
   xlab(label = expression(pi))+
@@ -520,6 +516,7 @@ ggplot(data = viz)+
   scale_shape_manual(name = "Condition", values = c(21, 22))
 ```
 
+
 ## Analysis with IgGeneUsage
 
 This is the main method of IgGeneUsage for differential gene usage.
@@ -563,13 +560,14 @@ grid.arrange(rstan::stan_rhat(object = M$glm),
 ### Posterior predictive checks: repertoire-specific
 
 ```{r, fig.height = 6, fig.wide = TRUE}
-ggplot(data = M$ppc)+
+ggplot(data = M$ppc$ppc.repertoire)+
   facet_wrap(facets = ~sample_id, ncol = 4)+
   geom_abline(intercept = 0, slope = 1)+
-  geom_errorbar(aes(x = raw, y = ppc.raw.mean, ymin = ppc.raw.L, 
-                    ymax = ppc.raw.H), col = "darkgray")+
-  geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), 
-             shape = 21, size = 2)+
+  geom_errorbar(aes(x = observed.count, y = ppc.count.mean, 
+                    ymin = ppc.count.L, ymax = ppc.count.H), 
+                col = "darkgray")+
+  geom_point(aes(x = observed.count, y = ppc.count.mean, 
+                 fill = condition), shape = 21, size = 2)+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
   scale_x_log10()+
@@ -581,13 +579,14 @@ ggplot(data = M$ppc)+
 
 
 
-### Gene-specific PPC
+### Posterior predictive checks: overall differential usage
 
 ```{r, fig.height = 6, fig.wide = TRUE}
-ggplot(data = M$group.ppc$group.ppc)+
+ggplot(data = M$ppc.data$ppc.gene)+
   geom_abline(intercept = 0, slope = 1)+
-  geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H), col = "darkgray")+
-  geom_point(aes(x = raw.M, y = ppc.M, fill = condition), 
+  geom_errorbar(aes(x = observed.mean, ymin = ppc.L, ymax = ppc.H), 
+                col = "darkgray")+
+  geom_point(aes(x = observed.mean, y = ppc.mean, fill = condition), 
              shape = 21, size = 2)+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
@@ -601,7 +600,7 @@ ggplot(data = M$group.ppc$group.ppc)+
   * with R-package loo
 
 ```{r}
-loo::loo(x = loo::extract_log_lik(stanfit = M$glm))
+rstan::loo(x = M$glm)
 ```
 
 
@@ -667,18 +666,15 @@ ggplot(data = stats)+
 ```{r, fig.height = 5, fig.wide = TRUE}
 promising.genes <- unique(M$usage.data$gene_names)
 
-group.ppc <- M$group.ppc$group.ppc
-group.ppc <- group.ppc[group.ppc$gene_name %in% promising.genes, ]
-
-point.data <- M$group.ppc$individual.pct.data
-point.data <- point.data[point.data$gene_name %in% promising.genes, ]
+ppc.gene <- M$ppc.data$ppc.gene
+ppc.gene <- ppc.gene[ppc.gene$gene_name %in% promising.genes, ]
 
 ggplot()+
-  geom_errorbar(data = group.ppc,
+  geom_errorbar(data = ppc.gene,
                 aes(x = gene_name, ymin = ppc.L, 
                     ymax = ppc.H, col = condition),
                 position = position_dodge(width = .8), width = 0.75)+
-  geom_point(data = point.data,
+  geom_point(data = viz[viz$gene_name %in% promising.genes, ],
              aes(x = gene_name, y = gene_usage_pct, col = condition),
              shape = 21, size = 1.5, fill = "black",
              position = position_jitterdodge(jitter.width = 0.15, 
@@ -847,12 +843,12 @@ grid.arrange(rstan::stan_rhat(object = M$glm),
 ### Posterior predictive checks: repertoire-specific
 
 ```{r, fig.height = 8, fig.wide = TRUE}
-ggplot(data = M$ppc)+
+ggplot(data = M$ppc.data$ppc.repertoire)+
   facet_wrap(facets = ~sample_id, ncol = 5)+
   geom_abline(intercept = 0, slope = 1)+
-  geom_errorbar(aes(x = raw, y = ppc.raw.mean, ymin = ppc.raw.L, 
-                    ymax = ppc.raw.H), col = "darkgray")+
-  geom_point(aes(x = raw, y = ppc.raw.mean, fill = condition), 
+  geom_errorbar(aes(x = observed.count, y = ppc.count.mean, 
+                    ymin = ppc.count.L, ymax = ppc.count.H), col = "darkgray")+
+  geom_point(aes(x = observed.count, y = ppc.count.mean, fill = condition), 
              shape = 21, size = 2.5)+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
@@ -868,10 +864,11 @@ ggplot(data = M$ppc)+
 ### Posterior predictive checks: overall differential usage
 
 ```{r, fig.height = 4, fig.wide = TRUE}
-ggplot(data = M$group.ppc$group.ppc)+
+ggplot(data = M$ppc.data$ppc.gene)+
   geom_abline(intercept = 0, slope = 1)+
-  geom_errorbar(aes(x = raw.M, ymin = ppc.L, ymax = ppc.H), col = "darkgray")+
-  geom_point(aes(x = raw.M, y = ppc.M, fill = condition), 
+  geom_errorbar(aes(x = observed.mean, ymin = ppc.L, ymax = ppc.H), 
+                col = "darkgray")+
+  geom_point(aes(x = observed.mean, y = ppc.mean, fill = condition), 
              shape = 21, size = 2)+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
@@ -885,7 +882,7 @@ ggplot(data = M$group.ppc$group.ppc)+
   * with R-package loo
 
 ```{r}
-loo::loo(x = loo::extract_log_lik(stanfit = M$glm))
+rstan::loo(x = M$glm)
 ```
 
 
@@ -972,18 +969,16 @@ ggplot(data = stats)+
 ```{r, fig.height=5, fig.wide = TRUE}
 promising.genes <- M$usage.data$gene_names
 
-group.ppc <- M$group.ppc$group.ppc
-group.ppc <- group.ppc[group.ppc$gene_name %in% promising.genes, ]
-
-point.data <- M$group.ppc$individual.pct.data
-point.data <- point.data[point.data$gene_name %in% promising.genes, ]
+ppc.gene <- M$ppc.data$ppc.gene
+ppc.gene <- ppc.gene[ppc.gene$gene_name %in% promising.genes, ]
+ppc.gene$gene_name <- factor(x = ppc.gene$gene_name, levels = -5:6)
 
 ggplot()+
-  geom_errorbar(data = group.ppc,
+  geom_errorbar(data = ppc.gene,
                 aes(x = gene_name, ymin = ppc.L, 
                     ymax = ppc.H, col = condition),
                 position = position_dodge(width = .8), width = 0.75)+
-  geom_point(data = point.data,
+  geom_point(data = viz[viz$gene_name %in% promising.genes, ],
              aes(x = gene_name, y = gene_usage_pct, col = condition),
              shape = 21, size = 1.5, fill = "black",
              position = position_jitterdodge(jitter.width = 0.2, 
@@ -1016,5 +1011,6 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
   scale_size_continuous(name = "N (10^3)", range = c(2, 6))+
   ylab(label = "Gene usage [count]")+
   xlab(label = '')+
-  scale_y_log10()
+  scale_y_log10()+
+  annotation_logticks(base = 10, sides = "l")
 ```

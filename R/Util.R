@@ -417,14 +417,15 @@ getPmax <- function(glm.ext) {
 getPpc <- function(glm.ext,
                    usage.data,
                    hdi.level) {
+
   yhat.pct <- glm.ext$Yhat_individual
-  yhat.raw <- glm.ext$Yhat
+  yhat.count <- glm.ext$Yhat
 
   ppc <- c()
   for(i in 1:usage.data$N_sample) {
     for(j in 1:usage.data$N_gene) {
-      yhat.i.raw <- yhat.raw[,j,i]
-      hdi.raw <- getHdi(vec = yhat.i.raw, hdi.level = hdi.level)
+      yhat.i.count <- yhat.count[,j,i]
+      hdi.count <- getHdi(vec = yhat.i.count, hdi.level = hdi.level)
 
       yhat.i.pct <- yhat.pct[,j,i]
       hdi.pct <- getHdi(vec = yhat.i.pct, hdi.level = hdi.level)
@@ -433,12 +434,12 @@ getPpc <- function(glm.ext,
       row <- data.frame(sample_id = usage.data$sample_names[i],
                         gene_name = usage.data$gene_names[j],
                         condition = usage.data$Xorg[i],
-                        raw = usage.data$Y[j,i],
-                        raw.pct = usage.data$Y[j,i]/usage.data$N[i]*100,
-                        ppc.raw.mean = mean(yhat.i.raw),
-                        ppc.raw.median = stats::median(yhat.i.raw),
-                        ppc.raw.L = hdi.raw[1],
-                        ppc.raw.H = hdi.raw[2],
+                        observed.count = usage.data$Y[j,i],
+                        observed.pct = usage.data$Y[j,i]/usage.data$N[i]*100,
+                        ppc.count.mean = mean(yhat.i.count),
+                        ppc.count.median = stats::median(yhat.i.count),
+                        ppc.count.L = hdi.count[1],
+                        ppc.count.H = hdi.count[2],
                         ppc.pct.mean = mean(yhat.i.pct),
                         ppc.pct.median = stats::median(yhat.i.pct),
                         ppc.pct.L = hdi.pct[1],
@@ -465,13 +466,12 @@ getGroupStats <- function(glm.ext,
                            yhat.gene,
                            hdi.level,
                            usage.data) {
+
     hdi.1 <- getHdi(vec = yhat.gene[,1,x], hdi.level = hdi.level)
     hdi.2 <- getHdi(vec = yhat.gene[,2,x], hdi.level = hdi.level)
 
 
-
-
-    # get mean raw data
+    # get mean count data
     x.1 <- which(usage.data$Xorg == conditions[1])
     real.pct.1 <- 0
     if(length(x.1) != 0) {
@@ -486,42 +486,25 @@ getGroupStats <- function(glm.ext,
 
 
     return(rbind(data.frame(gene_name = gene.names[x],
-                            ppc.M = mean(yhat.gene[,1,x]),
+                            ppc.mean = mean(yhat.gene[,1,x]),
                             ppc.L = hdi.1[1],
                             ppc.H = hdi.1[2],
-                            raw.M = mean(real.pct.1),
+                            observed.mean = mean(real.pct.1),
                             condition = conditions[1],
                             stringsAsFactors = FALSE),
                  data.frame(gene_name = gene.names[x],
-                            ppc.M = mean(yhat.gene[,2,x]),
+                            ppc.mean = mean(yhat.gene[,2,x]),
                             ppc.L = hdi.2[1],
                             ppc.H = hdi.2[2],
-                            raw.M = mean(real.pct.2),
+                            observed.mean = mean(real.pct.2),
                             condition = conditions[2],
                             stringsAsFactors = FALSE)))
   }
 
 
-
-  getPointData <- function(usage.data) {
-    pct.usage.data <- c()
-    for(i in 1:ncol(usage.data$Y)) {
-      row <- data.frame(gene_usage_pct = usage.data$Y[, i]/usage.data$N[i]*100,
-                        condition = usage.data$Xorg[i],
-                        sample_id = usage.data$sample_names[i],
-                        gene_name = usage.data$gene_names,
-                        stringsAsFactors = FALSE)
-
-      pct.usage.data <- rbind(pct.usage.data, row)
-    }
-    return (pct.usage.data)
-  }
-
-
-
-
   conditions = c(unique(usage.data$Xorg[usage.data$X == 1]),
                  unique(usage.data$Xorg[usage.data$X == -1]))
+
 
   group.ppc <- lapply(X = 1:usage.data$N_gene,
                       FUN = getGroupYhat,
@@ -532,13 +515,7 @@ getGroupStats <- function(glm.ext,
                       usage.data = usage.data)
   group.ppc <- do.call(rbind, group.ppc)
 
-
-  individual.pct.data <- getPointData(usage.data = usage.data)
-
-
-
-  return (list(group.ppc = group.ppc,
-               individual.pct.data = individual.pct.data))
+  return (group.ppc)
 }
 
 
