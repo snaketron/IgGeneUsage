@@ -30,5 +30,12 @@ before_install:
   - echo "CXX14FLAGS=-O3 -mtune=native -march=native -Wno-unused-variable -Wno-unused-function  -Wno-macro-redefined" >> ~/.R/Makevars
   - echo "CXX14=g++ -std=c++1y -fPIC" >> ~/.R/Makevars
 
+before_script:
+  - docker build -t buildroot . > build.log 2>&1
+  - while sleep 5m; do echo "=====[ $SECONDS seconds, buildroot still building... ]====="; done &
+  - time docker run --rm -v $PWD/build:/build buildroot >> build.log 2>&1
+  # Killing background sleep loop
+  - kill %1
+
 after_success:
   - travis_wait 30 Rscript -e 'covr::codecov()'
