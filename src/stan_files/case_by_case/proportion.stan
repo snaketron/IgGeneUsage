@@ -29,7 +29,7 @@ transformed parameters {
 
 model {
   for(i in 1:N_sample) {
-    Y[i] ~ beta(a[i], b[i]);// * X[i]
+    Y[i] ~ beta(a[i], b[i]);
   }
 
   alpha_gene ~ normal(0, 10);

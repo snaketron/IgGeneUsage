@@ -11,20 +11,20 @@ transformed data {
 }
 
 parameters {
-  real a_sample;
+  real alpha_gene;
   vector [N_sample] b;
-  real b_sample;
+  real beta_gene;
   real <lower = 0> b_sigma;
 }
 
 
 model {
   for(i in 1:N_sample) {
-    Y[i] ~ binomial_logit(N[i], a_sample + b[i] * X[i]);
+    Y[i] ~ binomial_logit(N[i], alpha_gene + b[i] * X[i]);
   }
-  a_sample ~ normal(0, 10);
-  b ~ normal(b_sample, b_sigma);
-  b_sample ~ normal(0, 5);
+  alpha_gene ~ normal(0, 10);
+  b ~ normal(beta_gene, b_sigma);
+  beta_gene ~ normal(0, 5);
   b_sigma ~ cauchy(0, 1);
 }
 
@@ -34,7 +34,7 @@ generated quantities {
   real Yhat_group [2];
 
   for(i in 1:N_sample) {
-    Yhat[i] = binomial_rng(N[i], 1/(1 + exp(-(a_sample+b[i]*X[i]))));
+    Yhat[i] = binomial_rng(N[i], 1/(1 + exp(-(alpha_gene+b[i]*X[i]))));
 
     if(Nreal[i] == 0.0) {
       Yhat_individual[i] = 0;
@@ -43,6 +43,6 @@ generated quantities {
     }
   }
 
-  Yhat_group[1] = 1/(1 + exp(-(a_sample + b_sample)));
-  Yhat_group[2] = 1/(1 + exp(-(a_sample + (-1)*b_sample)));
+  Yhat_group[1] = 1/(1 + exp(-(alpha_gene + beta_gene)));
+  Yhat_group[2] = 1/(1 + exp(-(alpha_gene + (-1)*beta_gene)));
 }
