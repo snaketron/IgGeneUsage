@@ -1,0 +1,3 @@
+R CMD INSTALL --preclean --no-multiarch --with-keep.source .
+R CMD build .
+R CMD BioCheck .
