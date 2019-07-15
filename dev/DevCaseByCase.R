@@ -26,6 +26,9 @@ data.list$Y <- data.list$Y[i, ]
 data.list$gene_names <- data.list$gene_names[i]
 data.list$Yp <- data.list$Y/data.list$N
 
+# problem at 0 and 1, infinite log-likelihood
+data.list$Yp[data.list$Yp == 0] <- 2.220446049250313e-16
+
 glm.binomial <- rstan::sampling(object = model.binomial,
                                 data = data.list,
                                 chains = 4,
@@ -57,6 +60,10 @@ glm.proportions <- rstan::sampling(object = model.proportions,
 
 
 summary(glm.binomial, par = "beta_gene")$summary
+summary(glm.beta.binomial, par = "beta_gene")$summary
+summary(glm.proportions, par = "beta_gene")$summary
+
+
 
 
 e <- rstan::extract(object = glm)
