@@ -25,14 +25,17 @@ i <- which(data.list$gene_names == "IGHV1-58")
 data.list$Y <- data.list$Y[i, ]
 data.list$gene_names <- data.list$gene_names[i]
 
-glm <- rstan::sampling(object = bm,
-                       data = data.list,
-                       chains = 4,
-                       cores = 4,
-                       iter = 5000,
-                       warmup = 1500,
-                       refresh = 500,
-                       control = list(adapt_delta = 0.999))
+glm.binomial <- rstan::sampling(object = model.binomial,
+                                data = data.list,
+                                chains = 4,
+                                cores = 4,
+                                iter = 5000,
+                                warmup = 1500,
+                                refresh = 500,
+                                control = list(adapt_delta = 0.999))
+
+
+
 
 summary(glm, par = "b_sample")$summary
 summary(glm, par = "b")$summary
