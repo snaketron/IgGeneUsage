@@ -17,11 +17,11 @@ parameters {
 transformed parameters {
   vector <lower = 0> [N_sample] a;
   vector <lower = 0> [N_sample] b;
-  vector [N_sample] beta;
+  vector [N_sample] beta_sample;
 
   for(i in 1:N_sample) {
-    beta[i] = beta_gene + beta_sigma * beta_raw[i];
-    a[i] = inv_logit(alpha_gene + beta[i]*X[i]) * phi;
+    beta_sample[i] = beta_gene + beta_sigma * beta_raw[i];
+    a[i] = inv_logit(alpha_gene + beta_sample[i]*X[i]) * phi;
     b[i] = phi - a[i];
   }
 }
