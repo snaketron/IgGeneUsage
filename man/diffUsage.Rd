@@ -67,9 +67,9 @@ boundary of HDI, H = high boundary of HDI); 2) pmax = probability of
 differential gene usage}
 \item{ppc.data}{two types of posterior predictive checks: 1) for each gene of
 a particular repertoire, 2) for each gene and condition}
-\item{test.stats}{differential gene usage statistics computed with the t-test
-(columns start with 't'), and Wilcoxon rank sum test (columns start with 'u').
-For both test we report a P-value, FDR-corrected P-value and Bonferroni-
+\item{test.stats}{differential gene usage statistics computed with the Welch's
+t-test (columns start with 't'), and Wilcoxon rank sum test (columns start with
+'u'). For both test we report a P-value, FDR-corrected P-value and Bonferroni-
 corrected P-value. Additionally, we report t-value and 95\% CI (from the
 t-test) and U-value (from the Wilcoxon rank sum test).}
 }
