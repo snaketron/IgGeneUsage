@@ -14,7 +14,9 @@ data("IGHV_HCV")
 # d <- IGHV_HCV[IGHV_HCV$gene_name %in% c("IGHV1-58", "IGHV3-72"), ]
 
 
-bm <- rstan::stan_model(file = "src/stan_files/simple_models/binomial.stan")
+model.binomial <- rstan::stan_model(file = "src/stan_files/case_by_case//binomial.stan")
+model.proportions <- rstan::stan_model(file = "src/stan_files/case_by_case/proportion.stan")
+model.beta.binomial <- rstan::stan_model(file = "src/stan_files/case_by_case/beta_binomial.stan")
 
 
 data.list <- getUsageData(usage = IGHV_HCV)

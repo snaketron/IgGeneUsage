@@ -6,6 +6,24 @@ sudo: TRUE
 bioc_packages:
   - BiocStyle
 
+r_packages:
+  - rstan
+  - stats
+  - graphics
+  - rstantools
+  - Rcpp
+  - reshape2
+  - BH
+  - RcppEigen
+  - StanHeaders
+  - knitr
+  - rmarkdown
+  - testthat
+  - ggplot2
+  - ggforce
+  - gridExtra
+  - ggrepel
+
 notifications:
   email: TRUE
 
