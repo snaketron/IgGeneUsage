@@ -1,6 +1,6 @@
 data {
   int <lower = 0> N_sample;
-  real Y [N_sample];
+  real Yp [N_sample];
   vector <lower = -1, upper = 1> [N_sample] X;
 }
 
@@ -29,7 +29,7 @@ transformed parameters {
 
 model {
   for(i in 1:N_sample) {
-    Y[i] ~ beta(a[i], b[i]);
+    Yp[i] ~ beta(a[i], b[i]);
   }
 
   alpha_gene ~ normal(0, 10);
@@ -42,15 +42,15 @@ model {
   tau ~ gamma(3, 0.1);
 }
 
-
-generated quantities {
-  real Yhat [N_sample];
-  real Yhat_group [2];
-
-  for(i in 1:N_sample) {
-    Yhat[i] = beta_rng(a[i], b[i]);
-  }
-
-  Yhat_group[1] = inv_logit(alpha_gene + beta_gene * 1.0);
-  Yhat_group[2] = inv_logit(alpha_gene + beta_gene * (-1.0));
-}
+//
+// generated quantities {
+//   real Yhat [N_sample];
+//   real Yhat_group [2];
+//
+//   for(i in 1:N_sample) {
+//     Yhat[i] = beta_rng(a[i], b[i]);
+//   }
+//
+//   Yhat_group[1] = inv_logit(alpha_gene + beta_gene * 1.0);
+//   Yhat_group[2] = inv_logit(alpha_gene + beta_gene * (-1.0));
+// }

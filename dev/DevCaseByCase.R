@@ -15,8 +15,8 @@ data("IGHV_HCV")
 
 
 model.binomial <- rstan::stan_model(file = "src/stan_files/case_by_case//binomial.stan")
-model.proportions <- rstan::stan_model(file = "src/stan_files/case_by_case/proportion.stan")
 model.beta.binomial <- rstan::stan_model(file = "src/stan_files/case_by_case/beta_binomial.stan")
+model.proportions <- rstan::stan_model(file = "src/stan_files/case_by_case/proportion.stan")
 
 
 data.list <- getUsageData(usage = IGHV_HCV)
@@ -24,6 +24,7 @@ i <- which(data.list$gene_names == "IGHV1-58")
 # i <- which(data.list$gene_names == "IGHV3-72")
 data.list$Y <- data.list$Y[i, ]
 data.list$gene_names <- data.list$gene_names[i]
+data.list$Yp <- data.list$Y/data.list$N
 
 glm.binomial <- rstan::sampling(object = model.binomial,
                                 data = data.list,
@@ -35,10 +36,28 @@ glm.binomial <- rstan::sampling(object = model.binomial,
                                 control = list(adapt_delta = 0.999))
 
 
+glm.beta.binomial <- rstan::sampling(object = model.beta.binomial,
+                                     data = data.list,
+                                     chains = 4,
+                                     cores = 4,
+                                     iter = 5000,
+                                     warmup = 1500,
+                                     refresh = 500,
+                                     control = list(adapt_delta = 0.999))
 
 
-summary(glm, par = "b_sample")$summary
-summary(glm, par = "b")$summary
+glm.proportions <- rstan::sampling(object = model.proportions,
+                                   data = data.list,
+                                   chains = 4,
+                                   cores = 4,
+                                   iter = 5000,
+                                   warmup = 1500,
+                                   refresh = 500,
+                                   control = list(adapt_delta = 0.999))
+
+
+summary(glm.binomial, par = "beta_gene")$summary
+
 
 e <- rstan::extract(object = glm)
 
