@@ -1,3 +1,22 @@
+functions {
+
+  real zibetareg_lpdf(real y, real a, real b, real zi) {
+    if (y == 0) {
+      return bernoulli_lpmf(1 | zi);
+    } else {
+      return bernoulli_lpmf(0 | zi) + beta_lpdf(y | a, b);
+    }
+  }
+
+  real zibetareg_rng(int y, real a, real b, real zi) {
+    if (bernoulli_rng(zi) == 1) {
+      return (0);
+    } else {
+      return (beta_rng(a, b));
+    }
+  }
+}
+
 data {
   int <lower = 0> N_sample;
   int <lower = 0> N_gene;
@@ -19,6 +38,8 @@ parameters {
 
   real <lower = 0> phi;
   real<lower = 0> tau;
+
+  real <lower = 0, upper = 1> z;  // zero-inflation probability
 }
 
 
@@ -42,7 +63,10 @@ transformed parameters {
 
 model {
   for(i in 1:N_sample) {
-    Yp[, i] ~ beta(a[i], b[i]);
+    // Yp[, i] ~ beta(a[i], b[i]);
+    for(j in 1:N_gene) {
+      target += zibetareg_lpdf(Yp[j,i] | a[i][j], b[i][j], z);
+    }
   }
 
   alpha_grand ~ normal(0, 10);
@@ -58,6 +82,8 @@ model {
 
   phi ~ exponential(tau);
   tau ~ gamma(3, 0.1);
+
+  z ~ beta(1, 3);
 }
 
 //
