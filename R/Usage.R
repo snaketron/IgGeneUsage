@@ -11,6 +11,9 @@ diffUsage <- function(usage.data,
                       dev.model) {
 
 
+  # TODO check ref.group
+
+
   # check inputs
   checkInput(usage.data = usage.data,
              mcmc.chains = mcmc.chains,
@@ -24,6 +27,12 @@ diffUsage <- function(usage.data,
   # format input usage
   usage.data.raw <- usage.data
   usage.data <- getUsageData(usage = usage.data.raw)
+
+
+  # contrast
+  contrast <- paste("Contrast: ", unique(usage.data$Xorg[usage.data$X == 1]),
+                    " vs. ", unique(usage.data$Xorg[usage.data$X == -1]),
+                    sep = '')
 
 
   # model
@@ -60,7 +69,7 @@ diffUsage <- function(usage.data,
                              "effect_L", "effect_H",
                              "Neff", "Rhat")
   glm.summary[, c("Rhat", "Neff")] <- NULL
-
+  glm.summary$contrast <- contrast
 
 
   # extract data

@@ -6,6 +6,24 @@ sudo: TRUE
 bioc_packages:
   - BiocStyle
 
+r_packages:
+  - rstan
+  - stats
+  - graphics
+  - rstantools
+  - Rcpp
+  - reshape2
+  - BH
+  - RcppEigen
+  - StanHeaders
+  - knitr
+  - rmarkdown
+  - testthat
+  - ggplot2
+  - ggforce
+  - gridExtra
+  - ggrepel
+
 notifications:
   email: TRUE
 
@@ -15,15 +33,9 @@ cache:
 
 warnings_are_errors: FALSE
 
-r_build_args: '--no-build-vignettes'
+r_build_args: '--no-build-vignettes', '--log temp.log'
 r_check_args: '--ignore-vignettes'
 
-addons:
-  apt:
-    packages:
-      - libudunits2-dev
-      - libgdal-dev
-      - libproj-dev
 
 before_install:
   - mkdir -p ~/.R

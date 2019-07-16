@@ -49,6 +49,9 @@ getUsageData <- function(usage) {
   X <- X[sample_ids]
 
 
+
+  # if ref.group ....
+
   # get X mapping
   X.unique <- unique(X)
   x1 <- which(X == X.unique[1])
