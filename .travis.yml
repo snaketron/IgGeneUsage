@@ -27,6 +27,13 @@ before_install:
   - echo "CXX14FLAGS=-O3 -mtune=native -march=native -Wno-unused-variable -Wno-unused-function  -Wno-macro-redefined" >> ~/.R/Makevars
   - echo "CXX14=g++ -std=c++1y -fPIC" >> ~/.R/Makevars
 
+script:
+  - |
+    travis_wait 42 R CMD build .
+    travis_wait 59 R CMD check IgGeneUsage*tar.gz
 
 after_success:
   - travis_wait 30 Rscript -e 'covr::codecov()'
+
+after_failure:
+  - cat IgGeneUsage.Rcheck/00*
