@@ -30,7 +30,7 @@ viz$gene_name_fig <- gsub(pattern = "IGHV", replacement = '', x = viz$gene_name)
 viz$condition <- ifelse(test = viz$condition == "hcv", yes = "HCV", no = "HD")
 
 
-M <- get(load(file = "R/dev/ighv_hcv_zibb_model.RData"))
+M <- get(load(file = "dev/ighv_hcv_zibb_model.RData"))
 
 
 
@@ -43,67 +43,75 @@ stats <- stats[order(abs(stats$effect_mean), decreasing = F), ]
 stats$gene_fac <- factor(x = stats$gene_name,
                          levels = stats$gene_name)
 stats <- merge(x= stats, y = M$test.stats, by = "gene_name")
-
-
-
-
 stats$gene_name_fig <- gsub(pattern = "IGHV", replacement = '', x = stats$gene_name)
 stats$t.test.fdr.pvalue[is.finite(stats$t.test.fdr.pvalue) == F] <- 1
 stats$u.test.fdr.pvalue[is.finite(stats$u.test.fdr.pvalue) == F] <- 1
 
+# ranks
+stats <- stats[order(stats$pmax, decreasing = T), ]
+stats$rank.pmax <- 1:nrow(stats)
+
+stats <- stats[order(stats$t.test.fdr.pvalue, decreasing = F), ]
+stats$rank.t <- 1:nrow(stats)
+
+stats <- stats[order(stats$u.test.fdr.pvalue, decreasing = F), ]
+stats$rank.u <- 1:nrow(stats)
 
 
 
 # T-test
-g <- ggplot()+
+g1 <- ggplot()+
   geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), linetype = "dashed", col = "darkgray")+
-  geom_text_repel(data = stats[stats$pmax >= 0.8, ], min.segment.length = 0.1, size = 2,
-                  aes(x = pmax, y = -log10(t.test.fdr.pvalue), label = gene_name_fig))+
   geom_point(data = stats, aes(x = pmax, y = -log10(t.test.fdr.pvalue)),
-             shape = 21, fill = "red", col = "black", size = 1.5)+
+             shape = 21, fill = "red", col = "black", size = 1, stroke = 0.5)+
+  geom_text_repel(data = stats[stats$rank.pmax <= 5 | stats$rank.t <= 5, ],
+                  min.segment.length = 0.1, size = 2, segment.size = 0.25,
+                  aes(x = pmax, y = -log10(t.test.fdr.pvalue), label = gene_name_fig))+
   xlim(0.5, 1)+
   ylab(label = "P-value [-log10]")+
   xlab(label = expression(pi))+
   theme_bw(base_size = 9)+
   theme(legend.position = "top")+
   scale_color_discrete(name = '')
-ggsave(filename = "R/dev/manuscript/ttest.eps", plot = g,
-       device = "eps", width = 4, height = 2.5, dpi = 600)
-
-
-
-
-
-
 
 # U-test
-g <- ggplot()+
+g2 <- ggplot()+
   geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), linetype = "dashed", col = "darkgray")+
-  geom_text_repel(data = stats[stats$pmax >= 0.8, ], min.segment.length = 0.1, size = 2,
-                  aes(x = pmax, y = -log10(u.test.fdr.pvalue), label = gene_name_fig))+
   geom_point(data = stats, aes(x = pmax, y = -log10(u.test.fdr.pvalue)),
-             shape = 21, fill = "red", col = "black", size = 1.25)+
+             shape = 21, fill = "red", col = "black", size = 1, stroke = 0.5)+
+  geom_text_repel(data = stats[stats$rank.pmax <= 5 | stats$rank.u <= 5, ],
+                  min.segment.length = 0.1, size = 2, segment.size = 0.25,
+                  aes(x = pmax, y = -log10(u.test.fdr.pvalue), label = gene_name_fig))+
   xlim(0.5, 1)+
   ylab(label = "P-value [-log10]")+
   xlab(label = expression(pi))+
   theme_bw(base_size = 9)+
   theme(legend.position = "top")+
   scale_color_discrete(name = '')
-ggsave(filename = "R/dev/manuscript/utest.eps", plot = g,
-       device = "eps", width = 4, height = 2.5, dpi = 600)
+
+
+g <- arrangeGrob(g1, g2, ncol = 2)
+plot(g)
+
+ggsave(filename = "dev/manuscript/comparison.eps", plot = g,
+       device = "eps", width = 3.5, height = 3, dpi = 600)
+
+ggsave(filename = "dev/manuscript/comparison2.eps", plot = g,
+       device = "eps", width = 3.5, height = 2, dpi = 600)
 
 
 
 
 
 
-# RAW COUNTS
+
+
+# RAW DATA
 # promising.genes <- c("IGHV1-58", "IGHV3-72", "IGHV4-30-4", "IGHV3-30-3", "IGHV3-23", "IGHV3-7")
 promising.genes <- c("IGHV1-58", "IGHV3-72", "IGHV3-30-3")
 
-
-g <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
-  facet_wrap(facets = ~gene_name_fig, ncol = 1, scales = "free")+
+g3 <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
+  facet_wrap(facets = ~gene_name_fig, nrow = 1)+
   geom_point(aes(x = '', y = gene_usage_count, fill = condition, shape = condition, size = total/10^3),
              position = position_jitterdodge(dodge.width = 1, jitter.width = 0.35, jitter.height = 0),
              stroke = 0.5)+
@@ -113,64 +121,69 @@ g <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
   theme(legend.position = "top")+
   scale_fill_manual(name = "Condition", values = c("orange", "#a4c0ed"))+
   scale_shape_manual(name = "Condition", values = c(21, 22))+
-  scale_size_continuous(name = "N (in thousands)", range = c(0.75, 2.5))+
-  guides(size = guide_legend(nrow = 1, byrow = TRUE))
+  scale_size_continuous(name = "N (in thousands)", range = c(0.75, 2))+
+  scale_y_log10()#+annotation_logticks(base = 10, sides = "l")
 
-
-g
-ggsave(filename = "R/dev/manuscript/results.eps", plot = g,
-       device = "eps", width = 1.25, height = 5.25, dpi = 600)
-
-
-g <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
-  facet_wrap(facets = ~gene_name_fig, ncol = 2, scales = "free")+
-  geom_point(aes(x = '', y = gene_usage_count, fill = condition, shape = condition, size = total/10^3),
-             position = position_jitterdodge(dodge.width = 1, jitter.width = 0.35, jitter.height = 0),
-             stroke = 0.5)+
-  theme_bw(base_size = 9)+
-  ylab(label = "Usage [count]")+
-  xlab(label = '')+
-  theme(legend.position = "top")+
-  scale_fill_manual(name = "Condition", values = c("orange", "#a4c0ed"))+
-  scale_shape_manual(name = "Condition", values = c(21, 22))+
-  scale_size_continuous(name = "N (in thousands)", range = c(0.75, 2.5))+
-  guides(size = guide_legend(nrow = 2, byrow = TRUE))
-
-ggsave(filename = "R/dev/manuscript/results_legend.eps", plot = g,
-       device = "eps", width = 7, height = 5.25, dpi = 600)
-
-
-
-
-
-
-
-
-
-
-
-
-# RAW PCT
-# promising.genes <- c("IGHV1-58", "IGHV3-72", "IGHV4-30-4", "IGHV3-30-3", "IGHV3-23", "IGHV3-7")
-promising.genes <- c("IGHV1-58", "IGHV3-72", "IGHV3-30-3")
-
-
-g <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
-  facet_wrap(facets = ~gene_name_fig, ncol = 1, scales = "free")+
+g4 <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
+  facet_wrap(facets = ~gene_name_fig, nrow = 1)+
   geom_point(aes(x = '', y = gene_usage_pct, fill = condition, shape = condition),
-             position = position_jitterdodge(dodge.width = 1, jitter.width = 0.35, jitter.height = 0),
-             stroke = 0.5)+
+             position = position_jitterdodge(dodge.width = 1,
+                                             jitter.width = 0.35, jitter.height = 0),
+             stroke = 0.5, size = 0.75)+
   theme_bw(base_size = 9)+
   ylab(label = "Usage [%]")+
   xlab(label = '')+
   theme(legend.position = "top")+
   scale_fill_manual(name = "Condition", values = c("orange", "#a4c0ed"))+
-  scale_shape_manual(name = "Condition", values = c(21, 22))+
-  guides(size = guide_legend(nrow = 1, byrow = TRUE))
+  scale_shape_manual(name = "Condition", values = c(21, 22))
 
 
-g
-ggsave(filename = "R/dev/manuscript/results_pct.eps", plot = g,
-       device = "eps", width = 1.25, height = 5.25, dpi = 600)
+q <- arrangeGrob(g3, g4, nrow = 1)
+plot(q)
 
 
+ggsave(filename = "dev/manuscript/cases.eps", plot = q,
+       device = "eps", width = 3.75, height = 2, dpi = 600)
+
+
+
+
+# TRY 2
+# promising.genes <- c("IGHV1-58", "IGHV3-72", "IGHV4-30-4", "IGHV3-30-3", "IGHV3-23", "IGHV3-7")
+promising.genes <- c("IGHV1-58", "IGHV3-72", "IGHV3-30-3")
+
+g3 <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
+  facet_wrap(facets = ~gene_name_fig, nrow = 1)+
+  geom_point(aes(x = '', y = gene_usage_count, col = condition, size = total/10^3),
+             shape = 21, stroke = 0.5,
+             position = position_jitterdodge(dodge.width = 0.85,
+                                             jitter.width = 0.4,
+                                             jitter.height = 0))+
+  theme_bw(base_size = 9)+
+  ylab(label = "Usage [count]")+
+  xlab(label = '')+
+  theme(legend.position = "top")+
+  scale_color_manual(name = "Condition", values = c("orange", "#a4c0ed"))+
+  scale_size_continuous(name = "N (in thousands)", range = c(0.75, 2))+
+  scale_y_log10()#+annotation_logticks(base = 10, sides = "l")
+
+g4 <- ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
+  facet_wrap(facets = ~gene_name_fig, nrow = 1)+
+  geom_point(aes(x = '', y = gene_usage_pct, col = condition),
+             fill = "NA", shape = 21, size = 1, stroke = 0.5,
+             position = position_jitterdodge(dodge.width = 0.85,
+                                             jitter.width = 0.4,
+                                             jitter.height = 0))+
+  theme_bw(base_size = 9)+
+  ylab(label = "Usage [%]")+
+  xlab(label = '')+
+  theme(legend.position = "top")+
+  scale_color_manual(name = "Condition", values = c("orange", "#a4c0ed"))
+
+
+q <- arrangeGrob(g3, g4, nrow = 1)
+plot(q)
+
+
+ggsave(filename = "dev/manuscript/cases2.eps", plot = q,
+       device = "eps", width = 3.75, height = 1.75, dpi = 600)

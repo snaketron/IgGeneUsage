@@ -31,7 +31,7 @@ diffUsage <- function(usage.data,
 
   # contrast
   contrast <- paste("Contrast: ", unique(usage.data$Xorg[usage.data$X == 1]),
-                    " vs. ", unique(usage.data$Xorg[usage.data$X == -1]),
+                    " - ", unique(usage.data$Xorg[usage.data$X == -1]),
                     sep = '')
 
 
