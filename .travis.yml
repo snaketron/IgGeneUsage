@@ -18,7 +18,7 @@ cache:
 
 warnings_are_errors: FALSE
 
-r_build_args: '--no-build-vignettes', '--log temp.log'
+r_build_args: '--no-build-vignettes'
 r_check_args: '--ignore-vignettes'
 
 
