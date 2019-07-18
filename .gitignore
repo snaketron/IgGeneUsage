@@ -44,3 +44,4 @@ R/dev/*.RData
 
 
 dev/*.RData
+dev/supplementary/*.RData

@@ -17,54 +17,91 @@ Yp <- data.list$Y
 for(i in 1:nrow(Yp)) {
   Yp[i, ] <- Yp[i, ]/as.numeric(data.list$N)
 }
-# Yp[which(Yp == 0, arr.ind = T)] <- 10^(-6) # numerical stability log(0)
 data.list$Yp <- Yp
 rm(Yp, i)
 
 
-# model.proportions <- rstan::stan_model(file = "src/stan_files/case_by_case/proportion_multigene.stan")
-model.h.proportions <- rstan::stan_model(file = "src/stan_files/case_by_case/proportion_h_multigene.stan")
+# model.prop <- rstan::stan_model(file = "src/stan_files/case_by_case/proportion_h_multigene.stan")
+# glm.prop <- rstan::sampling(object = model.prop,
+#                             data = data.list,
+#                             chains = 4,
+#                             cores = 4,
+#                             iter = 5000,
+#                             warmup = 2500,
+#                             control = list(adapt_delta = 0.95,
+#                                            max_treedepth = 10))
+# save(glm.prop, file = "dev/supplementary/proportion_h_multigene.RData")
 
 
-glm.h.prop <- rstan::sampling(object = model.h.proportions,
-                              data = data.list,
-                              chains = 4,
-                              cores = 4,
-                              iter = 3000,
-                              warmup = 1000,
-                              control = list(adapt_delta = 0.95,
-                                             max_treedepth = 10))
 
 
-s <- data.frame(summary(glm.h.prop, par = "beta_gene")$summary)
+glm.prop <- get(load(file = "dev/supplementary/proportion_h_multigene.RData"))
+s <- data.frame(summary(glm.prop, par = "beta_gene")$summary)
 s$gene_name <- data.list$gene_names
-e <- rstan::extract(object = glm.h.prop)
+e <- rstan::extract(object = glm.prop)
 s$pmax <- getPmax(glm.ext = e)
-hist(s$mean, breaks = 100)
-hist(s$pmax, breaks = 100)
-colnames(s) <- paste("beta.reg", colnames(s), sep = '_')
+colnames(s) <- paste("beta_reg", colnames(s), sep = '_')
 
 
 # zibb
 Mzibb <- get(load(file = "dev/ighv_hcv_zibb_model.RData"))
 z <- Mzibb$glm.summary
+d <- merge(x = z, y = s, by.x = "gene_name", by.y = "beta_reg_gene_name")
 
-d <- merge(x = z, y = s, by.x = "gene_name", by.y = "beta.reg_gene_name")
-d$delta <- d$pmax-d$beta.reg_pmax
-d$delta_effect <- abs(d$effect_mean)-abs(d$beta.reg_mean)
+
+# format data
+stats <- Mzibb$test.stats
+stats <- merge(x = d, y = stats, by = "gene_name")
+
+
+# ranks
+stats <- stats[order(stats$pmax, decreasing = T), ]
+stats$rank.zibb <- 1:nrow(stats)
+stats <- stats[order(stats$beta_reg_pmax, decreasing = T), ]
+stats$rank.zibr <- 1:nrow(stats)
+stats <- stats[order(stats$t.test.fdr.pvalue, decreasing = F), ]
+stats$rank.t <- 1:nrow(stats)
+stats <- stats[order(stats$u.test.fdr.pvalue, decreasing = F), ]
+stats$rank.u <- 1:nrow(stats)
+
 
 ggplot()+
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", col = "darkgray")+
-  geom_point(data = d, aes(x = pmax, y = beta.reg_pmax))+
-  geom_text_repel(data = d[d$pmax >= 0.8 | d$beta.reg_pmax >= 0.8, ],
-                  aes(x = pmax, y = beta.reg_pmax, label = gene_name))+
-  theme_bw()
+  geom_point(data = stats, aes(x = pmax, y = beta_reg_pmax), col = "red")+
+  geom_text_repel(data = stats[stats$rank.zibb <= 5 | stats$rank.zibr <= 5, ],
+                  min.segment.length = 0.1, size = 2, segment.size = 0.25,
+                  aes(x = pmax, y = beta_reg_pmax, label = gene_name))+
+  theme_bw()+
+  xlab(label = expression(pi["ZIBB"]))+
+  ylab(label = expression(pi["ZIBR"]))
+
 
 ggplot()+
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", col = "darkgray")+
-  geom_point(data = d, aes(x = abs(effect_mean), y = abs(beta.reg_mean)))+
-  geom_errorbar(data = d, aes(x = abs(effect_mean), y = abs(beta.reg_mean),
-                              ymin = beta.reg_X2.5., ymax = beta.reg_X97.5.))+
-  geom_text_repel(data = d[abs(d$delta_effect) >= 0.02, ],
-                  aes(x = abs(effect_mean), y = abs(beta.reg_mean), label = gene_name))+
-  theme_bw()
+  geom_point(data = stats, aes(x = effect_mean, y = beta_reg_mean), col = "red")+
+  theme_bw()+
+  xlab(label = expression(pi["ZIBB"]))+
+  ylab(label = expression(pi["ZIBR"]))
+
+
+grid.arrange(
+  ggplot()+
+    geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), linetype = "dashed", col = "darkgray")+
+    geom_point(data = stats, aes(x = pmax, y = -log10(t.test.fdr.pvalue)), col = "red")+
+    geom_text_repel(data = stats[stats$rank.zibb <= 5 | stats$rank.t <= 5, ],
+                    min.segment.length = 0.1, size = 2, segment.size = 0.25,
+                    aes(x = pmax, y = -log10(t.test.fdr.pvalue), label = gene_name))+
+    theme_bw()+
+    xlab(label = expression(pi["ZIBB"]))+
+    ylab(label = "P-value (-log10)"),
+  ggplot()+
+    geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), linetype = "dashed", col = "darkgray")+
+    geom_point(data = stats, aes(x = beta_reg_pmax, y = -log10(t.test.fdr.pvalue)), col = "red")+
+    geom_text_repel(data = stats[stats$rank.zibr <= 5 | stats$rank.t <= 5, ],
+                    min.segment.length = 0.1, size = 2, segment.size = 0.25,
+                    aes(x = beta_reg_pmax, y = -log10(t.test.fdr.pvalue), label = gene_name))+
+    theme_bw()+
+    xlab(label = expression(pi["ZIBR"]))+
+    ylab(label = "P-value (-log10)"),
+  nrow = 2)
+
