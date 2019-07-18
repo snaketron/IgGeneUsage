@@ -1,16 +1,16 @@
 language: r
-r: devel
+r: bioc-devel
 sudo: TRUE
 
 
-bioc_packages:
-  - BiocStyle
+repos:
+  CRAN: https://cloud.r-project.org
+  ropensci: http://packages.ropensci.org
 
-r_packages:
-  - rstan
 
 notifications:
   email: TRUE
+
 
 cache:
   - packages
@@ -23,9 +23,11 @@ r_check_args: '--ignore-vignettes'
 
 
 before_install:
+  - R -q -e 'install.packages(c("rstan"))'
   - mkdir -p ~/.R
   - echo "CXX14FLAGS=-O3 -mtune=native -march=native -Wno-unused-variable -Wno-unused-function  -Wno-macro-redefined" >> ~/.R/Makevars
   - echo "CXX14=g++ -std=c++1y -fPIC" >> ~/.R/Makevars
 
 after_success:
   - travis_wait 30 Rscript -e 'covr::codecov()'
+
