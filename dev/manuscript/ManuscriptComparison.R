@@ -61,31 +61,35 @@ stats$rank.u <- 1:nrow(stats)
 
 # T-test
 g1 <- ggplot()+
-  geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), linetype = "dashed", col = "darkgray")+
+  geom_hline(yintercept = c(-log10(0.05), -log10(0.01)),
+             linetype = "dashed", col = "darkgray")+
   geom_point(data = stats, aes(x = pmax, y = -log10(t.test.fdr.pvalue)),
-             shape = 21, fill = "red", col = "black", size = 1, stroke = 0.5)+
+             col = "red", size = 1)+
   geom_text_repel(data = stats[stats$rank.pmax <= 5 | stats$rank.t <= 5, ],
                   min.segment.length = 0.1, size = 2, segment.size = 0.25,
-                  aes(x = pmax, y = -log10(t.test.fdr.pvalue), label = gene_name_fig))+
+                  aes(x = pmax, y = -log10(t.test.fdr.pvalue),
+                      label = gene_name_fig))+
   xlim(0.5, 1)+
   ylab(label = "P-value [-log10]")+
   xlab(label = expression(pi))+
-  theme_bw(base_size = 9)+
+  theme_classic(base_size = 9)+
   theme(legend.position = "top")+
   scale_color_discrete(name = '')
 
 # U-test
 g2 <- ggplot()+
-  geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), linetype = "dashed", col = "darkgray")+
+  geom_hline(yintercept = c(-log10(0.05), -log10(0.01)),
+             linetype = "dashed", col = "darkgray")+
   geom_point(data = stats, aes(x = pmax, y = -log10(u.test.fdr.pvalue)),
-             shape = 21, fill = "red", col = "black", size = 1, stroke = 0.5)+
-  geom_text_repel(data = stats[stats$rank.pmax <= 5 | stats$rank.u <= 5, ],
+             col = "red", size = 1)+
+  geom_text_repel(data = stats[stats$rank.pmax <= 5 | stats$rank.t <= 5, ],
                   min.segment.length = 0.1, size = 2, segment.size = 0.25,
-                  aes(x = pmax, y = -log10(u.test.fdr.pvalue), label = gene_name_fig))+
+                  aes(x = pmax, y = -log10(u.test.fdr.pvalue),
+                      label = gene_name_fig))+
   xlim(0.5, 1)+
   ylab(label = "P-value [-log10]")+
   xlab(label = expression(pi))+
-  theme_bw(base_size = 9)+
+  theme_classic(base_size = 9)+
   theme(legend.position = "top")+
   scale_color_discrete(name = '')
 
@@ -93,11 +97,8 @@ g2 <- ggplot()+
 g <- arrangeGrob(g1, g2, ncol = 2)
 plot(g)
 
-ggsave(filename = "dev/manuscript/comparison.eps", plot = g,
-       device = "eps", width = 3.5, height = 3, dpi = 600)
-
-ggsave(filename = "dev/manuscript/comparison2.eps", plot = g,
-       device = "eps", width = 3.5, height = 2, dpi = 600)
+ggsave(filename = "dev/manuscript/comparison3.eps", plot = g,
+       device = "eps", width = 3.5, height = 1.5, dpi = 600)
 
 
 
