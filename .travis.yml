@@ -21,6 +21,9 @@ warnings_are_errors: FALSE
 r_build_args: '--no-build-vignettes'
 r_check_args: '--ignore-vignettes'
 
+script:
+  - R -q -e CMD build .
+  - R -q -e CMD check *tar.gz
 
 before_install:
   - R -q -e 'install.packages(c("rstan"))'
