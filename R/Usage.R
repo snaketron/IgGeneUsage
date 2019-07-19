@@ -36,8 +36,8 @@ diffUsage <- function(usage.data,
 
 
   # model
-  model <- rstan::stan_model(file = dev.model)
-  # model <- stanmodels$zibb_model
+  # model <- rstan::stan_model(file = dev.model)
+  model <- stanmodels$zibb_model
 
 
 
