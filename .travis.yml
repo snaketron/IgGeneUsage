@@ -41,12 +41,9 @@ before_install:
 
 
 after_script:
-  - tar -ztvf rstanarm_*.tar.gz
+  - tar -ztvf IgGeneUsage_*.tar.gz
 
 
 after_success:
   - travis_wait 40 Rscript -e 'covr::codecov()'
 
-
-after_failure:
-  - cat IgGeneUsage.Rcheck/00*
