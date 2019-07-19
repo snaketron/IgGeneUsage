@@ -41,9 +41,6 @@ before_install:
   - echo "CXX14=g++ -std=c++1y -fPIC" >> ~/.R/Makevars
 
 
-after_script:
-  - tar -ztvf IgGeneUsage_*.tar.gz
-
 
 after_success:
   - travis_wait 40 Rscript -e 'covr::codecov()'
