@@ -23,16 +23,15 @@ cache:
 
 warnings_are_errors: FALSE
 
+r_build_args: '--no-build-vignettes'
+r_check_args: '--ignore-vignettes'
+
 
 script:
   - |
     travis_wait 42 R CMD build .
     travis_wait 59 R CMD check IgGeneUsage*tar.gz
 
-
-script:
-  - R CMD build . >> log_build.log
-  - R CMD check IgGeneUsage_0.99.0.tar.gz >> log_build_check.log
 
 before_install:
   - R -q -e 'install.packages(c("rstan"))'
@@ -41,13 +40,13 @@ before_install:
   - echo "CXX14=g++ -std=c++1y -fPIC" >> ~/.R/Makevars
 
 
-
 after_script:
   - tar -ztvf rstanarm_*.tar.gz
 
+
 after_success:
-  - travis_wait 40 tar -C .. -xf $PKG_TARBALL
   - travis_wait 40 Rscript -e 'covr::codecov()'
+
 
 after_failure:
   - cat IgGeneUsage.Rcheck/00*
