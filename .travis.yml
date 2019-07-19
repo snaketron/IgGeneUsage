@@ -28,9 +28,7 @@ r_check_args: '--ignore-vignettes'
 
 
 script:
-  - |
-    travis_wait 42 R CMD build .
-    travis_wait 59 R CMD check IgGeneUsage*tar.gz
+  - travis_wait 40 R CMD build . >> build.log
 
 
 before_install:
