@@ -28,19 +28,21 @@ ppc$condition <- ifelse(test = ppc$condition == "hcv", yes = "HCV", no = "HD")
 ppc$family <- substr(x = ppc$gene_name_fig, start = 1, stop = 1)
 
 g <- ggplot(data = ppc)+
-  geom_sina(aes(x = condition, y = error.mean, fill = condition), shape = 21)+
+  facet_wrap(facets = ~sample_id, nrow = 5, scales = "free_x")+
+  geom_sina(aes(x = sample_id, y = error.pct.mean/100, fill = condition),
+            shape = 21, size = 1)+
   theme_bw(base_size = 9)+
-  ylab(label = "Error [%]")+
+  ylab(label = "Error")+
   xlab(label = "Condition")+
   scale_fill_manual(name = "condition", values = c("orange", "#a4c0ed"))+
   theme(legend.position = "none")
 g
 
 
-ggsave(filename = "dev/supplementary/PpcGroupError.pdf", plot = g,
-       device = "pdf", width = 4, height = 3, dpi = 600)
-ggsave(filename = "dev/supplementary/PpcGroupError.eps", plot = g,
-       device = "eps", width = 4, height = 3, dpi = 600)
+ggsave(filename = "dev/supplementary/PpcRepertoireError.pdf", plot = g,
+       device = "pdf", width = 5, height = 6, dpi = 600)
+ggsave(filename = "dev/supplementary/PpcRepertoireError.eps", plot = g,
+       device = "eps", width = 5, height = 6, dpi = 600)
 
 
 
@@ -53,9 +55,10 @@ ppc$condition <- ifelse(test = ppc$condition == "hcv", yes = "HCV", no = "HD")
 ppc$family <- substr(x = ppc$gene_name_fig, start = 1, stop = 1)
 
 g <- ggplot(data = ppc)+
-  geom_sina(aes(x = condition, y = error.mean, fill = condition), shape = 21)+
+  geom_sina(aes(x = condition, y = error.mean/100, fill = condition),
+            shape = 21, size = 1)+
   theme_bw(base_size = 9)+
-  ylab(label = "Error [%]")+
+  ylab(label = "Error")+
   xlab(label = "Condition")+
   scale_fill_manual(name = "condition", values = c("orange", "#a4c0ed"))+
   theme(legend.position = "none")
