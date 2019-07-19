@@ -5,6 +5,7 @@
 [![Build Status Travis](https://travis-ci.org/snaketron/IgGeneUsage.svg?branch=master)](https://travis-ci.org/snaketron/IgGeneUsage)
 [![codecov](https://codecov.io/github/snaketron/IgGeneUsage.svg?branch=master)](https://codecov.io/github/snaketron/IgGeneUsage)
 
+`install.packages("badger")`
 `r badge_bioc_download("clusterProfiler", "total", "blue", "total")`
 
 ## Overview
