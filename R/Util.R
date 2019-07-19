@@ -433,6 +433,9 @@ getPpc <- function(glm.ext,
       yhat.i.pct <- yhat.pct[,j,i]
       hdi.pct <- getHdi(vec = yhat.i.pct, hdi.level = hdi.level)
 
+      # errors
+      error.count <- abs(usage.data$Y[j,i]-yhat.i.count)
+      error.pct <- abs(usage.data$Y[j,i]/usage.data$N[i]*100-yhat.i.pct)
 
       row <- data.frame(sample_id = usage.data$sample_names[i],
                         gene_name = usage.data$gene_names[j],
@@ -446,7 +449,12 @@ getPpc <- function(glm.ext,
                         ppc.pct.mean = mean(yhat.i.pct),
                         ppc.pct.median = stats::median(yhat.i.pct),
                         ppc.pct.L = hdi.pct[1],
-                        ppc.pct.H = hdi.pct[2])
+                        ppc.pct.H = hdi.pct[2],
+                        error.count.mean = mean(error.count),
+                        error.count.median = stats::median(error.count),
+                        error.pct.mean = mean(error.pct),
+                        error.pct.median = stats::median(error.pct),
+                        stringsAsFactors = FALSE)
 
       ppc <- rbind(ppc, row)
     }
@@ -488,18 +496,24 @@ getGroupStats <- function(glm.ext,
     }
 
 
+    # errors
+    error.pct.1 <- abs(mean(real.pct.1)-yhat.gene[,1,x])
+    error.pct.2 <- abs(mean(real.pct.2)-yhat.gene[,2,x])
+
     return(rbind(data.frame(gene_name = gene.names[x],
+                            observed.mean = mean(real.pct.1),
                             ppc.mean = mean(yhat.gene[,1,x]),
                             ppc.L = hdi.1[1],
                             ppc.H = hdi.1[2],
-                            observed.mean = mean(real.pct.1),
+                            error.mean = mean(error.pct.1),
                             condition = conditions[1],
                             stringsAsFactors = FALSE),
                  data.frame(gene_name = gene.names[x],
+                            observed.mean = mean(real.pct.2),
                             ppc.mean = mean(yhat.gene[,2,x]),
                             ppc.L = hdi.2[1],
                             ppc.H = hdi.2[2],
-                            observed.mean = mean(real.pct.2),
+                            error.mean = mean(error.pct.2),
                             condition = conditions[2],
                             stringsAsFactors = FALSE)))
   }
