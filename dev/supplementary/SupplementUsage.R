@@ -25,7 +25,7 @@ viz$gene_usage_pct <- viz$gene_usage_count/viz$total*100
 viz$gene_name_fig <- gsub(pattern = "IGHV", replacement = '', x = viz$gene_name)
 viz$condition <- ifelse(test = viz$condition == "hcv", yes = "HCV", no = "HD")
 viz$family <- substr(x = viz$gene_name_fig, start = 1, stop = 1)
-
+viz$sample_nr <- as.numeric(as.factor(viz$sample_id))
 
 
 g <- ggplot(data = viz)+
@@ -51,19 +51,22 @@ ggsave(filename = "dev/supplementary/usage_pct.eps", plot = g,
 
 
 g <- ggplot(data = viz)+
-  facet_wrap(facets = ~gene_name, ncol = 3, scales = "free")+
-  geom_point(aes(x = sample_id, y = gene_usage_count, fill = condition,
+  facet_wrap(facets = ~gene_name, ncol = 5, scales = "free_y")+
+  geom_point(aes(x = sample_nr, y = gene_usage_count, fill = condition,
                  shape = condition), size = 1, stroke = 0.15)+
   theme_bw(base_size = 9)+
   ylab(label = "Usage [count]")+
   xlab(label = '')+
   scale_fill_manual(name = "condition", values = c("orange", "#a4c0ed"))+
   scale_shape_manual(name = "condition", values = c(21, 22))+
-  theme(legend.position = "top",
-        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
+  scale_x_continuous(breaks = c(1, 10, 20, 30), labels =  c(1, 10, 20, 30))+
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 3))+
+  theme(legend.position = "top")
 g
 
 
 
-ggsave(filename = "dev/supplementary/usage_count.eps", plot = g,
-       device = "eps", width = 9, height = 24, dpi = 600)
+ggsave(filename = "dev/supplementary/Usage_count.pdf", plot = g,
+       device = "pdf", width = 7, height = 9, dpi = 600)
+ggsave(filename = "dev/supplementary/Usage_count.eps", plot = g,
+       device = "eps", width = 7, height = 9, dpi = 600)

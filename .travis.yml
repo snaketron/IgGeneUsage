@@ -2,6 +2,11 @@ language: r
 r: bioc-devel
 sudo: TRUE
 
+os: linux
+#   - linux
+#  - windows
+#  - osx
+
 
 repos:
   CRAN: https://cloud.r-project.org
@@ -23,7 +28,7 @@ r_check_args: '--ignore-vignettes'
 
 script:
   - R CMD build . >> log_build.log
-  - R CMD check *tar.gz >> log_build_check.log
+  - R CMD check IgGeneUsage_0.99.0.tar.gz >> log_build_check.log
 
 before_install:
   - R -q -e 'install.packages(c("rstan"))'
