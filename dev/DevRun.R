@@ -12,23 +12,23 @@ source(file = "R/Usage.R")
 data("IGHV_HCV")
 
 
-# HIV
-data("IGHV_HIV")
-
-
-# Alakazam
-data("Ig")
-
-
-# Epitopes
-data("CDR3_Epitopes")
-
-
-
+# # HIV
+# data("IGHV_HIV")
+#
+#
+# # Alakazam
+# data("Ig")
+#
+#
+# # Epitopes
+# data("CDR3_Epitopes")
 
 
 
-d <- CDR3_Epitopes
+
+
+d <- IGHV_HCV
+# d <- CDR3_Epitopes
 
 
 
@@ -52,16 +52,16 @@ for(m in 1:length(stan.files)) {
                  max.treedepth = 13,
                  dev.model = stan.files[m])
 
-  out <- paste("R/dev/epitopes_", gsub(pattern = "\\.stan",
-                                       replacement = '\\.RData',
-                                       x = stan.files.short[m]), sep = '')
-  # out <- paste("R/dev/ighv_hiv_", gsub(pattern = "\\.stan",
+  # out <- paste("dev/epitopes_", gsub(pattern = "\\.stan",
   #                                      replacement = '\\.RData',
   #                                      x = stan.files.short[m]), sep = '')
-  # out <- paste("R/dev/ighv_hcv_", gsub(pattern = "\\.stan",
-  #                                       replacement = '\\.RData',
-  #                                       x = stan.files.short[m]), sep = '')
-  # out <- paste("R/dev/alakazam_", gsub(pattern = "\\.stan",
+  # out <- paste("dev/ighv_hiv_", gsub(pattern = "\\.stan",
+  #                                      replacement = '\\.RData',
+  #                                      x = stan.files.short[m]), sep = '')
+  out <- paste("dev/ighv_hcv_", gsub(pattern = "\\.stan",
+                                     replacement = '\\.RData',
+                                     x = stan.files.short[m]), sep = '')
+  # out <- paste("dev/alakazam_", gsub(pattern = "\\.stan",
   #                                      replacement = '\\.RData',
   #                                      x = stan.files.short[m]), sep = '')
   save(M, file = out)

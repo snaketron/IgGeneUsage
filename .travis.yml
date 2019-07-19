@@ -22,8 +22,8 @@ r_build_args: '--no-build-vignettes'
 r_check_args: '--ignore-vignettes'
 
 script:
-  - R CMD build . > "log_build.log"
-  - R CMD check *tar.gz > "log_build_check.log"
+  - R CMD build . >> "log_build.log"
+  - R CMD check *tar.gz >> "log_build_check.log"
 
 before_install:
   - R -q -e 'install.packages(c("rstan"))'
