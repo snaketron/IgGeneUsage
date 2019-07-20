@@ -1,5 +1,4 @@
 context("Tests input rules")
-# source("R/Util.R")
 
 
 test_that("Null input", {
