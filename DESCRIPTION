@@ -24,8 +24,15 @@ LinkingTo:
     RcppEigen (>= 0.3.3.5.0),
     rstan (>= 2.18.2),
     StanHeaders (>= 2.18.1-10)
-Suggests: BiocStyle, knitr, rmarkdown, testthat, ggplot2, ggforce, 
-    gridExtra, ggrepel
+Suggests: 
+    BiocStyle,
+    knitr,
+    rmarkdown,
+    testthat (>= 2.1.0),
+    ggplot2,
+    ggforce,
+    gridExtra,
+    ggrepel
 Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes

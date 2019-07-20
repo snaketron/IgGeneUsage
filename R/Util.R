@@ -351,14 +351,13 @@ checkInput <- function(usage.data,
     }
   }
 
-
-  if(is.null(usage.data) | missing(usage.data) |
-     is.null(mcmc.chains) | missing(mcmc.chains) |
-     is.null(mcmc.steps) | missing(mcmc.steps) |
-     is.null(mcmc.warmup) | missing(mcmc.warmup) |
-     is.null(mcmc.cores) | missing(mcmc.cores) |
-     is.null(hdi.level) | missing(hdi.level)) {
-    stop("arguments must be non-NULL/specified")
+  if(is.null(usage.data) || is.na(usage.data) || missing(usage.data) |
+     is.null(mcmc.chains) || is.na(mcmc.chains) || missing(mcmc.chains) |
+     is.null(mcmc.steps) || is.na(mcmc.steps) || missing(mcmc.steps) |
+     is.null(mcmc.warmup) || is.na(mcmc.warmup) || missing(mcmc.warmup) |
+     is.null(mcmc.cores) || is.na(mcmc.cores) || missing(mcmc.cores) |
+     is.null(hdi.level) || is.na(hdi.level) || missing(hdi.level)) {
+    stop("arguments must be specified")
   }
 
 
