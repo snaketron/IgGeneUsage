@@ -43,5 +43,5 @@ before_install:
 
 
 after_success:
-  - travis_wait 40 Rscript -e 'covr::codecov(token = token = "a7cb33b2-4c13-4650-8276-1105a6cd1695")'
+  - travis_wait 40 Rscript -e 'covr::codecov(token = "a7cb33b2-4c13-4650-8276-1105a6cd1695")'
 
