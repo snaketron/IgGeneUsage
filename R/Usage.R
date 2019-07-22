@@ -45,6 +45,14 @@ diffUsage <- function(usage.data,
 
 
   # stan sampling
+  # monitor subset of parameters -> memory concern
+  pars.relevant <- c("alpha_grand", "beta_grand",
+                     "alpha_sigma", "beta_sigma",
+                     "beta_gene_sigma", "phi",
+                     "tau", "beta", "alpha_gene",
+                     "beta_gene", "log_lik",
+                     "Yhat",  "Yhat_individual",
+                     "Yhat_gene")
   glm <- rstan::sampling(object = model,
                          data = usage.data,
                          chains = mcmc.chains,
@@ -52,10 +60,13 @@ diffUsage <- function(usage.data,
                          iter = mcmc.steps,
                          warmup = mcmc.warmup,
                          refresh = 500,
-                         control = control.list)
+                         control = control.list,
+                         pars = pars.relevant,
+                         algorithm = "NUTS")
 
 
   # get summary
+  cat("Computing summaries ... \n")
   glm.summary <- rstan::summary(object = glm, digits = 4,
                                 pars = "beta_gene",
                                 prob = c(0.5, (1-hdi.level)/2,
@@ -71,10 +82,12 @@ diffUsage <- function(usage.data,
 
 
   # extract data
+  cat("Posterior extraction ... \n")
   glm.ext <- rstan::extract(object = glm)
 
 
   # get pmax
+  cat("Computing probability of DGU ... \n")
   glm.summary$pmax <- getPmax(glm.ext = glm.ext)
 
 
@@ -83,6 +96,7 @@ diffUsage <- function(usage.data,
 
 
   # ppc
+  cat("Computing posterior predictions ... \n")
   ppc.data <- list(
     ppc.repertoire = getPpc(glm.ext = glm.ext,
                             usage.data = usage.data,
@@ -94,6 +108,7 @@ diffUsage <- function(usage.data,
 
 
   # frequentist tests, merge data
+  cat("Computing frequentist DGU ... \n")
   t.test.stats <- getTTestStats(usage.data = usage.data)
   u.test.stats <- getManUStats(usage.data = usage.data)
   test.stats <- merge(x = t.test.stats, y = u.test.stats, by = "gene_name")
