@@ -418,9 +418,9 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
 
 
 
-## Comparison with the Wilcoxon rank-sum test
+## Comparison with the Wilcoxon signed-rank test
 Another popular method for differential gene usage analysis is the nonparametric
-Wilcoxon rank-sum test (U-test). Its assumption of expecting equal shape is also 
+Wilcoxon signed-rank test (U-test). Its assumption of expecting equal shape is also 
 not met by our data. Here, we nevertheless compare our results against P-values 
 obtained with the U-test, which are automatically computed by IgGeneUsage.
 
@@ -705,7 +705,7 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
 
 
 
-## Comparison with the Wilcoxon rank-sum test (U-test)
+## Comparison with the Wilcoxon signed-rank test (U-test)
 Both the U-test and IgGeneUsage report no differential usage.
 
 ```{r, fig.height = 5, fig.wide = TRUE}
@@ -941,7 +941,7 @@ ggplot(data = stats)+
 
 
 
-## Comparison with the Wilcoxon rank-sum test (U-test)
+## Comparison with the Wilcoxon signed-rank test (U-test)
 The U-test finds differential usage in net chage group = 1. IgGeneUsage is
 more conservative, which makes sense when we take the sample sizes into
 consideration (see below).

@@ -2,9 +2,8 @@ language: r
 r: bioc-devel
 sudo: TRUE
 
-os: linux
+os: windows
 #   - linux
-#  - windows
 #  - osx
 
 

@@ -42,6 +42,4 @@ R/dev/*.RData
 
 *.rds
 
-
-dev/*.RData
-dev/supplementary/*.RData
+dev/
