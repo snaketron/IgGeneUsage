@@ -30,7 +30,7 @@ test_that("Null input", {
 
 
 
-test_that("usage.data", {
+test_that("usage.data check", {
 
   expect_error(checkUsageData(usage.data = character()),
                "usage.data must be data.frame")
@@ -131,3 +131,39 @@ test_that("usage.data", {
 })
 
 
+
+test_that("hdi.level check", {
+
+  expect_error(object = checkHdi(hdi.level = numeric(length = 1)),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
+  expect_error(checkHdi(hdi.level = double(length = 1)),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
+  expect_error(checkHdi(hdi.level = integer(length = 1)),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
+  expect_error(checkHdi(hdi.level = character(length = 1)),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
+  expect_error(checkHdi(hdi.level = logical(length = 1)),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
+
+
+  expect_error(checkHdi(hdi.level = numeric(length = 3)),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
+  expect_error(checkHdi(hdi.level = double(length = 3)),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
+  expect_error(checkHdi(hdi.level = integer(length = 3)),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
+  expect_error(checkHdi(hdi.level = character(length = 3)),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
+  expect_error(checkHdi(hdi.level = logical(length = 3)),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
+})

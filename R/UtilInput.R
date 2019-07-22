@@ -151,15 +151,15 @@ checkMcmcCores <- function(mcmc.cores) {
 # HDI input check
 checkHdi <- function(hdi.level) {
   if(length(hdi.level) != 1) {
-    stop("The HDI level must be in range (0, 1).")
+    stop('hdi.level must be a number in range (0, 1)')
   }
 
   if(is.numeric(hdi.level) == FALSE) {
-    stop("The HDI level must be in range (0, 1).")
+    stop('hdi.level must be a number in range (0, 1)')
   }
 
   if(hdi.level >= 1 | hdi.level <= 0) {
-    stop("The HDI level must be in range (0, 1).")
+    stop('hdi.level must be a number in range (0, 1)')
   }
 }
 
