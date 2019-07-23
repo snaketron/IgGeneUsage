@@ -34,45 +34,41 @@ rstan_options(auto_write = TRUE)
 
 
 # Introduction
-Decoding the properties of the immune repertoires is key in understanding the 
-response of adaptive immunity during health challenges such as infection or 
-disease. One important feature of all repertoires is their gene usage, i.e. the 
-frequency at which the various germline genes have been rearranged to generate 
-diverse B and T cell receptors (BCRs and TCRs).
-
-If we discover a disruption in gene usage under a specific biological condition 
-compared to a control, we can use this as hint about the potential link between 
-that condition (disease, virus, etc.) and the immune mechanisms that for BCR/TCR 
-generation and rearrangement, including subsequent selection pressures. 
-
-The first step is, however, to detect differential gene usage between two 
-biological conditions (e.g. healthy vs tumor). IgGeneUsage can help you do that.
+Decoding the properties of immune repertoires is key in understanding the 
+response of adaptive immunity to challenges such as viral infection. One 
+important property is biases in Ig gene usage between biological conditions 
+(e.g. healthy vs turmor). Yet, most analyses for differential gene usage are
+performed qualitatively, or with inadequate statistical methods. Here we 
+introduce IgGeneUsage, a computational tool for the analysis of differential 
+gene usage.
 
 
-# Usage
-All you need to carry out your analysis with IgGeneUsage is a data.frame with 
-the following 4 columns:
+# Input
+The input to IgGeneUsage is a data.frame object with usage frequencies for each 
+gene of a repertoire that belongs to a particular biological condition. The
+usage data.frame has the following 4 columns:
 
-  1. sample_id: character identifier of the sample/repertoire (e.g. Patient-1)
+  1. sample_id: character identifier of the repertoire (e.g. Patient-1)
   2. condition: character identifier of the condition to which each repertoire 
   belongs (e.g. healthy or tumor)
   3. gene_name: specific gene name (e.g. IGHV1-10 or family TRVB1)
   4. gene_usage_count: numeric (count) of rearrangements related to columns 1-3
 
-Important remarks: 
-
-  * the sum of the gene_usage_count (column 4) for a given sample (sample_id) 
-  should be equal to the total number of rearrangements in that repertoire. 
-  * the remaining parameters provided to IgGeneUsage help the MCMC sampler. The 
-  default settings should suffice for most analyses.
+The sum of all gene usage counts (column 4) in a given repertoire are equal to 
+the total gene usage in that repertoire. The remaining IgGeneUsage inputs help 
+the MCMC sampling.
 
 
 
 # Case Study I
-The IgGeneUsage package comes with built-in datasets of gene usage. In the first 
-case study we will evaluate disruptions in the IGHV-segment usage of class 
-switched (CS) memory B-cells between HCV+ (N = 22) and healthy individuals 
-(N = 7)[^1].
+IgGeneUsage has built-in datasets of gene usage. The dataset IGHV_HCV used in
+this case study contains publicly available data of human immunoglobulin heavy 
+chain VDJ rearrangements from a study that evaluates the effect of HCV on the 
+human BCR repertoire[^1]. The dataset consists of a population of class-switched 
+memory (CSM) B cells of 22 HCV-infected patients (HCV\textsuperscript{+}) and 7 
+healthy donors (HD). For the analysis of differential gene usage between 
+(HCV\textsuperscript{+}) and HD we use only one of the two replicates of the 
+CSM population. Gene usage data is available for 69 IGHV gene segments.
 
 [^1]: Tucci, Felicia A., et al. "Biased IGH VDJ gene repertoire and clonal 
 expansions in B cells of chronically hepatitis C virus–infected individuals." 
@@ -93,9 +89,10 @@ kable(x = head(IGHV_HCV), row.names = FALSE)
 
 
 ## Data visualization
-Lets look at the input data with ggplot2.
 
-```{r, fig.height = 6, fig.wide = TRUE}
+Lets look at the gene usage data with ggplot2.
+
+```{r, fig.height = 6, fig.width = 10}
 # we can compute the total number of rearrangements per sample
 total.usage <- aggregate(gene_usage_count~sample_id+condition, 
                          FUN = sum, data = IGHV_HCV)
@@ -104,8 +101,8 @@ total.usage$gene_usage_count <- NULL
 
 # merge it with the original data
 viz <- merge(x = IGHV_HCV, y = total.usage, 
-                  by = c("sample_id", "condition"), 
-                  all.x = TRUE)
+             by = c("sample_id", "condition"), 
+             all.x = TRUE)
 
 # compute %
 viz$gene_usage_pct <- viz$gene_usage_count/viz$total*100
@@ -118,16 +115,16 @@ ggplot(data = viz)+
   theme_bw(base_size = 12)+
   ylab(label = "Usage [%]")+
   xlab(label = '')+
-  theme(legend.position = "top",
-        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
+  theme(legend.position = "top")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
   scale_fill_manual(name = "Condition", values = c("orange", "#6666ff"))+
   scale_shape_manual(name = "Condition", values = c(21, 22))
 ```
 
 
-## Analysis with IgGeneUsage
+## Analysis of differential gene usage with IgGeneUsage
 
-This is the main method of IgGeneUsage for differential gene usage.
+This is the main method of IgGeneUsage.
 
 ```{r}
 M <- DGU(usage.data = IGHV_HCV,
@@ -137,14 +134,14 @@ M <- DGU(usage.data = IGHV_HCV,
          mcmc.cores = 4,
          hdi.level = 0.95,
          adapt.delta = 0.95,
-         max.treedepth = 13,
-         dev.model = "")
+         max.treedepth = 10)
 ```
 
 
 
 
 ## Model checking
+
 Do not blindly trust the model $\rightarrow$ check it extensively. 
 
   * Checklist of successful MCMC sampling[^2]:
@@ -169,7 +166,7 @@ rstan::check_hmc_diagnostics(M$glm)
 
   * Rhat and Neff
 
-```{r, fig.height = 3, fig.wide = TRUE}
+```{r, fig.height = 3, fig.width = 8}
 grid.arrange(rstan::stan_rhat(object = M$glm),
              rstan::stan_ess(object = M$glm),
              nrow = 1)
@@ -178,21 +175,21 @@ grid.arrange(rstan::stan_rhat(object = M$glm),
 
 ### Posterior predictive checks: repertoire-specific
 
-  * IgGeneUsage performs automatic posterior predictive check (PPC).
-  * In the following figure, we show the predictions (y-axis) of the model for 
-  the usage of each gene (shown as point) in a given repertoire. The predictions 
-  are compared against the observed data (x-axis).
-  * If the point lies on the the diagnoal $\rightarrow$ accurate prediction.
+IgGeneUsage has built-in checks for repertoire-specific posterior 
+prediction of gene usage. We show the predictions (y-axis) of the model,
+and compare them against the observed data (x-axis). If the point are near 
+the diagnoal $\rightarrow$ accurate prediction. Errors show 95% HDI of mean
+posterior prediction (shown in counts).
 
-```{r, fig.height = 12, fig.wide = TRUE}
+```{r, fig.height = 10, fig.width = 10}
 ggplot(data = M$ppc.data$ppc.repertoire)+
   facet_wrap(facets = ~sample_id, ncol = 6)+
-  geom_abline(intercept = 0, slope = 1)+
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
   geom_errorbar(aes(x = observed.count, y = ppc.count.mean, 
                     ymin = ppc.count.L, ymax = ppc.count.H), 
                 col = "darkgray")+
-  geom_point(aes(x = observed.count, y = ppc.count.mean, fill = condition), 
-             shape = 21, size = 2)+
+  geom_point(aes(x = observed.count, y = ppc.count.mean, 
+                 fill = condition), shape = 21, size = 2)+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
   scale_x_log10()+
@@ -204,21 +201,17 @@ ggplot(data = M$ppc.data$ppc.repertoire)+
 
 
 
-### Posterior predictive checks: overall differential usage
+### Posterior predictive checks: overall
 
-  * IgGeneUsage performs automatic posterior predictive check (PPC) at level of 
-  genes as well, i.e. , predicts the overal (pooled) usage of a gene within each 
-  condition.
-  * Legend:
-      * x-axis: mean usage of repertoires with given condition
-      * y-axis: predicted usage (with 95% HDI)
-  * If the point lies on the the diagnoal $\rightarrow$ accurate prediction.
-  * In the previous plot, the usage data and the predictions consist counts. In 
-  this plot, the usage is shown as % usage.
+IgGeneUsage has built-in checks for gene-specific posterior prediction 
+of gene usage within biological conditions. We show the predictions (y-axis) 
+of the model, and compare them against the observed mean usage (x-axis). If 
+the points are near the diagnoal $\rightarrow$ accurate prediction. Errors
+show 95% HDI of mean posterior prediction.
 
 ```{r, fig.height=5, fig.width = 6}
 ggplot(data = M$ppc.data$ppc.gene)+
-  geom_abline(intercept = 0, slope = 1)+
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
   geom_errorbar(aes(x = observed.mean, ymin = ppc.L, ymax = ppc.H), 
                 col = "darkgray")+
   geom_point(aes(x = observed.mean, y = ppc.mean, fill = condition), 
@@ -232,6 +225,7 @@ ggplot(data = M$ppc.data$ppc.gene)+
 
 
 ### Leave-one-out
+
   * with R-package loo
   
 ```{r}
@@ -240,11 +234,11 @@ rstan::loo(x = M$glm)
 
 
 ## Results
-This following figure shows the main results of IgGeneUsage $\rightarrow$ 
-probability of differential gene usage ($\pi$) shown on the y-axis for different 
-genes shown as points. The names of genes with $\pi > 0.95$ are shown.
+Next we show results of IgGeneUsage $\rightarrow$ probability of differential
+gene usage ($\pi$) shown on the y-axis for different genes (shown as points). 
+Names of genes with $\pi > 0.95$ are shown.
 
-```{r, fig.height=4, fig.wide = TRUE}
+```{r, fig.height=4, fig.width = 5}
 # format data
 stats <- M$glm.summary
 stats <- stats[order(abs(stats$effect_mean), decreasing = FALSE), ]
@@ -268,10 +262,10 @@ ggplot()+
 
 
 ### Promising hits
-Lets visualize the observed data of the genes with promising probability of 
+Lets visualize the observed data of the genes with high probability of 
 differential gene usage ($\pi > 0.95$). Here we show the gene usage in %.
 
-```{r, fig.height = 5, fig.wide = TRUE}
+```{r, fig.height = 5, fig.width = 8}
 promising.genes <- stats$gene_name[stats$pmax >= 0.95]
 
 ppc.gene <- M$ppc.data$ppc.gene
@@ -289,30 +283,30 @@ ggplot()+
                                              dodge.width = 0.8))+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
-  ylab(label = "Gene usage [%]")+
+  ylab(label = "Usage [%]")+
   xlab(label = '')
 ```
 
 
 ### Promising hits [count]
-Lets also visualize the gene usage in raw counts. Bubble size represents total
-usage in each repertoire.
+Lets also visualize the gene usage frequencies. Bubble size represents 
+total usage in each repertoire.
 
-```{r, fig.height = 5, fig.wide = TRUE}
+```{r, fig.height = 8, fig.width = 7}
 promising.genes <- stats$gene_name[stats$pmax >= 0.95]
 
 ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
-  geom_point(aes(x = gene_name, y = gene_usage_count, fill = condition, 
-                 size = total/10^3, alpha = 0.5), shape = 21,
-             position = position_jitterdodge(dodge.width = 0.75,
-                                             jitter.width = 0.2))+
+  facet_wrap(facets = ~gene_name, ncol = 1, scales = "free_y")+
+  geom_point(aes(x = sample_id, y = gene_usage_count, fill = condition, 
+                 size = total/10^3), shape = 21)+
   theme_bw(base_size = 12)+
   ylab(label = "Usage [count]")+
   xlab(label = '')+
   theme(legend.position = "top")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
   scale_fill_manual(name = "Condition", values = c("orange", "#6666ff"))+
   scale_size_continuous(name = "N (10^3)", range = c(2, 6))+
-  ylab(label = "Gene usage [count]")+
+  ylab(label = "Usage [count]")+
   xlab(label = '')+
   scale_y_log10()+
   annotation_logticks(base = 10, sides = "l")
@@ -322,33 +316,22 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
 
 
 
-## Comparison with the t-test
-Despite the fact that both assumptions made by the t-test are violated, i.e.
-(1) the assumption of normally distributed data and (2) homoscedasticity, the
-t-test if often used in the literature for differential gene usage analysis. 
-To use the t-test, researchers compute the proportions of gene usage. With that, 
-they discard data about the sample size. Here, we nevertheless compare our 
-results against P-values obtained with a t-test (with assumption of unequal 
-variance) to illustrate the pitfalls of such analyses. These statistics are 
-automatically computed by IgGeneUsage.
+## Comparison with the Welch's t-test (T-test)
+Despite the fact that the data is not normaly distributed, we performed the
+analysis of differential gene usage with the T-test. Prior to using the T-test, we must convert the usage frequencies into proportions. This is automatically
+done by IgGeneUsage.
 
-The following figure compares the probability ($\pi$) of differential gene
-usage obtained from the Bayesian analysis with P-values obtained from the 
-t-test. Legend:
+Next, we compare the probabilities of differential gene usage ($\pi$) with the 
+FDR corrected P-values (-log10 scale) from the T-test. Dashed lines show 
+significancelevels of 0.05 and 0.01. We observe few disagreements between the 
+two tests. Lets inspect them in more detail.
 
-  * y-axis: FDR-corrected P-value shown on -log10 scale. Dashed lines represent 
-  the significance levels of 0.05 and 0.01. 
-  * x-axis: $\pi$
-  
-We can notice a few deviations between the two analyses. Lets inspect the 
-corresponding genes more closely.
-
-```{r, fig.height=6, fig.wide = TRUE}
+```{r, fig.height=6, fig.width = 10}
 ggplot()+
   geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), 
              linetype = "dashed", col = "darkgray")+
-  geom_point(data = stats,
-             aes(x = pmax, y = -log10(t.test.fdr.pvalue)), size = 2)+
+  geom_point(data = stats, col = "red", size = 2,
+             aes(x = pmax, y = -log10(t.test.fdr.pvalue)))+
   geom_text_repel(data = stats[stats$pmax >= 0.8, ], 
                   aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
                       label = gene_name), size = 4, 
@@ -363,17 +346,14 @@ ggplot()+
 
 
 
-### Outliers: IGHV1-58 and IGHV3-72 [%]
-Based on the t-test results, the genes IGHV1-58 and IGHV3-72 are top candidates 
-having differential usage between the two conditions. Their $\pi$ estimates are
-however far from 1. 
+### Outliers: IGHV1-58 and IGHV3-72
+The two genes IGHV1-58 and IGHV3-72 are prioritized by the T-test. Their $\pi$ 
+estimates are however far from 1. Violation of T-test's assumptions is the most
+likely cause for the disagreement. Discarding information about the sample 
+size, and thus about uncertainty could be an alternative explanation. Lets
+visualize the data for IGHV1-58 and IGHV3-72.
 
-Why is that so? Based on the gene usage presented in unit %, we get misleading
-impression of differential gene usage. If we consider the sample size (see next
-figure), we see why basing the differential gene usage analysis based on the
-propoertions is innapropriate.
-
-```{r, fig.height = 6, fig.wide = TRUE}
+```{r, fig.height = 4, fig.width = 6}
 promising.genes <- c("IGHV1-58", "IGHV3-72")
 
 ppc.gene <- M$ppc.data$ppc.gene
@@ -398,54 +378,50 @@ ggplot()+
 
 ### Outliers: IGHV1-58 and IGHV3-72 [counts]
 
-```{r, fig.height = 6, fig.wide = TRUE}
+```{r, fig.height = 5, fig.width = 6}
 promising.genes <- c("IGHV1-58", "IGHV3-72")
 
 ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
-  geom_point(aes(x = gene_name, y = gene_usage_count, fill = condition, 
-                 size = total/10^3, alpha = 0.5), shape = 21,
-             position = position_jitterdodge(dodge.width = 0.75,
-                                             jitter.width = 0.2))+
+  facet_wrap(facets = ~gene_name, ncol = 1, scales = "free_y")+
+  geom_point(aes(x = sample_id, y = gene_usage_count, fill = condition, 
+                 size = total/10^3), shape = 21)+
   theme_bw(base_size = 12)+
+  ylab(label = "Usage [count]")+
+  xlab(label = '')+
   theme(legend.position = "top")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
   scale_fill_manual(name = "Condition", values = c("orange", "#6666ff"))+
   scale_size_continuous(name = "N (10^3)", range = c(2, 6))+
-  ylab(label = "Gene usage [count]")+
-  xlab(label = '')
+  ylab(label = "Usage [count]")+
+  xlab(label = '')+
+  scale_y_log10()+
+  annotation_logticks(base = 10, sides = "l")
 ```
 
 
 
 
+## Comparison with the Wilcoxon signed-rank test (U-test)
+The nonparametric U-test can also be used for the analysis of differential gene
+usage. It assumes data with equal shape in both groups (also not met by our 
+data). Prior to using the U-test, we must again convert the usage frequencies
+into proportions. This is automatically done by IgGeneUsage.
 
-## Comparison with the Wilcoxon signed-rank test
-Another popular method for differential gene usage analysis is the nonparametric
-Wilcoxon signed-rank test (U-test). Its assumption of expecting equal shape is also 
-not met by our data. Here, we nevertheless compare our results against P-values 
-obtained with the U-test, which are automatically computed by IgGeneUsage.
+Next, we compare the probabilities of differential gene usage ($\pi$) with the 
+FDR corrected P-values (-log10 scale) from the U-test. Dashed lines show 
+significancelevels of 0.05 and 0.01. The U-test finds no evidence of 
+differential gene usage.
 
-The following figure compares the probability ($\pi$) of differential gene
-usage obtained from the Bayesian analysis with P-values obtained from the 
-U-test. Legend:
-
-  * y-axis: FDR-corrected P-value shown on -log10 scale. Dashed lines represent 
-  the significance levels of 0.05 and 0.01. 
-  * x-axis: $\pi$
-  
-We observe similar results as in the case of the t-test. We can see that the 
-U-test is under-powered to detect statistically significant differences in gene 
-usage. This is both due to the low sample size and also due to the correction
-for multiple comparison.
-
-```{r, fig.height = 6, fig.wide = TRUE}
+```{r, fig.height=6, fig.width = 10}
 ggplot()+
   geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), 
              linetype = "dashed", col = "darkgray")+
-  geom_point(data = stats,
-             aes(x = pmax, y = -log10(u.test.fdr.pvalue)), size = 2)+
-  geom_text_repel(data = stats[stats$pmax >= 0.8, ],
+  geom_point(data = stats, col = "red", size = 2,
+             aes(x = pmax, y = -log10(u.test.fdr.pvalue)))+
+  geom_text_repel(data = stats[stats$pmax >= 0.8, ], 
                   aes(x = pmax, y = -log10(u.test.fdr.pvalue), 
-                      label=gene_name), size = 3, min.segment.length = 0.1)+
+                      label = gene_name), size = 4, 
+                  min.segment.length = 0.1)+
   xlim(0.5, 1)+
   ylab(label = "-log10 (P-value) from U-test [FDR corrected]")+
   xlab(label = expression(pi))+
@@ -459,17 +435,14 @@ ggplot()+
 
 # Case Study II
 
-A small example database subset from study evaluating vaccine-induced changes in
-B-cell populations [^3] publicly provided by R-package alakazam (version 0.2.11)
-. The IGHV family usage is reported in four B-cell populations (samples IgM, 
-IgD, IgG and IgA) across two timepoints (conditions = -1 hour and +7 days). In 
-this case study we investigate the overal effect of the vaccine on the IGHV 
-family usage.
+We use a small subset from a study evaluating vaccine-induced changes in B-cell
+populations [^3]. The data is publicly provided by R-package alakazam (version
+0.2.11). The IGHV family usage is reported in four B-cell populations (repertoires IgM, IgD, IgG and IgA) across two timepoints (conditions = -1 hour
+and +7 days). In this case study we investigate the overal effect of the vaccine
+on the IGHV family usage.
 
 [^3]: Laserson U and Vigneault F, et al. High-resolution antibody dynamics of
 vaccine-induced immune responses. Proc Natl Acad Sci USA. 2014 111:4928-33.
-
-
 
 ## Input data
 
@@ -487,7 +460,7 @@ kable(x = head(Ig), row.names = FALSE)
 ## Data visualization
 Lets look at the input data with ggplot2.
 
-```{r, fig.height = 6, fig.wide = TRUE}
+```{r, fig.height = 4, fig.width = 6}
 # we can compute the total number of rearrangements per sample
 total.usage <- aggregate(gene_usage_count~sample_id+condition,
                          FUN = sum, data = Ig)
@@ -506,8 +479,8 @@ viz$gene_usage_pct <- viz$gene_usage_count/viz$total*100
 ggplot(data = viz)+
   geom_point(aes(x = gene_name, y = gene_usage_pct, fill = condition, 
                  shape = condition), stroke = 0, size = 3,
-             position = position_jitterdodge(jitter.width = 0.15, 
-                                             dodge.width = 0.5))+
+             position = position_jitterdodge(jitter.width = 0.25, 
+                                             dodge.width = 0.75))+
   theme_bw(base_size = 12)+
   ylab(label = "Usage [%]")+
   xlab(label = '')+
@@ -529,8 +502,7 @@ M <- DGU(usage.data = Ig,
          mcmc.cores = 4,
          hdi.level = 0.95,
          adapt.delta = 0.95,
-         max.treedepth = 13,
-         dev.model = "")
+         max.treedepth = 13)
 ```
 
 
@@ -548,7 +520,7 @@ rstan::check_hmc_diagnostics(M$glm)
 
   * Rhat and Neff
 
-```{r, fig.height = 3, fig.wide = TRUE}
+```{r, fig.height = 3, fig.width = 8}
 grid.arrange(rstan::stan_rhat(object = M$glm),
              rstan::stan_ess(object = M$glm),
              nrow = 1)
@@ -557,10 +529,10 @@ grid.arrange(rstan::stan_rhat(object = M$glm),
 
 ### Posterior predictive checks: repertoire-specific
 
-```{r, fig.height = 6, fig.wide = TRUE}
+```{r, fig.height = 5, fig.width = 8}
 ggplot(data = M$ppc$ppc.repertoire)+
   facet_wrap(facets = ~sample_id, ncol = 4)+
-  geom_abline(intercept = 0, slope = 1)+
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
   geom_errorbar(aes(x = observed.count, y = ppc.count.mean, 
                     ymin = ppc.count.L, ymax = ppc.count.H), 
                 col = "darkgray")+
@@ -579,9 +551,9 @@ ggplot(data = M$ppc$ppc.repertoire)+
 
 ### Posterior predictive checks: overall differential usage
 
-```{r, fig.height = 6, fig.wide = TRUE}
+```{r, fig.height = 4, fig.width = 6}
 ggplot(data = M$ppc.data$ppc.gene)+
-  geom_abline(intercept = 0, slope = 1)+
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
   geom_errorbar(aes(x = observed.mean, ymin = ppc.L, ymax = ppc.H), 
                 col = "darkgray")+
   geom_point(aes(x = observed.mean, y = ppc.mean, fill = condition), 
@@ -603,20 +575,21 @@ rstan::loo(x = M$glm)
 
 
 ## Results
+Lets visualize the probability of differential gene usage ($\pi$) for different
+genes (shown as points). No genes witn $\pi > 0.95$ are shown.
 
-```{r, fig.height = 4, fig.wide = TRUE}
+```{r, fig.height = 4, fig.width = 5}
 # format data
 stats <- M$glm.summary
 stats <- stats[order(abs(stats$effect_mean), decreasing = FALSE), ]
-stats$gene_fac <- factor(x = stats$gene_name,
-                         levels = stats$gene_name)
+stats$gene_fac <- factor(x = stats$gene_name, levels = stats$gene_name)
 
 stats <- merge(x= stats, y = M$test.stats, by = "gene_name")
 
 ggplot()+
   geom_point(data = stats[stats$pmax < 0.95, ], aes(y = pmax, x = ''),
              position = position_jitter(width = 0.25, height = 0))+
-  # geom_text(data = stats[stats$pmax >= 0.95, ], size = 3, 
+  # geom_text(data = stats[stats$pmax >= 0.95, ], size = 4, 
   #                 aes(y = pmax, x = '', label = gene_name), 
   #                 position = position_jitter(width = 0.5, height = 0))+
   theme_bw(base_size = 12)+
@@ -630,25 +603,18 @@ ggplot()+
 
 
 
-## Comparison with the t-test
-We again compare compare the probability ($\pi$) of differential gene
-usage obtained from the Bayesian analysis, with P-values obtained from the 
-t-test. Legend:
+## Comparison with the Welch's t-test
 
-  * y-axis: FDR-corrected P-value shown on -log10 scale. Dashed lines represent 
-  the significance levels of 0.05 and 0.01. 
-  * x-axis: $\pi$
-  
-We can notice a few deviations between the two analyses. Lets inspect the 
-corresponding genes more closely.
-
-```{r, fig.height = 5, fig.wide = TRUE}
-ggplot(data = stats)+
+```{r, fig.height = 6, fig.width = 8}
+ggplot()+
   geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), 
              linetype = "dashed", col = "darkgray")+
-  geom_point(aes(x = pmax, y = -log10(t.test.fdr.pvalue)), size = 2)+
-  geom_text_repel(aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
-                label = gene_name), size = 3)+
+  geom_point(data = stats, col = "red", size = 2,
+             aes(x = pmax, y = -log10(t.test.fdr.pvalue)))+
+  geom_text_repel(data = stats[stats$pmax >= 0.8, ], 
+                  aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
+                      label = gene_name), size = 4, 
+                  min.segment.length = 0.1)+
   xlim(0.5, 1)+
   ylab(label = "-log10 (P-value) from t-test [FDR corrected]")+
   xlab(label = expression(pi))+
@@ -661,7 +627,7 @@ ggplot(data = stats)+
 
 ### Outliers: IGHV5
 
-```{r, fig.height = 5, fig.wide = TRUE}
+```{r, fig.height = 5, fig.width = 8}
 promising.genes <- unique(M$usage.data$gene_names)
 
 ppc.gene <- M$ppc.data$ppc.gene
@@ -685,18 +651,24 @@ ggplot()+
 
 ### Outliers: IGHV5 (original data)
 
-```{r, fig.height = 5, fig.wide = TRUE}
+```{r, fig.height = 4, fig.width = 7}
+promising.genes <- "IGHV5"
+
 ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
-  geom_point(aes(x = gene_name, y = gene_usage_count, 
-                 fill = condition, size = total/10^2, alpha = 0.5), shape = 21,
-             position = position_jitterdodge(dodge.width = 0.5,
-                                             jitter.width = 0.15))+
+  facet_wrap(facets = ~gene_name, ncol = 1, scales = "free_y")+
+  geom_point(aes(x = sample_id, y = gene_usage_count, fill = condition, 
+                 size = total/10^3), shape = 21)+
   theme_bw(base_size = 12)+
   ylab(label = "Usage [count]")+
   xlab(label = '')+
   theme(legend.position = "top")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
   scale_fill_manual(name = "Condition", values = c("orange", "#6666ff"))+
-  scale_size_continuous(name = "N (10^2)", range = c(2, 6))
+  scale_size_continuous(name = "N (10^3)", range = c(2, 6))+
+  ylab(label = "Usage [count]")+
+  xlab(label = '')+
+  scale_y_log10()+
+  annotation_logticks(base = 10, sides = "l")
 ```
 
 
@@ -704,15 +676,18 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
 
 
 ## Comparison with the Wilcoxon signed-rank test (U-test)
-Both the U-test and IgGeneUsage report no differential usage.
+No evidence of differential usage.
 
-```{r, fig.height = 5, fig.wide = TRUE}
-ggplot(data = stats)+
+```{r, fig.height = 6, fig.width = 8}
+ggplot()+
   geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), 
              linetype = "dashed", col = "darkgray")+
-  geom_point(aes(x = pmax, y = -log10(u.test.fdr.pvalue)), size = 2)+
-  geom_text_repel(aes(x = pmax, y = -log10(u.test.fdr.pvalue), 
-                label = gene_name), size = 4)+
+  geom_point(data = stats, col = "red", size = 2,
+             aes(x = pmax, y = -log10(u.test.fdr.pvalue)))+
+  geom_text_repel(data = stats[stats$pmax >= 0.8, ], 
+                  aes(x = pmax, y = -log10(u.test.fdr.pvalue), 
+                      label = gene_name), size = 4, 
+                  min.segment.length = 0.1)+
   xlim(0.5, 1)+
   ylab(label = "-log10 (P-value) from U-test [FDR corrected]")+
   xlab(label = expression(pi))+
@@ -728,7 +703,6 @@ ggplot(data = stats)+
 
 
 # Case Study III
-
 The main purpose of using IgGeneUsage is to detect differential gene usage. 
 However, the tool can in principle be be used to tackle all tasks that fall 
 under the scope of binomial regression. 
@@ -737,7 +711,7 @@ In the third case study we explain how to detect differential usage of net CDR3
 sequence charge between repertoires belonging to two biological conditions. For 
 this purpose we use CDR3 sequence data of human T-cells (TRB-chain) downloaded 
 from VDJdb [^4]. Each CDR3 sequence is annotated to a specific viral epitope. 
-Here we focus on the two viruses InfluenzaA and CMV, which represent our 
+Here we focus on the two viruses InfluenzaA and CMV which represent the two 
 biological conditions. We consider the different data sources (publications) 
 as different repertoires.
 
@@ -767,7 +741,7 @@ kable(x = head(CDR3_Epitopes), row.names = FALSE)
 
 Lets look at the input data with ggplot2.
 
-```{r, fig.height = 5, fig.wide = TRUE}
+```{r, fig.height = 4, fig.width = 7}
 # we can compute the total number of rearrangements per sample
 total.usage <- aggregate(gene_usage_count~sample_id+condition,
                          FUN = sum, data = CDR3_Epitopes)
@@ -784,7 +758,8 @@ viz$gene_usage_pct <- viz$gene_usage_count/viz$total*100
 
 # visualize
 ggplot(data = viz)+
-  geom_point(aes(x = as.numeric(gene_name), y = gene_usage_pct, fill = condition, 
+  geom_point(aes(x = as.numeric(gene_name), 
+                 y = gene_usage_pct, fill = condition, 
                  shape = condition), stroke = 0, size = 2, alpha = 0.5,
              position = position_jitterdodge(jitter.width = 0.15, 
                                              dodge.width = 0.5))+
@@ -802,8 +777,6 @@ ggplot(data = viz)+
 
 ## Analysis with IgGeneUsage
 
-This is the main method of IgGeneUsage for differential gene usage.
-
 ```{r}
 M <- DGU(usage.data = CDR3_Epitopes,
          mcmc.warmup = 500,
@@ -812,8 +785,7 @@ M <- DGU(usage.data = CDR3_Epitopes,
          mcmc.cores = 4,
          hdi.level = 0.95,
          adapt.delta = 0.95,
-         max.treedepth = 13,
-         dev.model = "")
+         max.treedepth = 13)
 ```
 
 
@@ -838,12 +810,13 @@ grid.arrange(rstan::stan_rhat(object = M$glm),
 ```
 
 
+
 ### Posterior predictive checks: repertoire-specific
 
-```{r, fig.height = 8, fig.wide = TRUE}
+```{r, fig.height = 8, fig.width = 8}
 ggplot(data = M$ppc.data$ppc.repertoire)+
-  facet_wrap(facets = ~sample_id, ncol = 5)+
-  geom_abline(intercept = 0, slope = 1)+
+  facet_wrap(facets = ~sample_id, ncol = 4)+
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
   geom_errorbar(aes(x = observed.count, y = ppc.count.mean, 
                     ymin = ppc.count.L, ymax = ppc.count.H), col = "darkgray")+
   geom_point(aes(x = observed.count, y = ppc.count.mean, fill = condition), 
@@ -858,12 +831,11 @@ ggplot(data = M$ppc.data$ppc.repertoire)+
 
 
 
-
 ### Posterior predictive checks: overall differential usage
 
-```{r, fig.height = 4, fig.wide = TRUE}
+```{r, fig.height = 5, fig.width = 6}
 ggplot(data = M$ppc.data$ppc.gene)+
-  geom_abline(intercept = 0, slope = 1)+
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
   geom_errorbar(aes(x = observed.mean, ymin = ppc.L, ymax = ppc.H), 
                 col = "darkgray")+
   geom_point(aes(x = observed.mean, y = ppc.mean, fill = condition), 
@@ -884,9 +856,10 @@ rstan::loo(x = M$glm)
 ```
 
 
+
 ## Results
 
-```{r, fig.height = 4, fig.wide = TRUE}
+```{r, fig.height = 4, fig.width = 6}
 stats <- M$glm.summary
 stats <- stats[order(abs(stats$effect_mean), decreasing = FALSE), ]
 stats$gene_fac <- factor(x = stats$gene_name, levels = stats$gene_name)
@@ -897,7 +870,7 @@ ggplot()+
              position = position_jitter(width = 0.25, height = 0))+
   geom_text(data = stats[stats$pmax >= 0.95, ], size = 5, 
                   aes(y = pmax, x = '', label = gene_name), 
-                  position = position_jitter(width = 0.5, height = 0))+
+                  position = position_jitter(width = 0.44, height = 0))+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
   xlab(label = "")+
@@ -907,21 +880,14 @@ ggplot()+
 
 
 
+## Comparison with the Welch's t-test
 
-
-## Comparison with the t-test
-We again compare $\pi$ estimates from IgGeneUsage with the P-values obtained 
-from the t-test. Legend:
-
-  * y-axis: FDR-corrected p-value shown on -log10 scale. Dashed lines represent 
-  the significance levels of 0.05 and 0.01. 
-  * x-axis: $\pi$
-
-```{r, fig.height=5, fig.wide = TRUE}
+```{r, fig.height=5, fig.width = 8}
 ggplot(data = stats)+
   geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), 
              linetype = "dashed", col = "darkgray")+
-  geom_point(aes(x = pmax, y = -log10(t.test.fdr.pvalue)), size = 1.5)+
+  geom_point(aes(x = pmax, y = -log10(t.test.fdr.pvalue)), 
+             size = 1.5, col = "red")+
   geom_text_repel(aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
                 label = gene_name), size = 5)+
   xlim(0.5, 1)+
@@ -934,21 +900,14 @@ ggplot(data = stats)+
 
 
 
-
-
-
-
-
 ## Comparison with the Wilcoxon signed-rank test (U-test)
-The U-test finds differential usage in net chage group = 1. IgGeneUsage is
-more conservative, which makes sense when we take the sample sizes into
-consideration (see below).
 
-```{r, fig.height=5, fig.wide = TRUE}
+```{r, fig.height=5, fig.width = 8}
 ggplot(data = stats)+
   geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), 
              linetype = "dashed", col = "darkgray")+
-  geom_point(aes(x = pmax, y = -log10(u.test.fdr.pvalue)), size = 1.5)+
+  geom_point(aes(x = pmax, y = -log10(u.test.fdr.pvalue)), 
+             size = 1.5, col = "red")+
   geom_text_repel(aes(x = pmax, y = -log10(u.test.fdr.pvalue), 
                 label = gene_name), size = 5)+
   xlim(0.5, 1)+
@@ -961,10 +920,9 @@ ggplot(data = stats)+
 
 
 
-
 ### Net charge usage [in %] groups and posterior means (and 95% HDI of mean) 
 
-```{r, fig.height=5, fig.wide = TRUE}
+```{r, fig.height=5, fig.width = 8}
 promising.genes <- M$usage.data$gene_names
 
 ppc.gene <- M$ppc.data$ppc.gene
@@ -986,29 +944,4 @@ ggplot()+
   theme(legend.position = "top")+
   ylab(label = "Gene usage [%]")+
   xlab(label = '')
-```
-
-
-### Net charge usage [counts] groups and posterior means (and 95% HDI of mean) 
-Lets also visualize the gene usage in raw counts. Bubble size represents total
-usage in each repertoire.
-
-```{r, fig.height = 5, fig.wide = TRUE}
-promising.genes <- M$usage.data$gene_names
-
-ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
-  geom_point(aes(x = gene_name, y = gene_usage_count, 
-                 fill = condition, size = total/10^3, alpha = 0.5), shape = 21,
-             position = position_jitterdodge(dodge.width = 0.75,
-                                             jitter.width = 0.2))+
-  theme_bw(base_size = 12)+
-  ylab(label = "Usage [count]")+
-  xlab(label = '')+
-  theme(legend.position = "top")+
-  scale_fill_manual(name = "Condition", values = c("orange", "#6666ff"))+
-  scale_size_continuous(name = "N (10^3)", range = c(2, 6))+
-  ylab(label = "Gene usage [count]")+
-  xlab(label = '')+
-  scale_y_log10()+
-  annotation_logticks(base = 10, sides = "l")
 ```
