@@ -77,156 +77,9 @@ getUsageData <- function(usage) {
 
 
 
-
-
-# Description:
-# Check the optional (...) parameters, if provided.
-checkDotParameters <- function(...) {
-
-  checkAdaptDelta <- function(adapt_delta) {
-    if(length(adapt_delta) != 1) {
-      stop("adapt_delta must be in range (0, 1) (default = 0.8).")
-    }
-
-    if(is.numeric(adapt_delta) == FALSE) {
-      stop("adapt_delta must be in range (0, 1)")
-    }
-
-    if(adapt_delta >= 1 | adapt_delta <= 0) {
-      stop("adapt_delta must be in range (0, 1)")
-    }
-  }
-
-  checkMaxTreedepth <- function(max_treedepth) {
-    if(length(max_treedepth) != 1) {
-      stop("max_treedepth is numeric parameter.")
-    }
-
-    if(is.numeric(max_treedepth) == FALSE) {
-      stop("max_treedepth is numeric parameter.")
-    }
-
-    if(max_treedepth < 5) {
-      stop("max_treedepth >= 5 (default = 10).")
-    }
-  }
-
-  checkCvFold <- function(cv.fold) {
-    if(length(cv.fold) != 1) {
-      stop("cv.fold must be in range (0, 1) (default = 0.66).")
-    }
-
-    if(is.numeric(cv.fold) == FALSE) {
-      stop("cv.fold must be in range (0, 1)")
-    }
-
-    if(cv.fold >= 1 | cv.fold <= 0) {
-      stop("cv.fold must be in range (0, 1)")
-    }
-  }
-
-  checkNtree <- function(ntree) {
-    if(length(ntree) != 1) {
-      stop("ntree is numeric parameter.")
-    }
-
-    if(is.numeric(ntree) == FALSE) {
-      stop("ntree is numeric parameter.")
-    }
-
-    if(ntree < 100) {
-      stop("ntree >= 100 (default = 500).")
-    }
-  }
-
-  checkVerbose <- function(verbose) {
-    if(length(verbose) != 1) {
-      stop("verbose is a logical parameter.")
-    }
-
-    if(is.logical(verbose) == FALSE) {
-      stop("verbose is a logical parameter.")
-    }
-  }
-
-  checkRefresh <- function(refresh) {
-    if(length(refresh) != 1) {
-      stop("refresh is numeric parameter.")
-    }
-
-    if(is.numeric(refresh) == FALSE) {
-      stop("refresh is a numeric parameter.")
-    }
-
-    return (refresh)
-  }
-
-  available.names <- c("adapt_delta",
-                       "max_treedepth",
-                       "ntree",
-                       "cv.fold",
-                       "refresh",
-                       "verbose")
-  default.values <- list(adapt_delta = 0.8,
-                         max_treedepth = 10,
-                         ntree = 1000,
-                         cv.fold = 0.66,
-                         refresh = 250,
-                         verbose = TRUE)
-
-  # get the optional parameters
-  dot.names <- names(list(...))
-
-  if(length(dot.names) > 0) {
-    if(any(dot.names %in% available.names) == FALSE) {
-      wrong.names <- dot.names[!dot.names %in% available.names]
-      stop(paste("Unknown optional parameter were provided! The following
-                 optional parameters are available:", dot.names, sep = ' '))
-    }
-  }
-
-  # check each parameter
-  for(p in dot.names) {
-    if(is.null(list(...)[[p]]) || is.na(list(...)[[p]])) {
-      stop(paste("optional parameter ", p, " can't be NULL", sep = ''))
-    }
-    if(p == "adapt_delta") {
-      checkAdaptDelta(adapt_delta = list(...)[[p]])
-      default.values[["adapt_delta"]] <- list(...)[[p]]
-    }
-    if(p == "max_treedepth") {
-      checkMaxTreedepth(max_treedepth = list(...)[[p]])
-      default.values[["max_treedepth"]] <- list(...)[[p]]
-    }
-    if(p == "cv.fold") {
-      checkCvFold(cv.fold = list(...)[[p]])
-      default.values[["cv.fold"]] <- list(...)[[p]]
-    }
-    if(p == "ntree") {
-      checkNtree(ntree = list(...)[[p]])
-      default.values[["ntree"]] <- list(...)[[p]]
-    }
-    if(p == "refresh") {
-      checkRefresh(refresh = list(...)[[p]])
-      default.values[["refresh"]] <- list(...)[[p]]
-    }
-    if(p == "verbose") {
-      checkVerbose(verbose = list(...)[[p]])
-      default.values[["verbose"]] <- list(...)[[p]]
-    }
-  }
-
-  return (default.values)
-}
-
-
-
-
-
 # Description:
 # Computes HDI given a vector, taken "Doing Bayesian Analysis"
-getHdi <- function(vec,
-                   hdi.level) {
+getHdi <- function(vec, hdi.level) {
   sortedPts <- sort(vec)
   ciIdxInc <- floor(hdi.level * length(sortedPts))
   nCIs = length(sortedPts) - ciIdxInc
@@ -390,7 +243,7 @@ getGroupStats <- function(glm.ext,
 # two sided t.test
 getTTestStats <- function(usage.data) {
   getTTest <- function(x, Ys, Xs, Ns) {
-    return(try(stats::t.test(Ys[x, ]/Ns*100~Xs)))
+    return(try(stats::t.test((Ys[x, ]/Ns*100)~Xs)))
   }
   getTTestSummary <- function(x) {
     if(inherits(x = x, what = 'try-error') == TRUE) {
@@ -432,7 +285,7 @@ getTTestStats <- function(usage.data) {
 getManUStats <- function(usage.data) {
 
   getMTest <- function(x, Ys, Xs, Ns) {
-    return(try(stats::wilcox.test(Ys[x, ]/Ns*100~Xs)))
+    return(try(stats::wilcox.test((Ys[x, ]/Ns*100)~Xs)))
   }
 
   getMSummary <- function(x) {
