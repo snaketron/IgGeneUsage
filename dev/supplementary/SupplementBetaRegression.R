@@ -92,3 +92,42 @@ ggsave(filename = "dev/supplementary/BetaRegression.eps", plot = g,
 
 
 
+
+
+
+# effect on individual betas
+s.zibb <- summary(Mzibb$glm, pars = "beta")$summary
+s.prop <- summary(glm.prop, pars = "beta_sample")$summary
+
+s.prop <- data.frame(s.prop)
+s.prop$zibb.M <- s.zibb[, 1]
+s.prop$zibb.L <- s.zibb[, 4]
+s.prop$zibb.H <- s.zibb[, 8]
+
+s.prop$beta.M <- s.prop$mean
+s.prop$beta.L <- s.prop$X2.5.
+s.prop$beta.H <- s.prop$X97.5.
+
+s.prop$g <- rep(x = 1:69, times = 29)
+s.prop$s <- rep(1:29, each  = 69)
+s.prop$N <- NA
+for(i in 1:29) {
+  s.prop$N[s.prop$s == i] <- Mzibb$usage.data$N[i]
+}
+
+ggplot(data = s.prop)+
+  facet_wrap(facets = ~s)+
+  geom_abline(slope = 1, intercept = 0, col = "darkgray", linetype = "dashed")+
+  geom_errorbar(aes(y = beta.M, x  = zibb.M, ymin = zibb.L, ymax = zibb.H), col = "gray")+
+  geom_errorbarh(aes(y = beta.M, x  = zibb.M, xmin = beta.L, xmax = beta.H), col = "gray")+
+  geom_point(aes(y = mean, x  = zibb.M, fill = N/10^3), shape = 21, stroke = 0.01)+
+  coord_cartesian(xlim = c(-2, 2), ylim = c(-2, 2))+
+  theme_bw()
+
+ggplot(data = s.prop)+
+  facet_wrap(facets = ~s)+
+  geom_density(aes(zibb.H-zibb.L), linetype = "solid")+
+  geom_density(aes(beta.H-beta.L), linetype = "solid", col = "darkgray")+
+  theme_bw()+
+  xlim(c(0, 2))+
+  ggtitle(label = "black = ZIBB, gray = Beta")
