@@ -126,19 +126,19 @@ ggplot(data = viz)+
 
 
 ## Analysis with IgGeneUsage
+
 This is the main method of IgGeneUsage for differential gene usage.
 
 ```{r}
-M <- diffUsage(usage.data = IGHV_HCV,
-               mcmc.warmup = 500,
-               mcmc.steps = 1500,
-               mcmc.chains = 4,
-               mcmc.cores = 4,
-               hdi.level = 0.95,
-               adapt.delta = 0.95,
-               max.treedepth = 13,
-               dev.model = "")
-# M <- get(load(file = "../dev/ighv_hcv_zibb_model.RData"))
+M <- DGU(usage.data = IGHV_HCV,
+         mcmc.warmup = 500,
+         mcmc.steps = 1500,
+         mcmc.chains = 4,
+         mcmc.cores = 4,
+         hdi.level = 0.95,
+         adapt.delta = 0.95,
+         max.treedepth = 13,
+         dev.model = "")
 ```
 
 
@@ -522,17 +522,15 @@ ggplot(data = viz)+
 This is the main method of IgGeneUsage for differential gene usage.
 
 ```{r}
-M <- diffUsage(usage.data = Ig,
-               mcmc.warmup = 500,
-               mcmc.steps = 1500,
-               mcmc.chains = 4,
-               mcmc.cores = 4,
-               hdi.level = 0.95,
-               adapt.delta = 0.95,
-               max.treedepth = 13,
-               dev.model = "")
-# save(M, file = "R/dev/saved_temp/M_IG.RData")
-# M <- get(load(file = "R/dev/alakazam_zibb_model.RData"))
+M <- DGU(usage.data = Ig,
+         mcmc.warmup = 500,
+         mcmc.steps = 1500,
+         mcmc.chains = 4,
+         mcmc.cores = 4,
+         hdi.level = 0.95,
+         adapt.delta = 0.95,
+         max.treedepth = 13,
+         dev.model = "")
 ```
 
 
@@ -804,18 +802,18 @@ ggplot(data = viz)+
 
 ## Analysis with IgGeneUsage
 
+This is the main method of IgGeneUsage for differential gene usage.
+
 ```{r}
-M <- diffUsage(usage.data = CDR3_Epitopes,
-               mcmc.warmup = 500,
-               mcmc.steps = 1500,
-               mcmc.chains = 4,
-               mcmc.cores = 4,
-               hdi.level = 0.95,
-               adapt.delta = 0.95,
-               max.treedepth = 13,
-               dev.model = "")
-# save(M, file = "R/dev/epitopes_zibb_model.RData")
-# M <- get(load(file = "R/dev/epitopes_zibb_model.RData"))
+M <- DGU(usage.data = CDR3_Epitopes,
+         mcmc.warmup = 500,
+         mcmc.steps = 1500,
+         mcmc.chains = 4,
+         mcmc.cores = 4,
+         hdi.level = 0.95,
+         adapt.delta = 0.95,
+         max.treedepth = 13,
+         dev.model = "")
 ```
 
 

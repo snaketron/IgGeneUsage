@@ -1,11 +1,12 @@
 
 # Description:
+# DGU = differential gene usage
 # usage.data: 4 columns
 #   * sample_id: char column
 #   * condition: char column
 #   * gene_name: char column
 #   * gene_usage_count: num column
-diffUsage <- function(usage.data,
+DGU <- function(usage.data,
                       mcmc.warmup = 500,
                       mcmc.steps = 1500,
                       mcmc.chains = 4,
