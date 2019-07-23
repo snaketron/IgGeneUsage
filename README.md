@@ -8,4 +8,8 @@
 [![codecov](https://codecov.io/gh/snaketron/IgGeneUsage/branch/master/graph/badge.svg)](https://codecov.io/github/snaketron/IgGeneUsage)
 
 ## Overview
-Differential gene usage analysis of immune repertoires. See package vignettes in folder vignette/ and doc/ for more information. 
+IgGeneUsage: computational tool for differential gene usage analysis in immune repertoires. 
+
+See package vignettes in folder vignette/ and doc/ for more information. 
+
+![alt text](readme_fig.png)
