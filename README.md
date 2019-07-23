@@ -12,4 +12,4 @@ IgGeneUsage: computational tool for differential gene usage analysis in immune r
 
 See package vignettes in folder vignette/ and doc/ for more information. 
 
-![alt text](readme_fig.png)
+![alt text](readme.png)

@@ -53,16 +53,12 @@ getUsageData <- function(usage) {
   # if ref.group ....
 
   # get X mapping
-  X.unique <- unique(X)
+  X.unique <- sort(x = unique(X), decreasing = TRUE)
   x1 <- which(X == X.unique[1])
   x2 <- which(X == X.unique[2])
   Xmap <- numeric(length = length(X))
   Xmap[x1] <- 1
   Xmap[x2] <- -1
-  # if(stats::runif(n = 1, min = 0, max = 1) >= 0.5) {
-  #   Xmap[x1] <- -1
-  #   Xmap[x2] <- 1
-  # }
 
 
   usage.data <- list(Y = Y,
