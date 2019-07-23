@@ -8,7 +8,7 @@
 
 
 \title{
-Differential gene usage of immune repertoires
+Differential gene usage in immune repertoires
 }
 
 
