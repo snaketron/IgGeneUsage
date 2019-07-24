@@ -8,7 +8,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "simo.kitanovski@uni-due.de")
 Description: Differential gene usage in immune repertoires such as B-cell and
-T-cell receptor repertoires with Bayesian hierarchical models.
+             T-cell receptor repertoires with Bayesian hierarchical models.
 License: GPL (>=3) + file LICENSE
 Depends: 
     methods,
