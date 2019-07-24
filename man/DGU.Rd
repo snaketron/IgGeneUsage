@@ -37,7 +37,7 @@ to a specific sample_id x condition x gene_name.}
 (default = 1,500), length of adaptive part of MCMC chains (default = 500).}
 \item{hdi.level}{Highest density interval (HDI) (default = 0.95).}
 \item{adapt.delta}{MCMC setting (default = 0.95).}
-\item{max_treedepth}{MCMC setting (default = 12).}
+\item{max.treedepth}{MCMC setting (default = 12).}
 }
 
 
@@ -96,5 +96,4 @@ M <- DGU(usage.data = Ig,
 }
 
 
-\seealso{
-}
+\seealso{Ig, IGHV_Epitopes, IGHV_HCV}
