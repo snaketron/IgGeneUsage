@@ -43,3 +43,12 @@ R/dev/*.RData
 *.rds
 
 dev/
+
+# Ignore individual files
+src/IgGeneUsage.so
+src/init.o
+
+src/stan_files/*.hpp
+src/stan_files/*.rds
+src/stan_files/*.o
+src/stan_files/*.cc
