@@ -12,12 +12,12 @@ checkInput <- function(usage.data,
                        hdi.level) {
 
 
-  if(missing(usage.data) | is.null(usage.data) | is.na(usage.data) |
-     missing(mcmc.chains) | is.null(mcmc.chains) | is.na(mcmc.chains) |
-     missing(mcmc.steps) | is.null(mcmc.steps) | is.na(mcmc.steps) |
-     missing(mcmc.warmup) | is.null(mcmc.warmup) | is.na(mcmc.warmup) |
-     missing(mcmc.cores) | is.null(mcmc.cores) | is.na(mcmc.cores) |
-     missing(hdi.level) | is.null(hdi.level) | is.na(hdi.level)) {
+  if(missing(usage.data) | is.null(usage.data) |
+     missing(mcmc.chains) | is.null(mcmc.chains) |
+     missing(mcmc.steps) | is.null(mcmc.steps) |
+     missing(mcmc.warmup) | is.null(mcmc.warmup) |
+     missing(mcmc.cores) | is.null(mcmc.cores) |
+     missing(hdi.level) | is.null(hdi.level)) {
     stop("arguments must be specified")
   }
 
