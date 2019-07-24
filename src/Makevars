@@ -12,9 +12,6 @@ clean:
 		rm -rf *.so *.o
 		rm -rf stan_files/*.cc
 		rm -rf stan_files/*.hpp
-		rm -rf IgGeneUsage.so
-		rm -rf zibb_model.so
-		rm -rf zibb_model.hpp
 
 %.cc: %.stan
 		"$(R_HOME)/bin$(R_ARCH_BIN)/Rscript" -e "source(file.path('..', 'tools', 'make_cc.R')); make_cc(commandArgs(TRUE))" $<
