@@ -106,6 +106,12 @@ viz <- merge(x = IGHV_HCV, y = total.usage,
 # compute %
 viz$gene_usage_pct <- viz$gene_usage_count/viz$total*100
 
+# for this example lets only consider the top 50 genes
+top <- aggregate(gene_usage_pct~gene_name, data = viz, FUN = mean)
+top <- top[order(top$gene_usage_pct, decreasing = TRUE), ]
+IGHV_HCV <- IGHV_HCV[IGHV_HCV$gene_name %in% top$gene_name[1:50], ]
+viz <- viz[viz$gene_name %in% top$gene_name[1:50], ]
+
 # visualize
 ggplot(data = viz)+
   geom_point(aes(x = gene_name, y = gene_usage_pct, 
@@ -129,12 +135,12 @@ This is the main method of IgGeneUsage.
 ```{r}
 # Differential gene usage (DGU)
 M <- DGU(usage.data = IGHV_HCV,
-         mcmc.warmup = 300,
+         mcmc.warmup = 500,
          mcmc.steps = 1000,
          mcmc.chains = 4,
          mcmc.cores = 4,
          hdi.level = 0.95,
-         adapt.delta = 0.90,
+         adapt.delta = 0.95,
          max.treedepth = 10)
 ```
 
@@ -334,7 +340,7 @@ ggplot()+
              linetype = "dashed", col = "darkgray")+
   geom_point(data = stats, col = "red", size = 2,
              aes(x = pmax, y = -log10(t.test.fdr.pvalue)))+
-  geom_text_repel(data = stats[stats$pmax >= 0.8, ], 
+  geom_text_repel(data = stats[stats$pmax >= 0.7, ], 
                   aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
                       label = gene_name), size = 4, 
                   min.segment.length = 0.1)+
