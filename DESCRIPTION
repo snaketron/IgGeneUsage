@@ -28,12 +28,11 @@ Suggests:
     BiocStyle,
     knitr,
     rmarkdown,
+    testthat (>= 2.1.0),
     ggplot2,
     ggforce,
     gridExtra,
-    ggrepel,
-    rstan,
-    testthat (>= 2.1.0)
+    ggrepel
 Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes

@@ -37,7 +37,7 @@ DGU <- function(usage.data,
 
 
   # model
-  model <- stanmodels$zibb_model
+  model <- stanmodels$zibb
 
 
   # setup control list
