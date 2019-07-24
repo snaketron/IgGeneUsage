@@ -4,7 +4,8 @@
 \title{IGHV gene usage in HCV+ and healthy individuals}
 
 \description{
-Publicly available dataset of IGHV segment usage in memory B-cells of 22 HCV+ individuals and 7 healthy donors.
+Publicly available dataset of IGHV segment usage in memory B-cells of 22 HCV+
+individuals and 7 healthy donors.
 }
 
 \usage{data("IGHV_HCV")}

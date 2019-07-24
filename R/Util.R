@@ -84,7 +84,7 @@ getHdi <- function(vec, hdi.level) {
   ciIdxInc <- floor(hdi.level * length(sortedPts))
   nCIs = length(sortedPts) - ciIdxInc
   ciWidth = rep(0 , nCIs)
-  for (i in 1:nCIs) {
+  for (i in seq_len(length.out = nCIs)) {
     ciWidth[i] = sortedPts[i + ciIdxInc] - sortedPts[i]
   }
   HDImin = sortedPts[which.min(ciWidth)]
@@ -107,7 +107,7 @@ getPmax <- function(glm.ext) {
   }
 
   beta.data <- glm.ext$beta_gene
-  pmax <- vapply(X = 1:ncol(beta.data),
+  pmax <- vapply(X = seq_len(length.out = ncol(beta.data)),
                  FUN = getPmaxGene,
                  beta.data = beta.data,
                  FUN.VALUE = numeric(length = 1))
@@ -127,8 +127,8 @@ getPpc <- function(glm.ext,
   yhat.count <- glm.ext$Yhat
 
   ppc <- c()
-  for(i in 1:usage.data$N_sample) {
-    for(j in 1:usage.data$N_gene) {
+  for(i in seq_len(length.out = usage.data$N_sample)) {
+    for(j in seq_len(length.out = usage.data$N_gene)) {
       yhat.i.count <- yhat.count[,j,i]
       hdi.count <- getHdi(vec = yhat.i.count, hdi.level = hdi.level)
 
@@ -225,7 +225,7 @@ getGroupStats <- function(glm.ext,
                  unique(usage.data$Xorg[usage.data$X == -1]))
 
 
-  group.ppc <- lapply(X = 1:usage.data$N_gene,
+  group.ppc <- lapply(X = seq_len(length.out = usage.data$N_gene),
                       FUN = getGroupYhat,
                       gene.names = usage.data$gene_names,
                       condition = conditions,
@@ -260,11 +260,12 @@ getTTestStats <- function(usage.data) {
                       stringsAsFactors = FALSE))
   }
 
-  tout <- suppressWarnings(expr = lapply(X = 1:usage.data$N_gene,
-                                         FUN = getTTest,
-                                         Ys = usage.data$Y,
-                                         Xs = usage.data$X,
-                                         Ns = usage.data$N))
+  tout <- suppressWarnings(
+    expr = lapply(X = seq_len(length.out = usage.data$N_gene),
+                  FUN = getTTest,
+                  Ys = usage.data$Y,
+                  Xs = usage.data$X,
+                  Ns = usage.data$N))
 
   tout.summary <- do.call(rbind, lapply(tout, getTTestSummary))
   tout.summary$gene_name <- usage.data$gene_names
@@ -299,11 +300,12 @@ getManUStats <- function(usage.data) {
                       stringsAsFactors = FALSE))
   }
 
-  mout <- suppressWarnings(expr = lapply(X = 1:usage.data$N_gene,
-                                         FUN = getMTest,
-                                         Ys = usage.data$Y,
-                                         Xs = usage.data$X,
-                                         Ns = usage.data$N))
+  mout <- suppressWarnings(
+    expr = lapply(X = seq_len(length.out = usage.data$N_gene),
+                  FUN = getMTest,
+                  Ys = usage.data$Y,
+                  Xs = usage.data$X,
+                  Ns = usage.data$N))
 
   mout.summary <- do.call(rbind, lapply(mout, getMSummary))
   mout.summary$gene_name <- usage.data$gene_names
