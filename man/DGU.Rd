@@ -81,7 +81,7 @@ t-test) and U-value (from the Wilcoxon signed-rank test).}
 \examples{
 # input data
 data(Ig)
-head(data(Ig))
+head(Ig)
 
 
 # run differential gene usage (DGU)

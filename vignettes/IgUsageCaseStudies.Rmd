@@ -135,8 +135,8 @@ This is the main method of IgGeneUsage.
 ```{r}
 # Differential gene usage (DGU)
 M <- DGU(usage.data = IGHV_HCV,
-         mcmc.warmup = 500,
-         mcmc.steps = 1000,
+         mcmc.warmup = 250,
+         mcmc.steps = 750,
          mcmc.chains = 4,
          mcmc.cores = 4,
          hdi.level = 0.95,
