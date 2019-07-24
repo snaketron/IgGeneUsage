@@ -52,23 +52,21 @@ usage data.frame has the following 4 columns:
   2. condition: character identifier of the condition to which each repertoire 
   belongs (e.g. healthy or tumor)
   3. gene_name: specific gene name (e.g. IGHV1-10 or family TRVB1)
-  4. gene_usage_count: numeric (count) of rearrangements related to columns 1-3
+  4. gene_usage_count: numeric (count) of usage related to columns 1-3
 
-The sum of all gene usage counts (column 4) in a given repertoire are equal to 
-the total gene usage in that repertoire. The remaining IgGeneUsage inputs help 
-the MCMC sampling.
+The sum of all gene usage counts (column 4) in a given repertoire is equal to 
+the total gene usage in that repertoire. 
 
 
 
 # Case Study I
-IgGeneUsage has built-in datasets of gene usage. The dataset IGHV_HCV used in
-this case study contains publicly available data of human immunoglobulin heavy 
-chain VDJ rearrangements from a study that evaluates the effect of HCV on the 
-human BCR repertoire[^1]. The dataset consists of a population of class-switched 
-memory (CSM) B cells of 22 HCV-infected patients (HCV\textsuperscript{+}) and 7 
-healthy donors (HD). For the analysis of differential gene usage between 
-(HCV\textsuperscript{+}) and HD we use only one of the two replicates of the 
-CSM population. Gene usage data is available for 69 IGHV gene segments.
+IgGeneUsage has built-in datasets from studies that evaluate biases in gene 
+usage. The dataset IGHV_HCV, used in this case study, contains publicly 
+available data of human immunoglobulin heavy chain VDJ rearrangements from a 
+study that evaluates the effect of HCV infection on the human BCR repertoire 
+[^1]. The dataset consists of a population of class-switched memory (CSM) B 
+cells of 22 HCV-infected patients (HCV+) and 7 healthy donors (HD). Gene usage 
+data is available for 69 IGHV gene segments.
 
 [^1]: Tucci, Felicia A., et al. "Biased IGH VDJ gene repertoire and clonal 
 expansions in B cells of chronically hepatitis C virus–infected individuals." 
@@ -83,7 +81,8 @@ data("IGHV_HCV", package = "IgGeneUsage")
 
 
 ```{r}
-kable(x = head(IGHV_HCV), row.names = FALSE)
+kable(x = head(IGHV_HCV), 
+      row.names = FALSE)
 ```
 
 
@@ -122,11 +121,13 @@ ggplot(data = viz)+
 ```
 
 
+
 ## Analysis of differential gene usage with IgGeneUsage
 
 This is the main method of IgGeneUsage.
 
 ```{r}
+# Differential gene usage (DGU)
 M <- DGU(usage.data = IGHV_HCV,
          mcmc.warmup = 500,
          mcmc.steps = 1500,
@@ -145,14 +146,12 @@ M <- DGU(usage.data = IGHV_HCV,
 Do not blindly trust the model $\rightarrow$ check it extensively. 
 
   * Checklist of successful MCMC sampling[^2]:
-      * no divergences
-      * no additional warnings from rstan
-      * Rhat < 1.05 (see object glm.stats)
-      * sufficiently high Neff
+      * no divergences, no excessive warnings from rstan, Rhat < 1.05, 
+      high Neff (see object glm.stats, glm and Stan documentation)
   * Checklist for valid model:
-      * posterior predictive check reveal decent predictive accuracy on 
-        already observed data (and also new data)
-      * leave-one-out analysis with R-package loo (most k values should be low)
+      * observed data can be replicated with the fitted model $\rightarrow$ 
+      posterior predictive checks
+      * leave-one-out analysis
 
 [^2]: https://mc-stan.org/misc/warnings.html
 
@@ -177,7 +176,7 @@ grid.arrange(rstan::stan_rhat(object = M$glm),
 
 IgGeneUsage has built-in checks for repertoire-specific posterior 
 prediction of gene usage. We show the predictions (y-axis) of the model,
-and compare them against the observed data (x-axis). If the point are near 
+and compare them against the observed data (x-axis). If the points are near 
 the diagnoal $\rightarrow$ accurate prediction. Errors show 95% HDI of mean
 posterior prediction (shown in counts).
 
@@ -225,8 +224,6 @@ ggplot(data = M$ppc.data$ppc.gene)+
 
 
 ### Leave-one-out
-
-  * with R-package loo
   
 ```{r}
 rstan::loo(x = M$glm)
@@ -234,6 +231,7 @@ rstan::loo(x = M$glm)
 
 
 ## Results
+
 Next we show results of IgGeneUsage $\rightarrow$ probability of differential
 gene usage ($\pi$) shown on the y-axis for different genes (shown as points). 
 Names of genes with $\pi > 0.95$ are shown.
@@ -262,6 +260,7 @@ ggplot()+
 
 
 ### Promising hits
+
 Lets visualize the observed data of the genes with high probability of 
 differential gene usage ($\pi > 0.95$). Here we show the gene usage in %.
 
@@ -289,8 +288,9 @@ ggplot()+
 
 
 ### Promising hits [count]
-Lets also visualize the gene usage frequencies. Bubble size represents 
-total usage in each repertoire.
+
+Lets also visualize the gene usage frequencies. Point size represents 
+total usage in repertoire.
 
 ```{r, fig.height = 8, fig.width = 7}
 promising.genes <- stats$gene_name[stats$pmax >= 0.95]
@@ -317,8 +317,10 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
 
 
 ## Comparison with the Welch's t-test (T-test)
+
 Despite the fact that the data is not normaly distributed, we performed the
-analysis of differential gene usage with the T-test. Prior to using the T-test, we must convert the usage frequencies into proportions. This is automatically
+analysis of differential gene usage with the T-test. Prior to using the T-test, 
+we must convert the usage frequencies into proportions. This is automatically
 done by IgGeneUsage.
 
 Next, we compare the probabilities of differential gene usage ($\pi$) with the 
@@ -347,9 +349,10 @@ ggplot()+
 
 
 ### Outliers: IGHV1-58 and IGHV3-72
+
 The two genes IGHV1-58 and IGHV3-72 are prioritized by the T-test. Their $\pi$ 
 estimates are however far from 1. Violation of T-test's assumptions is the most
-likely cause for the disagreement. Discarding information about the sample 
+probable cause for the disagreement. Discarding information about the sample 
 size, and thus about uncertainty could be an alternative explanation. Lets
 visualize the data for IGHV1-58 and IGHV3-72.
 
@@ -402,15 +405,15 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
 
 
 ## Comparison with the Wilcoxon signed-rank test (U-test)
+
 The nonparametric U-test can also be used for the analysis of differential gene
 usage. It assumes data with equal shape in both groups (also not met by our 
 data). Prior to using the U-test, we must again convert the usage frequencies
 into proportions. This is automatically done by IgGeneUsage.
 
-Next, we compare the probabilities of differential gene usage ($\pi$) with the 
-FDR corrected P-values (-log10 scale) from the U-test. Dashed lines show 
-significancelevels of 0.05 and 0.01. The U-test finds no evidence of 
-differential gene usage.
+Lets also compare $\pi$ with the FDR corrected P-values (-log10 scale) from 
+the U-test. Dashed lines show significancelevels of 0.05 and 0.01. The U-test 
+finds no evidence of differential gene usage.
 
 ```{r, fig.height=6, fig.width = 10}
 ggplot()+
@@ -435,11 +438,12 @@ ggplot()+
 
 # Case Study II
 
-We use a small subset from a study evaluating vaccine-induced changes in B-cell
-populations [^3]. The data is publicly provided by R-package alakazam (version
-0.2.11). The IGHV family usage is reported in four B-cell populations (repertoires IgM, IgD, IgG and IgA) across two timepoints (conditions = -1 hour
-and +7 days). In this case study we investigate the overal effect of the vaccine
-on the IGHV family usage.
+For our second case study we use a dataset from a study evaluating 
+vaccine-induced changes in B-cell populations [^3]. The data is publicly 
+provided via the R-package alakazam (version 0.2.11). The IGHV family usage is
+reported in four B-cell populations (repertoires IgM, IgD, IgG and IgA) across 
+two timepoints (conditions = -1 hour vs. +7 days). In this case study we 
+investigate the overal effect of the vaccine on the IGHV family usage.
 
 [^3]: Laserson U and Vigneault F, et al. High-resolution antibody dynamics of
 vaccine-induced immune responses. Proc Natl Acad Sci USA. 2014 111:4928-33.
@@ -447,18 +451,20 @@ vaccine-induced immune responses. Proc Natl Acad Sci USA. 2014 111:4928-33.
 ## Input data
 
 ```{r}
-data(Ig)
+data(Ig, package = "IgGeneUsage")
 ```
 
 
 ```{r}
-kable(x = head(Ig), row.names = FALSE)
+kable(x = head(Ig), 
+      row.names = FALSE)
 ```
 
 
 
 ## Data visualization
-Lets look at the input data with ggplot2.
+
+Lets look at the gene usage data with ggplot2.
 
 ```{r, fig.height = 4, fig.width = 6}
 # we can compute the total number of rearrangements per sample
@@ -491,8 +497,6 @@ ggplot(data = viz)+
 
 
 ## Analysis with IgGeneUsage
-
-This is the main method of IgGeneUsage for differential gene usage.
 
 ```{r}
 M <- DGU(usage.data = Ig,
@@ -549,7 +553,7 @@ ggplot(data = M$ppc$ppc.repertoire)+
 
 
 
-### Posterior predictive checks: overall differential usage
+### Posterior predictive checks: overall
 
 ```{r, fig.height = 4, fig.width = 6}
 ggplot(data = M$ppc.data$ppc.gene)+
@@ -566,8 +570,7 @@ ggplot(data = M$ppc.data$ppc.gene)+
 
 
 
-### Leave-one-out comparison
-  * with R-package loo
+### Leave-one-out
 
 ```{r}
 rstan::loo(x = M$glm)
@@ -575,8 +578,9 @@ rstan::loo(x = M$glm)
 
 
 ## Results
+
 Lets visualize the probability of differential gene usage ($\pi$) for different
-genes (shown as points). No genes witn $\pi > 0.95$ are shown.
+genes (shown as points). There are no witn $\pi > 0.95$.
 
 ```{r, fig.height = 4, fig.width = 5}
 # format data
@@ -603,7 +607,7 @@ ggplot()+
 
 
 
-## Comparison with the Welch's t-test
+## Comparison with the Welch's t-test (T-test)
 
 ```{r, fig.height = 6, fig.width = 8}
 ggplot()+
@@ -625,7 +629,7 @@ ggplot()+
 
 
 
-### Outliers: IGHV5
+### Outlier: IGHV5
 
 ```{r, fig.height = 5, fig.width = 8}
 promising.genes <- unique(M$usage.data$gene_names)
@@ -649,7 +653,7 @@ ggplot()+
 ```
 
 
-### Outliers: IGHV5 (original data)
+### Outliers IGHV5 (original data)
 
 ```{r, fig.height = 4, fig.width = 7}
 promising.genes <- "IGHV5"
@@ -676,7 +680,7 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
 
 
 ## Comparison with the Wilcoxon signed-rank test (U-test)
-No evidence of differential usage.
+No evidence of differential usage (at FDR level 0.05)
 
 ```{r, fig.height = 6, fig.width = 8}
 ggplot()+
@@ -703,21 +707,20 @@ ggplot()+
 
 
 # Case Study III
-The main purpose of using IgGeneUsage is to detect differential gene usage. 
-However, the tool can in principle be be used to tackle all tasks that fall 
-under the scope of binomial regression. 
 
-In the third case study we explain how to detect differential usage of net CDR3 
+The main purpose of using IgGeneUsage is to discover differential gene usage. 
+However, the tool can be be used for all differential count analyses. In the 
+third case study we explain how to detect differential usage of net CDR3 
 sequence charge between repertoires belonging to two biological conditions. For 
 this purpose we use CDR3 sequence data of human T-cells (TRB-chain) downloaded 
-from VDJdb [^4]. Each CDR3 sequence is annotated to a specific viral epitope. 
-Here we focus on the two viruses InfluenzaA and CMV which represent the two 
-biological conditions. We consider the different data sources (publications) 
-as different repertoires.
+from VDJdb [^4]. 
 
-To compute the net sequence charge, we consider the amino acids K, R and H as 
-+1 charged, while D and E as -1 charged. Thus, we computed the net charge of a 
-CDR3 sequence by adding up the individual residue charges. 
+Each CDR3 sequence is annotated to a specific viral epitope. Here we focus 
+on the two viruses InfluenzaA and CMV which represent the two biological 
+conditions. We consider the different data sources (publications) as different 
+repertoires. To compute the net sequence charge, we consider the amino acids 
+K, R and H as +1 charged, while D and E as -1 charged. Thus, we computed the 
+net charge of a CDR3 sequence by adding up the individual residue charges. 
 
 [^4]: https://vdjdb.cdr3.net/
 
@@ -725,13 +728,14 @@ CDR3 sequence by adding up the individual residue charges.
 ## Input data
 
 ```{r}
-data(CDR3_Epitopes)
+data(CDR3_Epitopes, package = "IgGeneUsage")
 ```
 
 
 
 ```{r}
-kable(x = head(CDR3_Epitopes), row.names = FALSE)
+kable(x = head(CDR3_Epitopes), 
+      row.names = FALSE)
 ```
 
 
@@ -849,7 +853,6 @@ ggplot(data = M$ppc.data$ppc.gene)+
 
 
 ### Leave-one-out
-  * with R-package loo
 
 ```{r}
 rstan::loo(x = M$glm)
