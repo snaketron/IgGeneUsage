@@ -231,11 +231,6 @@ ggplot(data = M$ppc.data$ppc.gene)+
 
 
 
-### Leave-one-out
-  
-```{r}
-rstan::loo(x = M$glm)
-```
 
 
 ## Results
@@ -578,12 +573,6 @@ ggplot(data = M$ppc.data$ppc.gene)+
 
 
 
-### Leave-one-out
-
-```{r}
-rstan::loo(x = M$glm)
-```
-
 
 ## Results
 
@@ -859,12 +848,6 @@ ggplot(data = M$ppc.data$ppc.gene)+
 ```
 
 
-
-### Leave-one-out
-
-```{r}
-rstan::loo(x = M$glm)
-```
 
 
 
