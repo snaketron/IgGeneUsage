@@ -37,7 +37,12 @@ DGU <- function(usage.data,
 
 
   # model
-  model <- stanmodels$zibb
+  cat("Compiling model ... \n")
+  rstan::rstan_options(auto_write = TRUE)
+  model.file <- system.file("extdata", "zibb.stan",
+                            package = "IgGeneUsage")
+  model <- rstan::stan_model(file = model.file,
+                             auto_write = TRUE)
 
 
   # setup control list
