@@ -48,8 +48,8 @@ test_that("usage.data check", {
                "usage.data must be data.frame")
 
   expect_error(checkUsageData(usage.data = data.frame()),
-               "usage.data must contain the following columns:
-               'sample_id', 'condition', 'gene_name' and 'gene_usage_count'")
+               "usage.data must contain the following columns: 'sample_id',
+         'condition', 'gene_name' and 'gene_usage_count'")
 
   expect_error(checkUsageData(
     usage.data = data.frame(a = NA, b = NA, c = NA, d = NA)),
