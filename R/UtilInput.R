@@ -23,8 +23,8 @@ checkInput <- function(usage.data,
 
 
   checkUsageData(usage.data = usage.data)
-  checkMcmcIterations(mcmc.steps = mcmc.steps)
-  checkMcmcWarmup(mcmc.warmup = mcmc.warmup)
+  checkMcmcSteps(mcmc.steps = mcmc.steps,
+                 mcmc.warmup = mcmc.warmup)
   checkMcmcChains(mcmc.chains = mcmc.chains)
   checkMcmcCores(mcmc.cores = mcmc.cores)
   checkHdi(hdi.level = hdi.level)
@@ -77,36 +77,30 @@ checkUsageData <- function(usage.data) {
 
 # Description:
 # MCMC Iterations check
-checkMcmcIterations <- function(mcmc.steps) {
-  # CHECK: mcmc.steps
-  if(length(mcmc.steps) != 1) {
-    stop("the mcmc.steps must be a number > 0 (default = 10000).")
+checkMcmcSteps <- function(mcmc.steps,
+                           mcmc.warmup) {
+
+  if(length(mcmc.steps) != 1 || length(mcmc.warmup) != 1) {
+    stop("mcmc.steps >= 500 & mcmc.warmup >= 100.")
   }
 
-  if(!is.numeric(mcmc.steps)) {
-    stop("mcmc.steps must be a numeric argument (default = 10000).")
+  if(!is.integer(mcmc.steps) || !is.integer(mcmc.warmup)) {
+    stop("mcmc.steps >= 500 & mcmc.warmup >= 100.")
   }
 
-  if(mcmc.steps <= 0) {
-    stop("mcmc.steps must be larger than 0 (default = 10000).")
-  }
-}
 
-
-# Description:
-# MCMC Warmup check
-checkMcmcWarmup <- function(mcmc.warmup) {
-  # CHECK: mcmc.warmup
-  if(length(mcmc.warmup) != 1) {
-    stop("the mcmc.warmup must be a number > 0 (default = 5000).")
+  if(is.finite(x = mcmc.steps)==FALSE || is.finite(x = mcmc.warmup)==FALSE) {
+    stop("mcmc.steps >= 500 & mcmc.warmup >= 100.")
   }
 
-  if(!is.numeric(mcmc.warmup)) {
-    stop("mcmc.warmup must be a numeric argument (default = 5000).")
+
+  if(mcmc.steps < 500 | mcmc.warmup < 100) {
+    stop("mcmc.steps >= 500 & mcmc.warmup >= 100.")
   }
 
-  if(mcmc.warmup <= 0) {
-    stop("mcmc.warmup must be larger than 0 (default = 5000).")
+
+  if(mcmc.steps <= mcmc.warmup) {
+    stop("mcmc.steps > mcmc.warmup")
   }
 }
 
@@ -116,15 +110,19 @@ checkMcmcWarmup <- function(mcmc.warmup) {
 checkMcmcChains <- function(mcmc.chains) {
   # CHECK: mcmc.chains
   if(length(mcmc.chains) != 1) {
-    stop("mcmc.chains must be a positive integer > 0 (default = 1).")
+    stop("mcmc.chains must be a positive integer > 0")
   }
 
-  if(!is.numeric(mcmc.chains)) {
-    stop("mcmc.chains must be a positive integer > 0 (default = 1).")
+  if(!is.integer(mcmc.chains)) {
+    stop("mcmc.chains must be a positive integer > 0")
   }
 
   if(mcmc.chains <= 0) {
-    stop("mcmc.chains must be a positive integer > 0 (default = 1).")
+    stop("mcmc.chains must be a positive integer > 0")
+  }
+
+  if(is.finite(x = mcmc.chains) == FALSE) {
+    stop("mcmc.chains must be a positive integer > 0")
   }
 }
 
@@ -132,17 +130,20 @@ checkMcmcChains <- function(mcmc.chains) {
 # Description:
 # MCMC Cores number check
 checkMcmcCores <- function(mcmc.cores) {
-  # CHECK: cores
   if(length(mcmc.cores) != 1) {
-    stop("mcmc.cores is numeric parameter.")
+    stop("mcmc.cores must be a positive integer > 0")
   }
 
-  if(is.numeric(mcmc.cores) == FALSE) {
-    stop("mcmc.cores is numeric parameter.")
+  if(is.integer(mcmc.cores) == FALSE) {
+    stop("mcmc.cores must be a positive integer > 0")
   }
 
   if(mcmc.cores <= 0) {
-    stop("mcmc.cores is numeric parameter >=1.")
+    stop("mcmc.cores must be a positive integer > 0")
+  }
+
+  if(is.finite(x = mcmc.cores) == FALSE) {
+    stop("mcmc.cores must be a positive integer > 0")
   }
 }
 

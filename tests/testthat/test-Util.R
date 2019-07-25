@@ -13,15 +13,6 @@ test_that("Null input", {
                "arguments must be specified")
 
 
-  # expect_error(checkInput(usage.data = NA,
-  #                         mcmc.chains = NA,
-  #                         mcmc.cores = NA,
-  #                         mcmc.steps = NA,
-  #                         mcmc.warmup = NA,
-  #                         hdi.level = NA),
-  #              "arguments must be specified")
-
-
   expect_error(checkInput(),
                "arguments must be specified")
 
@@ -31,6 +22,15 @@ test_that("Null input", {
 
 
 test_that("usage.data check", {
+
+  expect_error(checkUsageData(usage.data = NA),
+               "usage.data must be data.frame")
+
+  expect_error(checkUsageData(usage.data = NULL),
+               "usage.data must be data.frame")
+
+  expect_error(checkUsageData(usage.data = Inf),
+               "usage.data must be data.frame")
 
   expect_error(checkUsageData(usage.data = character()),
                "usage.data must be data.frame")
@@ -48,11 +48,11 @@ test_that("usage.data check", {
                "usage.data must be data.frame")
 
   expect_error(checkUsageData(usage.data = data.frame()),
-               "usage.data must contain the following columns: 'sample_id',
-         'condition', 'gene_name' and 'gene_usage_count'")
+               "usage.data must contain the following columns:
+               'sample_id', 'condition', 'gene_name' and 'gene_usage_count'")
 
-  expect_error(checkUsageData(usage.data = data.frame(
-    a = NA, b = NA, c = NA, d = NA)),
+  expect_error(checkUsageData(
+    usage.data = data.frame(a = NA, b = NA, c = NA, d = NA)),
     "usage.data must contain the following columns: 'sample_id',
          'condition', 'gene_name' and 'gene_usage_count'")
 
@@ -134,6 +134,15 @@ test_that("usage.data check", {
 
 test_that("hdi.level check", {
 
+  expect_error(object = checkHdi(hdi.level = NA),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
+  expect_error(object = checkHdi(hdi.level = NULL),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
+  expect_error(object = checkHdi(hdi.level = Inf),
+               regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
+
   expect_error(object = checkHdi(hdi.level = numeric(length = 1)),
                regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
 
@@ -167,3 +176,157 @@ test_that("hdi.level check", {
                regexp = "hdi\\.level must be a number in range \\(0, 1\\)")
 
 })
+
+
+
+test_that("mcmc.chains check", {
+
+  expect_error(object = checkMcmcChains(mcmc.chains = NA),
+               regexp = "mcmc.chains must be a positive integer > 0")
+
+  expect_error(object = checkMcmcChains(mcmc.chains = NULL),
+               regexp = "mcmc.chains must be a positive integer > 0")
+
+  expect_error(object = checkMcmcChains(mcmc.chains = Inf),
+               regexp = "mcmc.chains must be a positive integer > 0")
+
+  expect_error(object = checkMcmcChains(mcmc.chains = numeric(length = 1)),
+               regexp = "mcmc.chains must be a positive integer > 0")
+
+  expect_error(object = checkMcmcChains(mcmc.chains = double(length = 1)),
+               regexp = "mcmc.chains must be a positive integer > 0")
+
+  expect_error(object = checkMcmcChains(mcmc.chains = integer(length = 1)),
+               regexp = "mcmc.chains must be a positive integer > 0")
+
+  expect_error(object = checkMcmcChains(mcmc.chains = character(length = 1)),
+               regexp = "mcmc.chains must be a positive integer > 0")
+
+  expect_error(object = checkMcmcChains(mcmc.chains = logical(length = 1)),
+               regexp = "mcmc.chains must be a positive integer > 0")
+
+  expect_silent(object = checkMcmcChains(mcmc.chains = as.integer(x = 2)))
+
+  # len > 1
+  expect_error(object = checkMcmcChains(mcmc.chains = numeric(length = 3)),
+               regexp = "mcmc.chains must be a positive integer > 0")
+
+  expect_error(object = checkMcmcChains(mcmc.chains = double(length = 3)),
+               regexp = "mcmc.chains must be a positive integer > 0")
+
+  expect_error(object = checkMcmcChains(mcmc.chains = integer(length = 3)),
+               regexp = "mcmc.chains must be a positive integer > 0")
+
+  expect_error(object = checkMcmcChains(mcmc.chains = character(length = 3)),
+               regexp = "mcmc.chains must be a positive integer > 0")
+
+  expect_error(object = checkMcmcChains(mcmc.chains = logical(length = 3)),
+               regexp = "mcmc.chains must be a positive integer > 0")
+})
+
+
+
+test_that("mcmc.cores check", {
+
+  expect_error(object = checkMcmcCores(mcmc.cores = NA),
+               regexp = "mcmc.cores must be a positive integer > 0")
+
+  expect_error(object = checkMcmcCores(mcmc.cores = NULL),
+               regexp = "mcmc.cores must be a positive integer > 0")
+
+  expect_error(object = checkMcmcCores(mcmc.cores = Inf),
+               regexp = "mcmc.cores must be a positive integer > 0")
+
+  expect_error(object = checkMcmcCores(mcmc.cores = numeric(length = 1)),
+               regexp = "mcmc.cores must be a positive integer > 0")
+
+  expect_error(object = checkMcmcCores(mcmc.cores = double(length = 1)),
+               regexp = "mcmc.cores must be a positive integer > 0")
+
+  expect_error(object = checkMcmcCores(mcmc.cores = integer(length = 1)),
+               regexp = "mcmc.cores must be a positive integer > 0")
+
+  expect_error(object = checkMcmcCores(mcmc.cores = character(length = 1)),
+               regexp = "mcmc.cores must be a positive integer > 0")
+
+  expect_error(object = checkMcmcCores(mcmc.cores = logical(length = 1)),
+               regexp = "mcmc.cores must be a positive integer > 0")
+
+  expect_silent(object = checkMcmcCores(mcmc.cores = as.integer(x = 2)))
+
+  # len > 1
+  expect_error(object = checkMcmcCores(mcmc.cores = numeric(length = 3)),
+               regexp = "mcmc.cores must be a positive integer > 0")
+
+  expect_error(object = checkMcmcCores(mcmc.cores = double(length = 3)),
+               regexp = "mcmc.cores must be a positive integer > 0")
+
+  expect_error(object = checkMcmcCores(mcmc.cores = integer(length = 3)),
+               regexp = "mcmc.cores must be a positive integer > 0")
+
+  expect_error(object = checkMcmcCores(mcmc.cores = character(length = 3)),
+               regexp = "mcmc.cores must be a positive integer > 0")
+
+  expect_error(object = checkMcmcCores(mcmc.cores = logical(length = 3)),
+               regexp = "mcmc.cores must be a positive integer > 0")
+})
+
+
+
+test_that("mcmc.steps and mcmc.warmup check", {
+
+  expect_error(object = checkMcmcSteps(mcmc.steps = NA, mcmc.warmup = NA),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+
+  expect_error(object = checkMcmcSteps(mcmc.steps = NULL, mcmc.warmup = NULL),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+
+  expect_error(object = checkMcmcSteps(mcmc.steps = Inf, mcmc.warmup = Inf),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+
+  expect_error(object = checkMcmcSteps(mcmc.steps = numeric(length = 1),
+                                       mcmc.warmup = numeric(length = 1)),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+
+  expect_error(object = checkMcmcSteps(mcmc.steps = double(length = 1),
+                                       mcmc.warmup = double(length = 1)),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+
+  expect_error(object = checkMcmcSteps(mcmc.steps = integer(length = 1),
+                                       mcmc.warmup = integer(length = 1)),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+
+  expect_error(object = checkMcmcSteps(mcmc.steps = character(length = 1),
+                                       mcmc.warmup = character(length = 1)),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+
+  expect_error(object = checkMcmcSteps(mcmc.steps = logical(length = 1),
+                                       mcmc.warmup = logical(length = 1)),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+
+  expect_silent(object = checkMcmcSteps(mcmc.steps = as.integer(x = 500),
+                                        mcmc.warmup = as.integer(x = 100)))
+
+  # len > 1
+  expect_error(object = checkMcmcSteps(mcmc.steps = numeric(length = 2),
+                                       mcmc.warmup = numeric(length = 2)),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+
+  expect_error(object = checkMcmcSteps(mcmc.steps = double(length = 2),
+                                       mcmc.warmup = double(length = 2)),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+
+  expect_error(object = checkMcmcSteps(mcmc.steps = integer(length = 2),
+                                       mcmc.warmup = integer(length = 2)),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+
+  expect_error(object = checkMcmcSteps(mcmc.steps = character(length = 2),
+                                       mcmc.warmup = character(length = 2)),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+
+  expect_error(object = checkMcmcSteps(mcmc.steps = logical(length = 2),
+                                       mcmc.warmup = logical(length = 2)),
+               regexp = "mcmc.steps >= 500 & mcmc.warmup >= 100.")
+})
+
+
