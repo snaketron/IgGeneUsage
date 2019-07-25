@@ -88,8 +88,8 @@ head(Ig)
 M <- DGU(usage.data = Ig,
          mcmc.warmup = 500,
          mcmc.steps = 1500,
-         mcmc.chains = 4,
-         mcmc.cores = 4,
+         mcmc.chains = 2,
+         mcmc.cores = 2,
          hdi.level = 0.95,
          adapt.delta = 0.95,
          max.treedepth = 13)

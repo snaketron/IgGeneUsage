@@ -52,3 +52,5 @@ src/stan_files/*.hpp
 src/stan_files/*.rds
 src/stan_files/*.o
 src/stan_files/*.cc
+
+IgGeneUsage.Rproj
