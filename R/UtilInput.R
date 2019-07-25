@@ -80,26 +80,26 @@ checkUsageData <- function(usage.data) {
 checkMcmcSteps <- function(mcmc.steps,
                            mcmc.warmup) {
 
-  if(length(mcmc.steps) != 1 || length(mcmc.warmup) != 1) {
+  if(length(mcmc.steps) != 1 | length(mcmc.warmup) != 1) {
     stop("mcmc.steps >= 500 & mcmc.warmup >= 100.")
   }
 
-  if(!is.integer(mcmc.steps) || !is.integer(mcmc.warmup)) {
-    stop("mcmc.steps >= 500 & mcmc.warmup >= 100.")
-  }
-
-
-  if(is.finite(x = mcmc.steps)==FALSE || is.finite(x = mcmc.warmup)==FALSE) {
+  if(!is.numeric(mcmc.steps) | !is.numeric(mcmc.warmup)) {
     stop("mcmc.steps >= 500 & mcmc.warmup >= 100.")
   }
 
 
-  if(mcmc.steps < 500 | mcmc.warmup < 100) {
+  if(is.finite(x = mcmc.steps)==FALSE | is.finite(x = mcmc.warmup)==FALSE) {
     stop("mcmc.steps >= 500 & mcmc.warmup >= 100.")
   }
 
 
-  if(mcmc.steps <= mcmc.warmup) {
+  if(as.integer(x = mcmc.steps) < 500 | as.integer(x = mcmc.warmup) < 100) {
+    stop("mcmc.steps >= 500 & mcmc.warmup >= 100.")
+  }
+
+
+  if(as.integer(x = mcmc.steps) <= as.integer(x = mcmc.warmup)) {
     stop("mcmc.steps > mcmc.warmup")
   }
 }
@@ -113,15 +113,15 @@ checkMcmcChains <- function(mcmc.chains) {
     stop("mcmc.chains must be a positive integer > 0")
   }
 
-  if(!is.integer(mcmc.chains)) {
-    stop("mcmc.chains must be a positive integer > 0")
-  }
-
-  if(mcmc.chains <= 0) {
+  if(!is.numeric(mcmc.chains)) {
     stop("mcmc.chains must be a positive integer > 0")
   }
 
   if(is.finite(x = mcmc.chains) == FALSE) {
+    stop("mcmc.chains must be a positive integer > 0")
+  }
+
+  if(as.integer(x = mcmc.chains) <= 0) {
     stop("mcmc.chains must be a positive integer > 0")
   }
 }
@@ -134,15 +134,15 @@ checkMcmcCores <- function(mcmc.cores) {
     stop("mcmc.cores must be a positive integer > 0")
   }
 
-  if(is.integer(mcmc.cores) == FALSE) {
-    stop("mcmc.cores must be a positive integer > 0")
-  }
-
-  if(mcmc.cores <= 0) {
+  if(is.numeric(mcmc.cores) == FALSE) {
     stop("mcmc.cores must be a positive integer > 0")
   }
 
   if(is.finite(x = mcmc.cores) == FALSE) {
+    stop("mcmc.cores must be a positive integer > 0")
+  }
+
+  if(as.integer(x = mcmc.cores) <= 0) {
     stop("mcmc.cores must be a positive integer > 0")
   }
 }

@@ -7,21 +7,21 @@
 #   * gene_name: char column
 #   * gene_usage_count: num column
 DGU <- function(usage.data,
-                      mcmc.warmup = 500,
-                      mcmc.steps = 1500,
-                      mcmc.chains = 4,
-                      mcmc.cores = 4,
-                      hdi.level = 0.95,
-                      adapt.delta = 0.95,
-                      max.treedepth = 12) {
+                mcmc.warmup = 500,
+                mcmc.steps = 1500,
+                mcmc.chains = 4,
+                mcmc.cores = 4,
+                hdi.level = 0.95,
+                adapt.delta = 0.95,
+                max.treedepth = 12) {
 
 
   # check inputs
   checkInput(usage.data = usage.data,
-             mcmc.chains = mcmc.chains,
-             mcmc.cores = mcmc.cores,
-             mcmc.steps = mcmc.steps,
-             mcmc.warmup = mcmc.warmup,
+             mcmc.chains = as.integer(x = mcmc.chains),
+             mcmc.cores = as.integer(x = mcmc.cores),
+             mcmc.steps = as.integer(x = mcmc.steps),
+             mcmc.warmup = as.integer(x = mcmc.warmup),
              hdi.level = hdi.level)
 
 
