@@ -276,6 +276,8 @@ getTTestStats <- function(usage.data) {
   tout.summary$t.test.bonf.pvalue <- stats::p.adjust(
     p = tout.summary$t.test.pvalue, method = "bonferroni")
 
+
+
   return (tout.summary)
 }
 

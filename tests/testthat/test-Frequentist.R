@@ -1,0 +1,51 @@
+context("Tests input rules")
+
+
+test_that("T-test check", {
+
+  dummy.out <- data.frame(t.test.pvalue = NA,
+                          t.test.tvalue = NA,
+                          t.test.L95 = NA,
+                          t.test.H95 = NA,
+                          t.test.fdr.pvalue = as.numeric(x = NA),
+                          t.test.bonf.pvalue = as.numeric(x = NA),
+                          stringsAsFactors = FALSE)
+
+  # CS: 0
+  usage.data <- list(Y = matrix(data = numeric(length = 1), nrow = 1, ncol = 1),
+                     X = c("a"), N = c(1), N_gene = 1)
+  out <- getTTestStats(usage.data = usage.data)
+  expect_equal(object = out, expected = dummy.out)
+
+
+  # CS: 1
+  usage.data <- list(Y = matrix(data = numeric(length = 2), nrow = 1, ncol = 2),
+                     X = c("a", "b"), N = c(1, 1), N_gene = 1)
+  out <- getTTestStats(usage.data = usage.data)
+  expect_equal(object = out, expected = dummy.out)
+
+
+  # CS: 2
+  usage.data <- list(Y = matrix(data = numeric(length = 3), nrow = 1, ncol = 3),
+                     X = c("a", "b", "b"), N = c(1, 1, 1), N_gene = 1)
+  out <- getTTestStats(usage.data = usage.data)
+  expect_equal(object = out, expected = dummy.out)
+
+
+  dummy.out <- data.frame(t.test.pvalue = NaN,
+                          t.test.tvalue = NaN,
+                          t.test.L95 = NaN,
+                          t.test.H95 = NaN,
+                          t.test.fdr.pvalue = as.numeric(x = NaN),
+                          t.test.bonf.pvalue = as.numeric(x = NaN),
+                          stringsAsFactors = FALSE)
+  rownames(dummy.out) <- "t"
+
+
+  # CS: 3
+  usage.data <- list(Y = matrix(data = numeric(length = 4), nrow = 1, ncol = 4),
+                     X = c("a", "a", "b", "b"), N = c(1, 1, 1, 1), N_gene = 1)
+  out <- getTTestStats(usage.data = usage.data)
+  expect_equal(object = out, expected = dummy.out)
+})
+

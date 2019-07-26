@@ -65,7 +65,7 @@ DGU <- function(usage.data,
                          cores = mcmc.cores,
                          iter = mcmc.steps,
                          warmup = mcmc.warmup,
-                         refresh = 500,
+                         refresh = 250,
                          control = control.list,
                          pars = pars.relevant,
                          algorithm = "NUTS")
