@@ -47,23 +47,19 @@ to a specific sample_id x condition x gene_name.}
 
 \details{
 The input to IgGeneUsage is a table with usage frequencies for each gene of a
-repertoire that belongs to a particular biological condition. Given R
-repertoires, each having G genes, IgGeneUsage generates a gene usage matrix
-Y^(R x G). Row sums in Y define the total usage in each repertoire (N). The
-design variable X is set to X = 1 for repertoires that belong to the first
-condition, and X = -1 otherwise. For the evaluation of differential gene usage
-between two biological conditions, IgGeneUsage employs a Bayesian hierarchical
-model for zero-inflated beta-binomial (ZIBB) regression (see vignette
-'ModelOverview').
+repertoire that belongs to a particular biological condition. For the evaluation 
+of differential gene usage between two biological conditions, IgGeneUsage 
+employs a Bayesian hierarchical model for zero-inflated beta-binomial (ZIBB)
+regression (see vignette 'ModelOverview').
 }
 
 \value{
 \item{glm}{stanfit object}
 \item{glm.summary}{differential gene usage statistics for each gene.
-1) effect = effect on differential gene usage (mean, median standard error (se),
-standard deviation (sd), L (low boundary of HDI), H (high boundary of HDI);
-2) contrast = direction of the effect
-3) pmax = probability of differential gene usage}
+1) effect = effect size on differential gene usage (mean, median standard error 
+(se), standard deviation (sd), L (low boundary of HDI), H (high boundary of 
+HDI); 2) contrast = direction of the effect 3) pmax = probability of 
+differential gene usage}
 \item{ppc.data}{two types of posterior predictive checks: 1) repertoire-
 specific, 2) gene-specific}
 \item{test.stats}{differential gene usage statistics computed with the Welch's

@@ -63,9 +63,11 @@ transformed parameters {
   vector <lower = 0> [N_gene] a [N_sample];
   vector <lower = 0> [N_gene] b [N_sample];
 
-  // non-centered params
+  // non-centered params (at repertoire level)
   alpha_gene = alpha_grand + alpha_sigma * alpha_raw;
   beta_gene = beta_grand + beta_gene_sigma * beta_gene_raw;
+  
+  // non-centered params (at gene level)
   for(i in 1:N_sample) {
     beta[i] = beta_gene + beta_sigma * beta_raw[i];
     a[i] = inv_logit(alpha_gene + beta[i]*X[i]) * phi;
@@ -97,7 +99,7 @@ model {
   }
   beta_gene_raw ~ normal(0, 1);
 
-  phi ~ exponential(tau);
+  phi ~ exponential(tau); //pareto ||
   tau ~ gamma(3, 0.1);
   z ~ beta(1, 3);
 }
