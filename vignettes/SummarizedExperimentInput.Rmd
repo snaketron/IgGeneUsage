@@ -1,0 +1,74 @@
+---
+title: "Using 'SummarizedExperiment' objects as IgGeneUsage input"
+author: "SK"
+date: "July 25, 2019"
+output:
+  BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{Using 'SummarizedExperiment' object as IgGeneUsage input}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE, warning = FALSE}
+knitr::opts_chunk$set(comment = FALSE, 
+                      warning = FALSE, 
+                      message = FALSE)
+```
+
+```{r}
+require(IgGeneUsage)
+require(reshape2)
+require(SummarizedExperiment)
+```
+
+
+# Load SummarizedExperiment object internal to IgGeneUsage
+In this vignette we demonstrate how to use SummarizedExperiment objects as input
+to IgGeneUsage. For this very purpose IgGeneUsage provides the dataset 'Ig_SE'
+which is a SummarizedExperiment object with additional column (sample) data but 
+without anyrow (gene) data, as it is often the case in analyses of differential
+gene usage.
+
+```{r}
+# 1. first load the example dataset
+data(Ig_SE, package = "IgGeneUsage")
+
+# 2. get the assay counts and convert them to data.frame with reshape2
+Ig_counts <- SummarizedExperiment::assay(x = Ig_SE)
+Ig_counts <- reshape2::melt(data = Ig_counts, 
+                            value.name = "gene_usage_count", 
+                            as.is = TRUE)
+# 3. rename the columns as required by IgGeneUsage:
+#   * sample_id: char column of repertoire names => column names of assay obj.
+#   * gene_name: char column of gene names => row names of assay obj.
+#   * gene_usage_count: assay obj. entries
+colnames(Ig_counts) <- c("gene_name", "sample_id", "gene_usage_count")
+
+
+# 4. get the sample (repertoire) data and convert it to data.frame
+Ig_coldata <- SummarizedExperiment::colData(x = Ig_SE)
+Ig_coldata <- as.data.frame(Ig_coldata)
+
+# 5. merge both datasets into the standard 4-column IgGeneUsage input
+Ig_input <- merge(x = Ig_counts, y = Ig_coldata, 
+                  by = "sample_id", all = TRUE)
+
+# 6. optional cleanup of the different objects
+rm(Ig_coldata, Ig_counts, Ig_SE)
+```
+
+# Run differential gene usage (DGU) with IgGeneUsage
+
+```{r}
+# 7. run
+M <- DGU(usage.data = Ig_input,
+         mcmc.warmup = 500,
+         mcmc.steps = 1500,
+         mcmc.chains = 2,
+         mcmc.cores = 2,
+         hdi.level = 0.95,
+         adapt.delta = 0.95,
+         max.treedepth = 13)
+```
+

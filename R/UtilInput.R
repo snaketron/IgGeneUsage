@@ -72,6 +72,10 @@ checkUsageData <- function(usage.data) {
      typeof(usage.data$gene_usage_count) != "integer") {
     stop("column gene_usage_count must be of numeric type.")
   }
+  
+  if(length(unique(usage.data$condition)) != 2) {
+    stop("exactly 2 biological conditions must be provided.")
+  }
 }
 
 

@@ -22,7 +22,7 @@ test_that("Null input", {
 
 
 test_that("usage.data check", {
-
+  
   expect_error(checkUsageData(usage.data = NA),
                "usage.data must be data.frame")
 
@@ -127,7 +127,22 @@ test_that("usage.data check", {
     gene_usage_count = logical(length = 2),
     stringsAsFactors = FALSE)),
     "column gene_usage_count must be of numeric type.")
-
+  
+  expect_error(checkUsageData(usage.data = data.frame(
+    sample_id = character(length = 2),
+    condition = c("A", "A"),
+    gene_name = character(length = 2),
+    gene_usage_count = numeric(length = 2),
+    stringsAsFactors = FALSE)),
+    "exactly 2 biological conditions must be provided.")
+  
+  expect_error(checkUsageData(usage.data = data.frame(
+    sample_id = character(length = 3),
+    condition = c("A", "B", "C"),
+    gene_name = character(length = 3),
+    gene_usage_count = numeric(length = 3),
+    stringsAsFactors = FALSE)),
+    "exactly 2 biological conditions must be provided.")
 })
 
 

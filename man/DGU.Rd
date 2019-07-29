@@ -92,4 +92,4 @@ M <- DGU(usage.data = Ig,
 }
 
 
-\seealso{Ig, IGHV_Epitopes, IGHV_HCV}
+\seealso{Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE}
