@@ -47,7 +47,7 @@ to a specific sample_id x condition x gene_name.}
 
 \details{
 The input to IgGeneUsage is a table with usage frequencies for each gene of a
-repertoire that belongs to a particular biological condition. For the evaluation 
+repertoire that belongs to a particular biological condition. For the analysis 
 of differential gene usage between two biological conditions, IgGeneUsage 
 employs a Bayesian hierarchical model for zero-inflated beta-binomial (ZIBB)
 regression (see vignette 'ModelOverview').
