@@ -27,7 +27,7 @@ require(SummarizedExperiment)
 In this vignette we demonstrate how to use SummarizedExperiment objects as input
 to IgGeneUsage. For this very purpose IgGeneUsage provides the dataset 'Ig_SE'
 which is a SummarizedExperiment object with additional column (sample) data but 
-without anyrow (gene) data, as it is often the case in analyses of differential
+without any row (gene) data, as it is often the case in analyses of differential
 gene usage.
 
 ```{r}

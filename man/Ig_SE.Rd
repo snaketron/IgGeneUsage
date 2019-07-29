@@ -1,5 +1,5 @@
-\name{Ig}
-\alias{Ig}
+\name{Ig_SE}
+\alias{Ig_SE}
 \docType{data}
 \title{IGHV gene family usage in vaccine-challenged B-cell repertoires 
 (SummarizedExperiment object)}
@@ -11,7 +11,7 @@ contains IGHV gene family usage, reported in four B-cell populations (samples
 IgM, IgD, IgG and IgA) across two timepoints (conditions = -1 hour and +7 days).
 }
 
-\usage{data("Ig")}
+\usage{data("Ig_SE")}
 
 \format{
   A SummarizedExperiment object with 1) assay data (rows = gene name, 
