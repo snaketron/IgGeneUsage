@@ -73,6 +73,38 @@ getUsageData <- function(usage) {
 
 
 
+# Description:
+# Takes an input usage.data of class SummarizedExperiment,
+# and creates data.frame. Given that this function is used
+# before the input control, it also does some rudimentary checks
+convertSummarizedExperiment <- function(usage.data.se) {
+  # get count data
+  count.data <- SummarizedExperiment::assay(x = usage.data.se)
+  count.data <- reshape2::melt(
+    data = count.data, value.name = "gene_usage_count", as.is = TRUE)
+  colnames(count.data) <- c("gene_name", "sample_id", "gene_usage_count")
+  
+  
+  # get the sample (repertoire) data and convert it to data.frame
+  coldata <- SummarizedExperiment::colData(x = usage.data.se)
+  coldata <- base::as.data.frame(coldata)
+  if(nrow(coldata) == 0 | ncol(coldata) == 0) {
+    stop("colData(usage.data) is empty.")
+  }
+  
+  if(all(colnames(coldata) %in% c("condition", "sample_id")) == FALSE) {
+    stop("colData(usage.data) must have 2 columns: 'condition' and 'sample_id'")
+  }
+  
+  # merge both datasets into the standard 4-column IgGeneUsage input
+  usage.data <- base::merge(x = count.data, y = coldata, 
+                            by = "sample_id", all = TRUE)
+  
+  return (usage.data)
+}
+
+
+
 
 # Description:
 # Computes HDI given a vector, taken "Doing Bayesian Analysis"
@@ -317,7 +349,5 @@ getManUStats <- function(usage.data) {
 
   return (mout.summary)
 }
-
-
 
 

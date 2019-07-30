@@ -16,6 +16,13 @@ DGU <- function(usage.data,
                 max.treedepth = 12) {
 
 
+  # before check convert summarized experiment object to data.frame
+  if(inherits(x = usage.data, what = "SummarizedExperiment") == TRUE) {
+    usage.data.raw <- usage.data
+    usage.data <- convertSummarizedExperiment(usage.data.se = usage.data.raw)
+  }
+  
+  
   # check inputs
   checkInput(usage.data = usage.data,
              mcmc.chains = as.integer(x = mcmc.chains),

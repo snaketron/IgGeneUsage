@@ -32,9 +32,9 @@ checkInput <- function(usage.data,
 
 
 # Description:
-# Usage data check
+# Usage data check if data.frame
 checkUsageData <- function(usage.data) {
-
+  
   if(is.data.frame(usage.data) == FALSE) {
     stop("usage.data must be data.frame")
   }
@@ -77,6 +77,10 @@ checkUsageData <- function(usage.data) {
     stop("exactly 2 biological conditions must be provided.")
   }
 }
+
+
+
+
 
 
 # Description:

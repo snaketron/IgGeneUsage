@@ -79,6 +79,9 @@ t-test) and U-value (from the Wilcoxon signed-rank test).}
 data(Ig)
 head(Ig)
 
+# alternatively SummarizedExperiment input data
+# data(Ig_SE)
+
 
 # run differential gene usage (DGU)
 M <- DGU(usage.data = Ig,
