@@ -4,8 +4,6 @@
 # Description:
 # Parse input data
 getUsageData <- function(usage) {
-
-
   # if the same sample_id is present in both conditions
   key <- paste(usage$sample_id, usage$condition, sep = '_')
   if(length(unique(key)) != length(unique(usage$sample_id))) {
@@ -14,40 +12,31 @@ getUsageData <- function(usage) {
     rm(key)
   }
 
-
-  # get Y data
-  # fill empty combinations with 0
-  Y <- reshape2::acast(data = usage,
-                       formula = gene_name~sample_id,
-                       drop = FALSE,
-                       value.var = "gene_usage_count",
-                       fill = 0,
-                       fun.aggregate = sum)
+  # get Y data, fill empty combinations with 0
+  Y <- reshape2::acast(data = usage, formula = gene_name~sample_id,
+                       drop = FALSE, value.var = "gene_usage_count",
+                       fill = 0, fun.aggregate = sum)
+  
   sample_ids <- colnames(Y)
   gene_names <- rownames(Y)
 
-
   # get N data
-  N.data <- stats::aggregate(gene_usage_count~sample_id,
-                             data = usage, FUN = sum,
-                             drop = FALSE)
+  N.data <- stats::aggregate(gene_usage_count~sample_id, data = usage, 
+                             FUN = sum, drop = FALSE)
   N <- N.data$gene_usage_count
   names(N) <- N.data$sample_id
   rm(N.data)
   N <- N[sample_ids]
 
-
   # get X data
   usage <-  usage[usage$sample_id %in% sample_ids, ]
   usage <- usage[duplicated(usage[, c("sample_id")]) == FALSE, ]
 
-  X.data <- stats::aggregate(condition~sample_id,
-                             data = usage, FUN = unique)
+  X.data <- stats::aggregate(condition~sample_id, data = usage, FUN = unique)
   X <- X.data$condition
   names(X) <- X.data$sample_id
   rm(X.data)
   X <- X[sample_ids]
-
 
   # get X mapping
   X.unique <- sort(x = unique(X), decreasing = TRUE)
@@ -56,19 +45,10 @@ getUsageData <- function(usage) {
   Xmap <- numeric(length = length(X))
   Xmap[x1] <- 1
   Xmap[x2] <- -1
-
-
-  usage.data <- list(Y = Y,
-                     N = N,
-                     N_sample = ncol(Y),
-                     N_gene = nrow(Y),
-                     X = Xmap,
-                     Xorg = X,
-                     gene_names = gene_names,
-                     sample_names = sample_ids)
-
-
-  return (usage.data)
+  
+  return (list(Y = Y, N = N, N_sample = ncol(Y), N_gene = nrow(Y),
+               X = Xmap, Xorg = X, gene_names = gene_names,
+               sample_names = sample_ids))
 }
 
 
@@ -89,7 +69,7 @@ convertSummarizedExperiment <- function(usage.data.se) {
   coldata <- SummarizedExperiment::colData(x = usage.data.se)
   coldata <- base::as.data.frame(coldata)
   if(nrow(coldata) == 0 | ncol(coldata) == 0) {
-    stop("colData(usage.data) is empty.")
+    stop("colData(usage.data) is empty")
   }
   
   if(all(colnames(coldata) %in% c("condition", "sample_id")) == FALSE) {
@@ -197,21 +177,13 @@ getPpc <- function(glm.ext,
 
 
 
-getGroupStats <- function(glm.ext,
-                          usage.data,
-                          hdi.level) {
-
-
-  getGroupYhat <- function(x,
-                           gene.names,
-                           conditions,
-                           yhat.gene,
-                           hdi.level,
-                           usage.data) {
+getGroupStats <- function(glm.ext, usage.data, hdi.level) {
+  
+  getGroupYhat <- function(x, gene.names, conditions, yhat.gene, 
+                           hdi.level, usage.data) {
 
     hdi.1 <- getHdi(vec = yhat.gene[,1,x], hdi.level = hdi.level)
     hdi.2 <- getHdi(vec = yhat.gene[,2,x], hdi.level = hdi.level)
-
 
     # get mean count data
     x.1 <- which(usage.data$Xorg == conditions[1])
@@ -219,41 +191,33 @@ getGroupStats <- function(glm.ext,
     if(length(x.1) != 0) {
       real.pct.1 <- usage.data$Y[gene.names[x], x.1]/usage.data$N[x.1]*100
     }
-
     x.2 <- which(usage.data$Xorg == conditions[2])
     real.pct.2 <- 0
     if(length(x.2) != 0) {
       real.pct.2 <- usage.data$Y[gene.names[x], x.2]/usage.data$N[x.2]*100
     }
 
-
     # errors
     error.pct.1 <- abs(mean(real.pct.1)-yhat.gene[,1,x])
     error.pct.2 <- abs(mean(real.pct.2)-yhat.gene[,2,x])
-
     return(rbind(data.frame(gene_name = gene.names[x],
                             observed.mean = mean(real.pct.1),
                             ppc.mean = mean(yhat.gene[,1,x]),
-                            ppc.L = hdi.1[1],
-                            ppc.H = hdi.1[2],
+                            ppc.L = hdi.1[1], ppc.H = hdi.1[2],
                             error.mean = mean(error.pct.1),
                             condition = conditions[1],
                             stringsAsFactors = FALSE),
                  data.frame(gene_name = gene.names[x],
                             observed.mean = mean(real.pct.2),
                             ppc.mean = mean(yhat.gene[,2,x]),
-                            ppc.L = hdi.2[1],
-                            ppc.H = hdi.2[2],
+                            ppc.L = hdi.2[1], ppc.H = hdi.2[2],
                             error.mean = mean(error.pct.2),
                             condition = conditions[2],
                             stringsAsFactors = FALSE)))
   }
 
-
   conditions = c(unique(usage.data$Xorg[usage.data$X == 1]),
                  unique(usage.data$Xorg[usage.data$X == -1]))
-
-
   group.ppc <- lapply(X = seq_len(length.out = usage.data$N_gene),
                       FUN = getGroupYhat,
                       gene.names = usage.data$gene_names,
@@ -261,9 +225,7 @@ getGroupStats <- function(glm.ext,
                       yhat.gene = glm.ext$Yhat_gene,
                       hdi.level = hdi.level,
                       usage.data = usage.data)
-  group.ppc <- do.call(rbind, group.ppc)
-
-  return (group.ppc)
+  return (do.call(rbind, group.ppc))
 }
 
 
