@@ -18,8 +18,9 @@ test_that("Summarized Experiment check", {
   colData <- DataFrame(condition = rep(c("A", "B"), each = 3),
                        sample_id = LETTERS[1:6],
                        row.names = LETTERS[1:6])
-  se.1 <- SummarizedExperiment(assays = list(counts = counts),
+  se.1 <- SummarizedExperiment(assays = list(counts = counts), 
                                colData = colData)
   expect_silent(object = convertSummarizedExperiment(usage.data.se = se.1))
-  expect_is(object = y, class = "data.frame")
+  expect_is(object = convertSummarizedExperiment(usage.data.se = se.1), 
+            class = "data.frame")
 })

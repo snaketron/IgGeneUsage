@@ -89,6 +89,11 @@ convertSummarizedExperiment <- function(usage.data.se) {
 # Description:
 # Computes HDI given a vector, taken "Doing Bayesian Analysis"
 getHdi <- function(vec, hdi.level) {
+  check <- (is.numeric(vec) | is.double(vec) | is.integer(vec))
+  if(check == FALSE) {
+    stop("HDI not numeric")
+  }
+  
   sortedPts <- sort(vec)
   ciIdxInc <- floor(hdi.level * length(sortedPts))
   nCIs = length(sortedPts) - ciIdxInc
