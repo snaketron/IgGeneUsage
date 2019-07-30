@@ -1,7 +1,7 @@
 Package: IgGeneUsage
 Type: Package
 Title: Differential gene usage in immune repertoires
-Version: 0.99.20
+Version: 0.99.21
 Authors@R: 
     person(given = "Simo",
            family = "Kitanovski",
@@ -26,8 +26,7 @@ Suggests:
     ggplot2,
     ggforce,
     gridExtra,
-    ggrepel,
-    SummarizedExperiment
+    ggrepel
 Encoding: UTF-8
 LazyData: true
 NeedsCompilation: no
