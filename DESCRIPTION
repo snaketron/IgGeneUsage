@@ -1,7 +1,7 @@
 Package: IgGeneUsage
 Type: Package
 Title: Differential gene usage in immune repertoires
-Version: 0.99.24
+Version: 0.99.25
 Authors@R: 
     person(given = "Simo",
            family = "Kitanovski",
@@ -12,7 +12,7 @@ Description: Differential gene usage in immune repertoires such as B-cell and
 License: GPL (>=3) + file LICENSE
 Depends: 
     methods,
-    R (>= 3.5.0),   
+    R (>= 3.6.0),   
     Rcpp (>= 0.12.0),
     SummarizedExperiment,
     StanHeaders (> 2.18.1)
