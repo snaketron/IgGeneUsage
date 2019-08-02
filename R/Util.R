@@ -77,7 +77,8 @@ convertSummarizedExperiment <- function(usage.data.se) {
   }
   
   # merge both datasets into the standard 4-column IgGeneUsage input
-  usage.data <- base::merge(x = count.data, y = coldata, 
+  usage.data <- base::merge(x = count.data, 
+                            y = coldata[, c("condition", "sample_id")], 
                             by = "sample_id", all = TRUE)
   
   return (usage.data)

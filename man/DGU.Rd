@@ -31,7 +31,9 @@ DGU(usage.data, mcmc.warmup, mcmc.steps,
 of each repertoire, 'condition' = character key representing each of the two
 biological conditions, 'gene_name' = character name of each gene to be tested
 for differential usage, 'gene_usage_count' = number of rearrangements belonging
-to a specific sample_id x condition x gene_name.}
+to a specific sample_id x condition x gene_name. Alternatively, usage.data can
+be a SummarizedExperiment object. See examplary data 'data(Ig_SE)' for more 
+information.}
 \item{mcmc.chains, mcmc.warmup, mcmc.steps, mcmc.cores}{Number of MCMC chains
 (default = 4), number of cores to use (default = 1), length of MCMC chains
 (default = 1,500), length of adaptive part of MCMC chains (default = 500).}
@@ -79,7 +81,8 @@ t-test) and U-value (from the Wilcoxon signed-rank test).}
 data(Ig)
 head(Ig)
 
-# alternatively SummarizedExperiment input data
+# Alternative:
+# use SummarizedExperiment input data
 # data(Ig_SE)
 
 

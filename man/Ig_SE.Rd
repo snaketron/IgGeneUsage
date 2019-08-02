@@ -16,9 +16,7 @@ IgM, IgD, IgG and IgA) across two timepoints (conditions = -1 hour and +7 days).
 \format{
   A SummarizedExperiment object with 1) assay data (rows = gene name, 
   columns = repertoires) and 2) column data.frame in which the sample names
-  and the corresponding biological condition labels are noted. See vignette
-  'SummarizedExperimentInput.Rmd' for additional information of how to use
-  this data as input for IgGeneUsage.
+  and the corresponding biological condition labels are noted.
 }
 \source{
 R package: alakazam version 0.2.11
@@ -28,6 +26,13 @@ Laserson U and Vigneault F, et al. High-resolution antibody dynamics of
 vaccine-induced immune responses. Proc Natl Acad Sci USA. 2014 111:4928-33.
 }
 \examples{
+# inspect the data
 data(Ig_SE)
+
+# repertoire information: must have the two columns: 'condition', 'sample_id'
+SummarizedExperiment::colData(Ig_SE)
+
+# assay counts (gene frequency usage)
+SummarizedExperiment::assay(x = Ig_SE)
 }
 \keyword{Ig_SE}
