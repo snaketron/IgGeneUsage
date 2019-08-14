@@ -1,3 +1,4 @@
+<a href="https://github.com/snaketron/IgGeneUsage/"><img src="logo.png" width = 220 alt="Logo"/>
 
 # IgGeneUsage
 
