@@ -54,3 +54,6 @@ src/stan_files/*.o
 src/stan_files/*.cc
 
 IgGeneUsage.Rproj
+
+logo.png
+logo.svg

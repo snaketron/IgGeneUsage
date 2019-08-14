@@ -570,7 +570,6 @@ IgGeneUsage. Lets load the data, and to inspect its content.
 data(Ig, package = "IgGeneUsage")
 ```
 
-
 ```{r}
 kable(x = head(Ig), row.names = FALSE)
 ```
@@ -611,7 +610,8 @@ ggplot(data = viz)+
 
 
 ## Analysis with IgGeneUsage
-Lets analyze the differential gene usage in the data Ig.
+Lets analyze the differential gene usage in the data Ig. We use the 
+default values of most DGU arguments.
 
 ```{r}
 M <- DGU(usage.data = Ig,

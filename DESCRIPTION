@@ -1,7 +1,7 @@
 Package: IgGeneUsage
 Type: Package
 Title: Differential gene usage in immune repertoires
-Version: 0.99.28
+Version: 0.99.30
 Authors@R: 
     person(given = "Simo",
            family = "Kitanovski",
@@ -12,9 +12,9 @@ Description: Decoding the properties of immune repertoires is key in
     viral infection. One important task in immune repertoire profiling is 
     the detection of biases in Ig gene usage between biological conditions. 
     IgGeneUsage is a computational tool for the analysis of differential gene 
-    usage in immune repertoires. It employs Bayesian hierarchical models to fit 
-    complex gene usage data from immune repertoire sequencing experiments and 
-    quantifies Ig gene usage biases as probabilities.
+    usage in immune repertoires. It employs Bayesian hierarchical models to 
+    fit complex gene usage data from immune repertoire sequencing experiments 
+    and quantifies Ig gene usage biases as probabilities.
 License: file LICENSE
 Depends: 
     methods,
