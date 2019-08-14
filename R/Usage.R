@@ -10,7 +10,7 @@ DGU <- function(usage.data,
                 mcmc.warmup = 500,
                 mcmc.steps = 1500,
                 mcmc.chains = 4,
-                mcmc.cores = 4,
+                mcmc.cores = 1,
                 hdi.level = 0.95,
                 adapt.delta = 0.95,
                 max.treedepth = 12) {
@@ -38,10 +38,10 @@ DGU <- function(usage.data,
 
 
   # contrast
-  contrast <- paste("C: ", unique(usage.data$Xorg[usage.data$X == 1]),
+  contrast <- paste(unique(usage.data$Xorg[usage.data$X == 1]),
                     " - ", unique(usage.data$Xorg[usage.data$X == -1]),
                     sep = '')
-
+  
 
   # model
   message("Compiling model ... \n")
@@ -86,9 +86,9 @@ DGU <- function(usage.data,
                                          1-(1-hdi.level)/2))
   glm.summary <- glm.summary$summary
   glm.summary <- data.frame(glm.summary)
-  colnames(glm.summary) <- c("effect_mean", "effect_mean_se",
-                             "effect_sd", "effect_median",
-                             "effect_L", "effect_H",
+  colnames(glm.summary) <- c("es_mean", "es_mean_se",
+                             "es_sd", "es_median",
+                             "es_L", "es_H",
                              "Neff", "Rhat")
   glm.summary[, c("Rhat", "Neff")] <- NULL
   glm.summary$contrast <- contrast
@@ -124,7 +124,7 @@ DGU <- function(usage.data,
   message("Computing frequentist DGU ... \n")
   t.test.stats <- getTTestStats(usage.data = usage.data)
   u.test.stats <- getManUStats(usage.data = usage.data)
-  test.stats <- merge(x = t.test.stats, y = u.test.stats, by = "gene_name")
+  test.summary <- merge(x = t.test.stats, y = u.test.stats, by = "gene_name")
 
 
   # result
@@ -132,7 +132,7 @@ DGU <- function(usage.data,
                  glm.summary = glm.summary,
                  ppc.data = ppc.data,
                  usage.data = usage.data,
-                 test.stats = test.stats)
+                 test.summary = test.summary)
 
 
   return (result)
