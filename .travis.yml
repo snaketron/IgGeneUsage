@@ -28,6 +28,8 @@ script:
   - travis_wait 40 R CMD build
   - R CMD check *tar.gz
 
+# test for bioconductor
+bioc_packages: SummarizedExperiment 
 
 before_install:
   - R -q -e 'install.packages(c("BH", "Rcpp", "RcppEigen",

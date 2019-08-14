@@ -141,7 +141,8 @@ getPpc <- function(glm.ext,
   yhat.pct <- glm.ext$Yhat_individual
   yhat.count <- glm.ext$Yhat
 
-  ppc <- c()
+  ppc <- vector(mode = "list", length = usage.data$N_sample*usage.data$N_gene)
+  pc <- 1
   for(i in seq_len(length.out = usage.data$N_sample)) {
     for(j in seq_len(length.out = usage.data$N_gene)) {
       yhat.i.count <- yhat.count[,j,i]
@@ -154,29 +155,30 @@ getPpc <- function(glm.ext,
       error.count <- abs(usage.data$Y[j,i]-yhat.i.count)
       error.pct <- abs(usage.data$Y[j,i]/usage.data$N[i]*100-yhat.i.pct)
 
-      row <- data.frame(sample_id = usage.data$sample_names[i],
-                        gene_name = usage.data$gene_names[j],
-                        condition = usage.data$Xorg[i],
-                        observed.count = usage.data$Y[j,i],
-                        observed.pct = usage.data$Y[j,i]/usage.data$N[i]*100,
-                        ppc.count.mean = mean(yhat.i.count),
-                        ppc.count.median = stats::median(yhat.i.count),
-                        ppc.count.L = hdi.count[1],
-                        ppc.count.H = hdi.count[2],
-                        ppc.pct.mean = mean(yhat.i.pct),
-                        ppc.pct.median = stats::median(yhat.i.pct),
-                        ppc.pct.L = hdi.pct[1],
-                        ppc.pct.H = hdi.pct[2],
-                        error.count.mean = mean(error.count),
-                        error.count.median = stats::median(error.count),
-                        error.pct.mean = mean(error.pct),
-                        error.pct.median = stats::median(error.pct),
-                        stringsAsFactors = FALSE)
-
-      ppc <- rbind(ppc, row)
+      ppc[[pc]] <- data.frame(
+        sample_id = usage.data$sample_names[i],
+        gene_name = usage.data$gene_names[j],
+        condition = usage.data$Xorg[i],
+        observed.count = usage.data$Y[j,i],
+        observed.pct = usage.data$Y[j,i]/usage.data$N[i]*100,
+        ppc.count.mean = mean(yhat.i.count),
+        ppc.count.median = stats::median(yhat.i.count),
+        ppc.count.L = hdi.count[1],
+        ppc.count.H = hdi.count[2],
+        ppc.pct.mean = mean(yhat.i.pct),
+        ppc.pct.median = stats::median(yhat.i.pct),
+        ppc.pct.L = hdi.pct[1],
+        ppc.pct.H = hdi.pct[2],
+        error.count.mean = mean(error.count),
+        error.count.median = stats::median(error.count),
+        error.pct.mean = mean(error.pct),
+        error.pct.median = stats::median(error.pct),
+        stringsAsFactors = FALSE)
+      pc <- pc + 1;
     }
   }
 
+  ppc <- do.call(rbind, ppc)
   return (ppc)
 }
 

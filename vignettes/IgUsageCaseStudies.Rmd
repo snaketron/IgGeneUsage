@@ -50,25 +50,97 @@ The input to IgGeneUsage is a data.frame object with usage frequencies for each
 gene of a repertoire that belongs to a particular biological condition. The
 usage data.frame has the following 4 columns:
 
-  1. sample_id: character identifier of the repertoire (e.g. Patient-1)
-  2. condition: character identifier of the condition to which each repertoire 
+  1. sample_id: identifier of the repertoire (e.g. Patient-1)
+  2. condition: identifier of the condition to which each repertoire 
   belongs (e.g. healthy or tumor)
   3. gene_name: specific gene name (e.g. IGHV1-10 or family TRVB1)
   4. gene_usage_count: numeric (count) of usage related to columns 1-3
 
-The sum of all gene usage counts (column 4) in a given repertoire is equal to 
-the total gene usage in that repertoire. 
+The sum of all gene usage counts (column 4) for a given repertoire should be 
+equal to the total gene usage in that repertoire. 
+
+
+# Method
+IgGeneUsage transforms the provided input in the following way. Given $R$ 
+repertoires, each having $G$ genes, IgGeneUsage generates a gene usage matrix 
+$Y^{R \times G}$. Row sums in $Y$ define the total usage in each repertoire 
+($N$). The design variable $X$ is set to $X = 1$ for repertoires that belong to 
+the first condition, and $X = -1$ otherwise. 
+
+For the analysis of DGU between two biological conditions, we designed the 
+following Bayesian model ($M$) for zero-inflated beta-binomial regression. This
+model can fit over-dispersed gene usage data. The immune repertoire data is also
+not exhaustive, which leads to misdetection of genes that are systematically 
+rearranged at low probability. The zero-inflated component of our model 
+accounts for this:
+
+\begin{align}
+p(Y_{ij} \mid M) = \begin{cases} 
+\kappa + (1 - \kappa) \operatorname{BB}\left(0 \mid N_{i}, \theta_{ij}, \phi 
+\right), & \text{if $Y_{ij}$ = 0} \\
+(1 - \kappa) \operatorname{BB}\left(Y_{ij} \mid N_{i}, \theta_{ij}, \phi 
+\right), & \text{if $Y_{ij}$ > 0}
+\end{cases}\\
+\theta_{ij} = \operatorname{logit^{-1}}\left(\alpha_{j}+\beta_{ij}X_{i}\right)\\
+\beta_{ij}\sim\operatorname{Normal}\left(\gamma_{j},\gamma_{\sigma} \right)\\
+\gamma_{j}\sim\operatorname{Normal}\left(\hat{\gamma},\hat{\gamma}_{\sigma}
+\right) \\
+\alpha_{j}\sim\operatorname{Normal}\left(\hat{\alpha},\hat{\alpha}_{\sigma}
+\right) \\
+\hat{\gamma} \sim \operatorname{Normal}\left(0, 5\right) \\
+\hat{\alpha} \sim \operatorname{Normal}\left(0, 10\right) \\
+\gamma_{\sigma}, \hat{\gamma}_{\sigma}, \hat{\alpha}_{\sigma} \sim 
+\operatorname{Cauchy^{+}}\left(0, 1\right) \\
+\phi \sim \operatorname{Exponential}\left(\tau\right) \\
+\tau \sim \operatorname{Gamma}\left(3, 0.1\right) \\
+\kappa \sim \operatorname{Beta}\left(1, 3\right)
+\end{align}
+
+Model $M$ legend:
+
+  * $i$ and $j$: index of different repertoires and genes, respectively 
+  * $\kappa$: zero-inflation probability
+  * $\theta$: probability of gene usage
+  * $\phi$: dispersion
+  * $\alpha$: intercept/baseline gene usage
+  * $\beta$: slope/within-repertoire DGU coefficient
+  * $\gamma$, $\gamma_{\sigma}$: slope/gene-specific DGU coefficient; 
+  standard deviation
+  * $\hat{\gamma}$, $\hat{\gamma}_{\sigma}$: mean and standard deviation of 
+  the population of gene-specific DGU coefficients
+  * $\hat{\alpha}$, $\hat{\alpha}_{\sigma}$: mean and standard deviation of 
+  the population of gene-specific baseline usages
+  * $\operatorname{BB}$: beta-binomial probability mass function (pmf)
+  * $\operatorname{Normal}$: normal probability density function (pdf)
+  * $\operatorname{Cauchy^{+}}$: half-Cauchy pdf
+  * $\operatorname{Exponential}$: exponential pdf
+  * $\operatorname{Gamma}$: gamma pdf
+  * $\operatorname{Beta}$: beta pdf
+  * $\operatorname{logit^{-1}}$: inverse logistic function
+
+In the output of IgGeneUsage, we report the mean effect size ($\gamma$) and its 
+95% highest density interval (HDI). Genes with $\gamma \neq 0$ (e.g. if 95% HDI 
+of $\gamma$ excludes 0) experience differential usage. Additionally, we report 
+the probability of differential gene usage ($\pi$):
+\begin{align}
+\pi = \max\left(\int_{\gamma = -\infty}^{0} p(\gamma)\mathrm{d}\gamma, 
+\int_{\gamma = 0}^{\infty} p(\gamma)\mathrm{d}\gamma\right)
+\end{align}
+with $\pi = 1$ for genes with strong differential usage, and $\pi = 0.5$ for 
+genes with negligible differential gene usage. Both metrics are computed based
+on the posterior distribution of $\gamma$, and are thus related. We find $\pi$ 
+slightly easier to interpret.
 
 
 
 # Case Study I
-IgGeneUsage has built-in datasets from studies that evaluate biases in gene 
-usage. The dataset IGHV_HCV, used in this case study, contains publicly 
-available data of human immunoglobulin heavy chain VDJ rearrangements from a 
-study that evaluates the effect of HCV infection on the human BCR repertoire 
-[^1]. The dataset consists of a population of class-switched memory (CSM) B 
-cells of 22 HCV-infected patients (HCV+) and 7 healthy donors (HD). Gene usage 
-data is available for 69 IGHV gene segments.
+IgGeneUsage provides built-in datasets from studies that evaluate biases in Ig
+gene usage. The dataset IGHV_HCV contains publicly available data of human 
+immunoglobulin heavy chain VDJ rearrangements from a study that evaluates the 
+effect of HCV infection on the human BCR repertoire[^1]. The dataset consists 
+of a population of class-switched memory (CSM) B cells of 22 HCV-infected 
+patients (HCV+) and 7 healthy donors (HD). Gene usage data is available for 69 
+IGHV gene segments.
 
 [^1]: Tucci, Felicia A., et al. "Biased IGH VDJ gene repertoire and clonal 
 expansions in B cells of chronically hepatitis C virus–infected individuals." 
@@ -76,6 +148,9 @@ Blood 131.5 (2018): 546-557.]
 
 
 ## Input data
+The data is already formatted such that it can directly be passed as input to
+IgGeneUsage. The following steps allow you to load the data, and to inspect 
+its column names and table entries.
 
 ```{r}
 data("IGHV_HCV", package = "IgGeneUsage")
@@ -83,15 +158,14 @@ data("IGHV_HCV", package = "IgGeneUsage")
 
 
 ```{r}
-kable(x = head(IGHV_HCV), 
-      row.names = FALSE)
+kable(x = head(IGHV_HCV), row.names = FALSE)
 ```
 
 
 
 ## Data visualization
 
-Lets look at the gene usage data with ggplot2.
+Lets visualize the gene usage with ggplot2.
 
 ```{r, fig.height = 6, fig.width = 10}
 # we can compute the total number of rearrangements per sample
@@ -132,18 +206,49 @@ ggplot(data = viz)+
 
 ## Analysis of differential gene usage with IgGeneUsage
 
-This is the main method of IgGeneUsage.
+This is the main method of IgGeneUsage. The primary input is the dataset 
+IGHV_HCV. Other inputs allow you to configure specific settings of the Markov 
+Chain Monte Carlo (MCMC) simulation.
+
+In this example we analyze IGHV_HCV with 2 MCMC chains (750 iterations each, 
+including 250 warm-ups) in parallel using 2 CPU cores. We compute for each 
+parameter of our model its 95% highest density interval (HDIs).
+
+Important remark: you should run your analysis using the default argument 
+values of the function DGU. These values have been carefully chosen to fit most 
+analyses for differential gene usage of immune repertoires. If any messages or 
+warnings are reported concerning the MCMC sampling, please consult the Stan 
+manual[^2] and adjust the MCMC arguments accordingly. If the warnings persist, 
+please submit an issue with a reproducible script at the Bioconductor support 
+site or on Github[^3].
 
 ```{r}
-# Differential gene usage (DGU)
-M <- DGU(usage.data = IGHV_HCV,
-         mcmc.warmup = 250,
-         mcmc.steps = 750,
-         mcmc.chains = 2,
-         mcmc.cores = 2,
-         hdi.level = 0.95,
-         adapt.delta = 0.95,
-         max.treedepth = 10)
+M <- DGU(usage.data = IGHV_HCV, # input data
+         mcmc.warmup = 250, # how many MCMC warm-ups per chain (default: 500)
+         mcmc.steps = 750, # how many MCMC steps per chain (default: 1,500)
+         mcmc.chains = 2, # how many MCMC chain to run (default: 4)
+         mcmc.cores = 2, # how many PC cores to use? (e.g. parallel chains)
+         hdi.level = 0.95, # highest density interval level (default: 95%=0.95)
+         adapt.delta = 0.95, # MCMC target acceptance rate (default: 0.95)
+         max.treedepth = 10) # tree depth evaluated at each step (default: 12)
+```
+
+
+## Output
+
+The following objects are provided as part of the output of DGU:
+  
+  * glm.summary (main results of IgGeneUsage): quantitative summary of 
+  differential gene usage  (see section 'Results')
+  * test.stats: alternative quantitative summary of differential gene usage 
+  estimated with two frequentist methods (the Welch's t-test and the Wilcoxon 
+  signed-rank test)
+  * glm: rstan ('stanfit') object of the fitted model $rightarrow$ you can use 
+  this for further checks of your model (see section 'Model checking')
+  * ppc.data: data on posterior predictive checks (see section 'Model checking')
+
+```{r}
+summary(M)
 ```
 
 
@@ -151,17 +256,19 @@ M <- DGU(usage.data = IGHV_HCV,
 
 ## Model checking
 
-Do not blindly trust the model $\rightarrow$ check it extensively. 
+Do not blindly trust your model $\rightarrow$ check it extensively. You can
+use the object glm for these checks.
 
   * Checklist of successful MCMC sampling[^2]:
       * no divergences, no excessive warnings from rstan, Rhat < 1.05, 
-      high Neff (see object glm.stats, glm and Stan documentation)
+      high Neff
   * Checklist for valid model:
       * observed data can be replicated with the fitted model $\rightarrow$ 
       posterior predictive checks
       * leave-one-out analysis
 
 [^2]: https://mc-stan.org/misc/warnings.html
+[^3]: https://github.com/snaketron/IgGeneUsage/issues
 
 ### MCMC sampling
 
@@ -174,19 +281,22 @@ rstan::check_hmc_diagnostics(M$glm)
   * Rhat and Neff
 
 ```{r, fig.height = 3, fig.width = 8}
-grid.arrange(rstan::stan_rhat(object = M$glm),
-             rstan::stan_ess(object = M$glm),
-             nrow = 1)
+gridExtra::grid.arrange(rstan::stan_rhat(object = M$glm),
+                        rstan::stan_ess(object = M$glm),
+                        nrow = 1)
 ```
 
 
 ### Posterior predictive checks: repertoire-specific
 
-IgGeneUsage has built-in checks for repertoire-specific posterior 
-prediction of gene usage. We show the predictions (y-axis) of the model,
-and compare them against the observed data (x-axis). If the points are near 
-the diagnoal $\rightarrow$ accurate prediction. Errors show 95% HDI of mean
-posterior prediction (shown in counts).
+IgGeneUsage has built-in checks for repertoire-specific posterior prediction 
+of gene usage. It uses the fitted model to predict the usage of each gene in 
+a given repertoire (y-axis). Error bars show 95% HDI of mean posterior 
+prediction. The predictions can be compared with the observed data (x-axis). 
+For points near the diagnoal $\rightarrow$ accurate prediction.
+
+The following figure shows that our model can reproduce the fitted data 
+$\rightarrow$ indicator of a valid model.
 
 ```{r, fig.height = 10, fig.width = 10}
 ggplot(data = M$ppc.data$ppc.repertoire)+
@@ -202,7 +312,8 @@ ggplot(data = M$ppc.data$ppc.repertoire)+
   scale_x_log10()+
   scale_y_log10()+
   xlab(label = "Observed usage [counts]")+
-  ylab(label = "Predicted usage [counts]")
+  ylab(label = "Predicted usage [counts]")+
+  annotation_logticks(base = 10, sides = "lb")
 ```
 
 
@@ -210,11 +321,11 @@ ggplot(data = M$ppc.data$ppc.repertoire)+
 
 ### Posterior predictive checks: overall
 
-IgGeneUsage has built-in checks for gene-specific posterior prediction 
-of gene usage within biological conditions. We show the predictions (y-axis) 
-of the model, and compare them against the observed mean usage (x-axis). If 
-the points are near the diagnoal $\rightarrow$ accurate prediction. Errors
-show 95% HDI of mean posterior prediction.
+IgGeneUsage has built-in checks for gene-specific posterior prediction of gene 
+usage within each biological condition. We show the predictions (y-axis) of 
+the model, and compare them against the observed mean usage (x-axis). If the 
+points are near the diagnoal $\rightarrow$ accurate prediction. Errors show 
+95% HDI of mean posterior prediction.
 
 ```{r, fig.height=5, fig.width = 6}
 ggplot(data = M$ppc.data$ppc.gene)+
@@ -226,7 +337,10 @@ ggplot(data = M$ppc.data$ppc.gene)+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
   xlab(label = "Observed usage [%]")+
-  ylab(label = "Predicted usage [%]")
+  ylab(label = "Predicted usage [%]")+
+  scale_x_log10()+
+  scale_y_log10()+
+  annotation_logticks(base = 10, sides = "lb")
 ```
 
 
@@ -235,11 +349,32 @@ ggplot(data = M$ppc.data$ppc.gene)+
 
 ## Results
 
-Next we show results of IgGeneUsage $\rightarrow$ probability of differential
-gene usage ($\pi$) shown on the y-axis for different genes (shown as points). 
-Names of genes with $\pi > 0.95$ are shown.
+Next we present a table with the main results of IgGeneUsage contained in the 
+data.frame glm.summary. Each row of glm.summary summarizes the degree of 
+differential gene usage in a specific immune gene using two metrics (effect 
+size and pmax)
 
-```{r, fig.height=4, fig.width = 5}
+Legend:
+  
+  * effect: effect size ($\gamma$ from model $M$) on differential gene usage 
+  (mean, median standard error (se), standard deviation (sd), L (low boundary 
+  of 95% HDI), H (high boundary of 95% HDI))
+  * contrast: the direction of the effect (e.g. tumor - healthy)
+  * pmax: probability of differential gene usage ($\pi$ from model $M$)
+
+```{r}
+kable(x = head(M$glm.summary), row.names = FALSE, digits = 3)
+```
+
+
+The effect size and $\pi$ are related. Lets visualize them for each gene (shown 
+as a point). Names are shown of genes with $\pi \geq 0.95$. Dashed horizontal 
+line represents null-effect ($\gamma = 0$). Notice that the gene with $\pi 
+\approx 1$ also has an effect size whose 95% HDI (error bar) does not overlap 
+the null-effect. The genes with high degree of differential usage are easy to 
+detect with this figure.
+
+```{r, fig.height = 4, fig.width = 6}
 # format data
 stats <- M$glm.summary
 stats <- stats[order(abs(stats$effect_mean), decreasing = FALSE), ]
@@ -247,25 +382,23 @@ stats$gene_fac <- factor(x = stats$gene_name, levels = stats$gene_name)
 
 stats <- merge(x= stats, y = M$test.stats, by = "gene_name")
 
-ggplot()+
-  geom_point(data = stats[stats$pmax < 0.95, ], aes(y = pmax, x = ''),
-             position = position_jitter(width = 0.25, height = 0))+
-  geom_text(data = stats[stats$pmax >= 0.95, ], size = 4, 
-                  aes(y = pmax, x = '', label = gene_name), 
-                  position = position_jitter(width = 0.5, height = 0))+
-  theme_bw(base_size = 12)+
-  theme(legend.position = "top")+
-  xlab(label = "")+
-  ylab(label = expression(pi))+
-  ylim(c(0.5, 1))
-```
 
+ggplot(data = stats)+
+  geom_hline(yintercept = 0, linetype = "dashed", col = "gray")+
+  geom_errorbar(aes(x = pmax, y = effect_mean, ymin = effect_L, 
+                    ymax = effect_H), col = "darkgray")+
+  geom_point(aes(x = pmax, y = effect_mean))+
+  geom_text_repel(data = stats[stats$pmax >= 0.95, ],
+                  aes(x = pmax, y = effect_mean, label = gene_fac))+
+  theme_bw(base_size = 9)+
+  xlab(label = expression(pi))
+```
 
 
 ### Promising hits
 
 Lets visualize the observed data of the genes with high probability of 
-differential gene usage ($\pi > 0.95$). Here we show the gene usage in %.
+differential gene usage ($\pi \geq 0.95$). Here we show the gene usage in %.
 
 ```{r, fig.height = 5, fig.width = 8}
 promising.genes <- stats$gene_name[stats$pmax >= 0.95]
@@ -324,11 +457,11 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
 Despite the fact that the data is not normaly distributed, we performed the
 analysis of differential gene usage with the T-test. Prior to using the T-test, 
 we must convert the usage frequencies into proportions. This is automatically
-done by IgGeneUsage.
+done by IgGeneUsage (object test.stats).
 
 Next, we compare the probabilities of differential gene usage ($\pi$) with the 
 FDR corrected P-values (-log10 scale) from the T-test. Dashed lines show 
-significancelevels of 0.05 and 0.01. We observe few disagreements between the 
+significance levels of 0.05 and 0.01. We observe few disagreements between the 
 two tests. Lets inspect them in more detail.
 
 ```{r, fig.height=6, fig.width = 10}
@@ -415,7 +548,7 @@ data). Prior to using the U-test, we must again convert the usage frequencies
 into proportions. This is automatically done by IgGeneUsage.
 
 Lets also compare $\pi$ with the FDR corrected P-values (-log10 scale) from 
-the U-test. Dashed lines show significancelevels of 0.05 and 0.01. The U-test 
+the U-test. Dashed lines show significance levels of 0.05 and 0.01. The U-test 
 finds no evidence of differential gene usage.
 
 ```{r, fig.height=6, fig.width = 10}
@@ -442,16 +575,18 @@ ggplot()+
 # Case Study II
 
 For our second case study we use a dataset from a study evaluating 
-vaccine-induced changes in B-cell populations [^3]. The data is publicly 
+vaccine-induced changes in B-cell populations [^5]. The data is publicly 
 provided via the R-package alakazam (version 0.2.11). The IGHV family usage is
 reported in four B-cell populations (repertoires IgM, IgD, IgG and IgA) across 
 two timepoints (conditions = -1 hour vs. +7 days). In this case study we 
 investigate the overal effect of the vaccine on the IGHV family usage.
 
-[^3]: Laserson U and Vigneault F, et al. High-resolution antibody dynamics of
+[^5]: Laserson U and Vigneault F, et al. High-resolution antibody dynamics of
 vaccine-induced immune responses. Proc Natl Acad Sci USA. 2014 111:4928-33.
 
 ## Input data
+The data is already formatted such that it can directly be passed as input to
+IgGeneUsage. Lets load the data, and to inspect its content.
 
 ```{r}
 data(Ig, package = "IgGeneUsage")
@@ -459,8 +594,7 @@ data(Ig, package = "IgGeneUsage")
 
 
 ```{r}
-kable(x = head(Ig), 
-      row.names = FALSE)
+kable(x = head(Ig), row.names = FALSE)
 ```
 
 
@@ -504,7 +638,7 @@ ggplot(data = viz)+
 ```{r}
 M <- DGU(usage.data = Ig,
          mcmc.warmup = 500,
-         mcmc.steps = 1000,
+         mcmc.steps = 1500,
          mcmc.chains = 2,
          mcmc.cores = 2,
          hdi.level = 0.95,
@@ -528,9 +662,9 @@ rstan::check_hmc_diagnostics(M$glm)
   * Rhat and Neff
 
 ```{r, fig.height = 3, fig.width = 8}
-grid.arrange(rstan::stan_rhat(object = M$glm),
-             rstan::stan_ess(object = M$glm),
-             nrow = 1)
+gridExtra::grid.arrange(rstan::stan_rhat(object = M$glm),
+                        rstan::stan_ess(object = M$glm),
+                        nrow = 1)
 ```
 
 
@@ -550,7 +684,8 @@ ggplot(data = M$ppc$ppc.repertoire)+
   scale_x_log10()+
   scale_y_log10()+
   xlab(label = "Observed usage [counts]")+
-  ylab(label = "Predicted usage [counts]")
+  ylab(label = "Predicted usage [counts]")+
+  annotation_logticks(base = 10, sides = "bl")
 ```
 
 
@@ -568,18 +703,26 @@ ggplot(data = M$ppc.data$ppc.gene)+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
   xlab(label = "Observed usage [%]")+
-  ylab(label = "Predicted usage [%]")
+  ylab(label = "Predicted usage [%]")+
+  scale_x_log10()+
+  scale_y_log10()+
+  annotation_logticks(base = 10, sides = "bl")
 ```
 
 
 
 
 ## Results
+Main results:
 
-Lets visualize the probability of differential gene usage ($\pi$) for different
-genes (shown as points). There are no witn $\pi > 0.95$.
+```{r}
+kable(x = M$glm.summary, row.names = FALSE, digits = 3)
+```
 
-```{r, fig.height = 4, fig.width = 5}
+The effect size and $\pi$ are related. Lets visualize them for each gene (shown 
+as a point). There are no genes with $\pi \approx 1$.
+
+```{r, fig.height = 4, fig.width = 6}
 # format data
 stats <- M$glm.summary
 stats <- stats[order(abs(stats$effect_mean), decreasing = FALSE), ]
@@ -587,20 +730,17 @@ stats$gene_fac <- factor(x = stats$gene_name, levels = stats$gene_name)
 
 stats <- merge(x= stats, y = M$test.stats, by = "gene_name")
 
-ggplot()+
-  geom_point(data = stats[stats$pmax < 0.95, ], aes(y = pmax, x = ''),
-             position = position_jitter(width = 0.25, height = 0))+
-  # geom_text(data = stats[stats$pmax >= 0.95, ], size = 4, 
-  #                 aes(y = pmax, x = '', label = gene_name), 
-  #                 position = position_jitter(width = 0.5, height = 0))+
-  theme_bw(base_size = 12)+
-  theme(legend.position = "top")+
-  xlab(label = "")+
-  ylab(label = expression(pi))+
-  ylim(c(0.5, 1))
+ggplot(data = stats)+
+  geom_hline(yintercept = 0, linetype = "dashed", col = "gray")+
+  geom_errorbar(aes(x = pmax, y = effect_mean, ymin = effect_L, 
+                    ymax = effect_H), col = "darkgray")+
+  geom_point(aes(x = pmax, y = effect_mean))+
+  geom_text_repel(data = stats[stats$pmax >= 0.95, ],
+                  aes(x = pmax, y = effect_mean, label = gene_fac))+
+  theme_bw(base_size = 9)+
+  xlab(label = expression(pi))+
+  scale_x_continuous(limits = c(0.48,  1))
 ```
-
-
 
 
 
@@ -612,7 +752,7 @@ ggplot()+
              linetype = "dashed", col = "darkgray")+
   geom_point(data = stats, col = "red", size = 2,
              aes(x = pmax, y = -log10(t.test.fdr.pvalue)))+
-  geom_text_repel(data = stats[stats$pmax >= 0.8, ], 
+  geom_text_repel(data = stats[stats$pmax >= 0.7, ], 
                   aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
                       label = gene_name), size = 4, 
                   min.segment.length = 0.1)+
@@ -623,7 +763,6 @@ ggplot()+
   theme(legend.position = "top")+
   scale_color_discrete(name = '')
 ```
-
 
 
 ### Outlier: IGHV5
@@ -723,23 +862,21 @@ net charge of a CDR3 sequence by adding up the individual residue charges.
 
 
 ## Input data
+The data is already formatted such that it can directly be passed as input to
+IgGeneUsage. Lets load the data, and to inspect its content.
 
 ```{r}
 data(CDR3_Epitopes, package = "IgGeneUsage")
 ```
 
-
-
 ```{r}
-kable(x = head(CDR3_Epitopes), 
-      row.names = FALSE)
+kable(x = head(CDR3_Epitopes), row.names = FALSE)
 ```
 
 
 
 
 ## Data visualization
-
 Lets look at the input data with ggplot2.
 
 ```{r, fig.height = 4, fig.width = 7}
@@ -824,10 +961,11 @@ ggplot(data = M$ppc.data$ppc.repertoire)+
              shape = 21, size = 2.5)+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
+  xlab(label = "Observed usage [counts]")+
+  ylab(label = "Predicted usage [counts]")+
   scale_x_log10()+
   scale_y_log10()+
-  xlab(label = "Observed usage [counts]")+
-  ylab(label = "Predicted usage [counts]")
+  annotation_logticks(base = 10, sides = "bl")
 ```
 
 
@@ -844,7 +982,10 @@ ggplot(data = M$ppc.data$ppc.gene)+
   theme_bw(base_size = 12)+
   theme(legend.position = "top")+
   xlab(label = "Observed usage [%]")+
-  ylab(label = "Predicted usage [%]")
+  ylab(label = "Predicted usage [%]")+
+  scale_x_log10()+
+  scale_y_log10()+
+  annotation_logticks(base = 10, sides = "bl")
 ```
 
 
@@ -852,26 +993,35 @@ ggplot(data = M$ppc.data$ppc.gene)+
 
 
 ## Results
+Main results:
+
+```{r}
+kable(x = head(M$glm.summary), row.names = FALSE, digits = 3)
+```
+
+The effect size and $\pi$ are related. Lets visualize them for each gene (shown 
+as a point). There are couple of net-charges groups with $\pi \approx 1$.
 
 ```{r, fig.height = 4, fig.width = 6}
+# format data
 stats <- M$glm.summary
 stats <- stats[order(abs(stats$effect_mean), decreasing = FALSE), ]
 stats$gene_fac <- factor(x = stats$gene_name, levels = stats$gene_name)
-stats <- merge(x= stats, y = M$test.stats, by = "gene_name")
 
-ggplot()+
-  geom_point(data = stats[stats$pmax < 0.95, ], aes(y = pmax, x = ''),
-             position = position_jitter(width = 0.25, height = 0))+
-   geom_label_repel(data = stats[stats$pmax >= 0.95, ], size = 5, 
-                  aes(y = pmax, x = '', label = gene_name))+
-  theme_bw(base_size = 12)+
-  theme_bw(base_size = 12)+
-  theme(legend.position = "top")+
-  xlab(label = "")+
-  ylab(label = expression(pi))+
-  ylim(c(0.5, 1))
+stats <- merge(x = stats, y = M$test.stats, by = "gene_name")
+
+
+ggplot(data = stats)+
+  geom_hline(yintercept = 0, linetype = "dashed", col = "gray")+
+  geom_errorbar(aes(x = pmax, y = effect_mean, ymin = effect_L, 
+                    ymax = effect_H), col = "darkgray")+
+  geom_point(aes(x = pmax, y = effect_mean))+
+  geom_text_repel(data = stats[stats$pmax >= 0.95, ],
+                  aes(x = pmax, y = effect_mean, label = gene_fac))+
+  theme_bw(base_size = 9)+
+  xlab(label = expression(pi))+
+  scale_x_continuous(limits = c(0.48,  1))
 ```
-
 
 
 ## Comparison with the Welch's t-test
@@ -939,3 +1089,5 @@ ggplot()+
   ylab(label = "Gene usage [%]")+
   xlab(label = '')
 ```
+
+

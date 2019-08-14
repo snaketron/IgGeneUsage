@@ -38,13 +38,13 @@ DGU <- function(usage.data,
 
 
   # contrast
-  contrast <- paste("Contrast: ", unique(usage.data$Xorg[usage.data$X == 1]),
+  contrast <- paste("C: ", unique(usage.data$Xorg[usage.data$X == 1]),
                     " - ", unique(usage.data$Xorg[usage.data$X == -1]),
                     sep = '')
 
 
   # model
-  cat("Compiling model ... \n")
+  message("Compiling model ... \n")
   rstan::rstan_options(auto_write = TRUE)
   model.file <- system.file("extdata", "zibb.stan",
                             package = "IgGeneUsage")
@@ -79,7 +79,7 @@ DGU <- function(usage.data,
 
 
   # get summary
-  cat("Computing summaries ... \n")
+  message("Computing summaries ... \n")
   glm.summary <- rstan::summary(object = glm, digits = 4,
                                 pars = "beta_gene",
                                 prob = c(0.5, (1-hdi.level)/2,
@@ -95,12 +95,12 @@ DGU <- function(usage.data,
 
 
   # extract data
-  cat("Posterior extraction ... \n")
+  message("Posterior extraction ... \n")
   glm.ext <- rstan::extract(object = glm)
 
 
   # get pmax
-  cat("Computing probability of DGU ... \n")
+  message("Computing probability of DGU ... \n")
   glm.summary$pmax <- getPmax(glm.ext = glm.ext)
 
 
@@ -109,7 +109,7 @@ DGU <- function(usage.data,
 
 
   # ppc
-  cat("Computing posterior predictions ... \n")
+  message("Computing posterior predictions ... \n")
   ppc.data <- list(
     ppc.repertoire = getPpc(glm.ext = glm.ext,
                             usage.data = usage.data,
@@ -121,7 +121,7 @@ DGU <- function(usage.data,
 
 
   # frequentist tests, merge data
-  cat("Computing frequentist DGU ... \n")
+  message("Computing frequentist DGU ... \n")
   t.test.stats <- getTTestStats(usage.data = usage.data)
   u.test.stats <- getManUStats(usage.data = usage.data)
   test.stats <- merge(x = t.test.stats, y = u.test.stats, by = "gene_name")

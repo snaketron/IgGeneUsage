@@ -3,6 +3,7 @@
 export(DGU)
 import(Rcpp)
 import(methods)
+import(StanHeaders)
 import(SummarizedExperiment)
 importFrom(rstan,sampling)
 importFrom(rstan,summary)
