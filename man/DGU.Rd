@@ -56,19 +56,19 @@ regression (see vignette 'User Manual: IgGeneUsage').
 }
 
 \value{
-\item{glm}{stanfit object}
 \item{glm.summary}{differential gene usage statistics for each gene.
 1) es = effect size on differential gene usage (mean, median standard error 
 (se), standard deviation (sd), L (low boundary of HDI), H (high boundary of 
 HDI); 2) contrast = direction of the effect 3) pmax = probability of 
 differential gene usage}
-\item{ppc.data}{two types of posterior predictive checks: 1) repertoire-
-specific, 2) gene-specific}
 \item{test.summary}{differential gene usage statistics computed with the 
 Welch's t-test (columns start with 't'), and Wilcoxon signed-rank test (columns 
 start with 'u'). For both test report P-values, FDR-corrected P-values, 
 Bonferroni-corrected P-values. Additionally, we report t-value and 95\% CI 
 (from the t-test) and U-value (from the Wilcoxon signed-rank test).}
+\item{glm}{stanfit object}
+\item{ppc.data}{two types of posterior predictive checks: 1) repertoire-
+specific, 2) gene-specific}
 }
 
 \author{

@@ -141,29 +141,29 @@ getPpcRepertoire <- function(glm,
 
   yhat.count$par <- NULL
   yhat.count$par.name <- NULL
-  colnames(yhat.count)[1:6] <- paste(colnames(yhat.count)[1:6],
+  colnames(yhat.count)[1:6] <- paste("ppc", colnames(yhat.count)[1:6],
                                      "count", sep = "_")
+  
   yhat.prop$par <- NULL
   yhat.prop$par.name <- NULL
-  colnames(yhat.prop)[1:6] <- paste(colnames(yhat.prop)[1:6],
+  colnames(yhat.prop)[1:6] <- paste("ppc", colnames(yhat.prop)[1:6],
                                    "prop", sep = "_")
-  colnames(yhat.count) <- gsub(pattern = '_', replacement = '.',
-                               x = colnames(yhat.count))
+  
   yhat <- merge(x = yhat.count, y = yhat.prop, by = c("G", "R"))
-  colnames(yhat) <- gsub(pattern = '_', replacement = '.',
-                         x = colnames(yhat))
   rm(yhat.count, yhat.prop)
 
-  yhat$sample.name <- NA
-  yhat$gene.name <- NA
-  yhat$observed.count <- NA
-  yhat$observed.prop <- NA
+  yhat$condition <- NA
+  yhat$sample_name <- NA
+  yhat$gene_name <- NA
+  yhat$observed_count <- NA
+  yhat$observed_prop <- NA
 
   for(i in 1:nrow(yhat)) {
-    yhat$sample.name[i] <- usage.data$sample_names[yhat$R[i]]
-    yhat$gene.name[i] <- usage.data$gene_names[yhat$G[i]]
-    yhat$observed.count[i] <- usage.data$Y[yhat$G[i], yhat$R[i]]
-    yhat$observed.prop[i] <- yhat$observed.count[i]/usage.data$N[yhat$R[i]]
+    yhat$sample_name[i] <- usage.data$sample_names[yhat$R[i]]
+    yhat$gene_name[i] <- usage.data$gene_names[yhat$G[i]]
+    yhat$observed_count[i] <- usage.data$Y[yhat$G[i], yhat$R[i]]
+    yhat$observed_prop[i] <- yhat$observed_count[i]/usage.data$N[yhat$R[i]]
+    yhat$condition[i] <- usage.data$Xorg[yhat$sample_name[i]]
   }
 
   return (yhat)
@@ -197,16 +197,17 @@ getPpcGene <- function(glm,
 
   yhat$par <- NULL
   yhat$par.name <- NULL
-  colnames(yhat)[1:6] <- paste(colnames(yhat)[1:6], "prop", sep = "_")
-  colnames(yhat) <- gsub(pattern = '_', replacement = '.', x = colnames(yhat))
+  colnames(yhat)[1:6] <- paste("ppc", colnames(yhat)[1:6], "prop", sep = "_")
 
-  yhat$gene.name <- NA
-  yhat$observed.prop <- NA
-  for(i in 1:nrow(yhat)) {
-    yhat$gene.name[i] <- usage.data$gene_names[yhat$G[i]]
-    yhat$observed.prop[i] <- mean(usage.data$Y[yhat$G[i], ]/usage.data$N)
-  }
   yhat$X <- ifelse(test = yhat$X == 1, yes = 1, no = -1)
+  yhat$condition <- NA
+  yhat$gene_name <- NA
+  yhat$observed_prop <- NA
+  for(i in 1:nrow(yhat)) {
+    yhat$gene_name[i] <- usage.data$gene_names[yhat$G[i]]
+    yhat$observed_prop[i] <- mean(usage.data$Y[yhat$G[i], ]/usage.data$N)
+    yhat$condition[i] <- usage.data$Xorg[usage.data$X == yhat$X[i]][1]
+  }
 
   return (yhat)
 }
