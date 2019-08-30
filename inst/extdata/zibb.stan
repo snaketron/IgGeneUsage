@@ -66,7 +66,7 @@ transformed parameters {
   // non-centered params (at repertoire level)
   alpha_gene = alpha_grand + alpha_sigma * alpha_raw;
   beta_gene = beta_grand + beta_gene_sigma * beta_gene_raw;
-  
+
   // non-centered params (at gene level)
   for(i in 1:N_sample) {
     beta[i] = beta_gene + beta_sigma * beta_raw[i];
@@ -109,10 +109,10 @@ generated quantities {
   // PPC: count usage
   int Yhat [N_gene, N_sample];
 
-  // PPC: percent usage
+  // PPC: proportion usage
   real Yhat_individual [N_gene, N_sample];
 
-  // PPC: percent usage at a gene level
+  // PPC: proportion usage at a gene level
   matrix [2, N_gene] Yhat_gene;
 
   // LOG-LIK
@@ -128,10 +128,10 @@ generated quantities {
         Yhat_individual[j, i] = 0;
       }
       else {
-        Yhat_individual[j, i] = Yhat[j,i]/Nreal[i]*100.0;
+        Yhat_individual[j, i] = Yhat[j,i]/Nreal[i];
       }
     }
-    Yhat_gene[1, j] = inv_logit(alpha_gene[j]+beta_gene[j]*1.0)*100.0;
-    Yhat_gene[2, j] = inv_logit(alpha_gene[j]+beta_gene[j]*(-1.0))*100.0;
+    Yhat_gene[1, j] = inv_logit(alpha_gene[j]+beta_gene[j]*1.0);
+    Yhat_gene[2, j] = inv_logit(alpha_gene[j]+beta_gene[j]*(-1.0));
   }
 }

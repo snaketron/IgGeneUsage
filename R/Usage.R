@@ -21,8 +21,8 @@ DGU <- function(usage.data,
     usage.data.raw <- usage.data
     usage.data <- convertSummarizedExperiment(usage.data.se = usage.data.raw)
   }
-  
-  
+
+
   # check inputs
   checkInput(usage.data = usage.data,
              mcmc.chains = as.integer(x = mcmc.chains),
@@ -41,7 +41,7 @@ DGU <- function(usage.data,
   contrast <- paste(unique(usage.data$Xorg[usage.data$X == 1]),
                     " - ", unique(usage.data$Xorg[usage.data$X == -1]),
                     sep = '')
-  
+
 
   # model
   message("Compiling model ... \n")
@@ -110,13 +110,12 @@ DGU <- function(usage.data,
 
   # ppc
   message("Computing posterior predictions ... \n")
-  ppc.data <- list(
-    ppc.repertoire = getPpc(glm.ext = glm.ext,
-                            usage.data = usage.data,
-                            hdi.level = hdi.level),
-    ppc.gene = getGroupStats(glm.ext = glm.ext,
-                             usage.data = usage.data,
-                             hdi.level = hdi.level))
+  ppc.data <- list(ppc.repertoire = getPpcRepertoire(glm = glm,
+                                                     usage.data = usage.data,
+                                                     hdi.level = hdi.level),
+                   ppc.gene = getPpcGene(glm = glm,
+                                         usage.data = usage.data,
+                                         hdi.level = hdi.level))
 
 
 
@@ -128,12 +127,10 @@ DGU <- function(usage.data,
 
 
   # result
-  result <- list(glm = glm,
-                 glm.summary = glm.summary,
+  result <- list(glm.summary = glm.summary,
+                 test.summary = test.summary,
+                 glm = glm,
                  ppc.data = ppc.data,
-                 usage.data = usage.data,
-                 test.summary = test.summary)
-
-
+                 usage.data = usage.data)
   return (result)
 }
