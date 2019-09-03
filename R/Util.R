@@ -104,6 +104,8 @@ getPmax <- function(glm.ext) {
                  beta.data = beta.data,
                  FUN.VALUE = numeric(length = 1))
 
+  # convert from [0.5, 1] -> [0, 1]
+  pmax <- 2 * pmax - 1
   return(pmax)
 }
 
@@ -143,12 +145,12 @@ getPpcRepertoire <- function(glm,
   yhat.count$par.name <- NULL
   colnames(yhat.count)[1:6] <- paste("ppc", colnames(yhat.count)[1:6],
                                      "count", sep = "_")
-  
+
   yhat.prop$par <- NULL
   yhat.prop$par.name <- NULL
   colnames(yhat.prop)[1:6] <- paste("ppc", colnames(yhat.prop)[1:6],
                                    "prop", sep = "_")
-  
+
   yhat <- merge(x = yhat.count, y = yhat.prop, by = c("G", "R"))
   rm(yhat.count, yhat.prop)
 

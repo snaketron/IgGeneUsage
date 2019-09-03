@@ -124,7 +124,7 @@ Additionally, we report the probability of differential gene usage ($\pi$):
 \pi = \max\left(\int_{\gamma = -\infty}^{0} p(\gamma)\mathrm{d}\gamma, 
 \int_{\gamma = 0}^{\infty} p(\gamma)\mathrm{d}\gamma\right)
 \end{align}
-with $\pi = 1$ for genes with strong differential usage, and $\pi = 0.5$ for 
+with $\pi = 1$ for genes with strong differential usage, and $\pi = 0$ for 
 genes with negligible differential gene usage. Both metrics are computed based
 on the posterior distribution of $\gamma$, and are thus related. We find $\pi$ 
 slightly easier to interpret.
@@ -357,7 +357,7 @@ kable(x = head(M$glm.summary), row.names = FALSE, digits = 3)
 ```
 
 The effect size and $\pi$ are related. Lets visualize them for each gene (shown 
-as a point). Names are shown of genes with $\pi \geq 0.95$. Dashed horizontal 
+as a point). Names are shown of genes with $\pi \geq 0.9$. Dashed horizontal 
 line represents null-effect ($\gamma = 0$). Notice that the gene with $\pi 
 \approx 1$ also has an effect size whose 95% HDI (error bar) does not overlap 
 the null-effect. The genes with high degree of differential usage are easy to 
@@ -376,7 +376,7 @@ ggplot(data = stats)+
   geom_errorbar(aes(x = pmax, y = es_mean, ymin = es_L, ymax = es_H), 
                 col = "darkgray")+
   geom_point(aes(x = pmax, y = es_mean))+
-  geom_text_repel(data = stats[stats$pmax >= 0.95, ],
+  geom_text_repel(data = stats[stats$pmax >= 0.9, ],
                   aes(x = pmax, y = es_mean, label = gene_fac))+
   theme_bw(base_size = 12)+
   xlab(label = expression(pi))
@@ -385,10 +385,10 @@ ggplot(data = stats)+
 
 ### Promising hits
 Lets visualize the observed data of the genes with high probability of 
-differential gene usage ($\pi \geq 0.95$). Here we show the gene usage in %.
+differential gene usage ($\pi \geq 0.9$). Here we show the gene usage in %.
 
 ```{r, fig.height = 4, fig.width = 6}
-promising.genes <- stats$gene_name[stats$pmax >= 0.95]
+promising.genes <- stats$gene_name[stats$pmax >= 0.9]
 
 ppc.gene <- M$ppc.data$ppc.gene
 ppc.gene <- ppc.gene[ppc.gene$gene_name %in% promising.genes, ]
@@ -416,7 +416,7 @@ Lets also visualize the gene usage frequencies. Point size represents
 total usage in repertoire.
 
 ```{r, fig.height = 8, fig.width = 6}
-promising.genes <- stats$gene_name[stats$pmax >= 0.95]
+promising.genes <- stats$gene_name[stats$pmax >= 0.9]
 
 ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
   facet_wrap(facets = ~gene_name, ncol = 1, scales = "free_y")+
@@ -715,7 +715,7 @@ ggplot(data = stats)+
   geom_errorbar(aes(x = pmax, y = es_mean, ymin = es_L, ymax = es_H), 
                 col = "darkgray")+
   geom_point(aes(x = pmax, y = es_mean))+
-  geom_text_repel(data = stats[stats$pmax >= 0.95, ],
+  geom_text_repel(data = stats[stats$pmax >= 0.9, ],
                   aes(x = pmax, y = es_mean, label = gene_fac))+
   theme_bw(base_size = 12)+
   xlab(label = expression(pi))+
@@ -998,7 +998,7 @@ ggplot(data = stats)+
   geom_errorbar(aes(x = pmax, y = es_mean, ymin = es_L, ymax = es_H), 
                 col = "darkgray")+
   geom_point(aes(x = pmax, y = es_mean))+
-  geom_text_repel(data = stats[stats$pmax >= 0.95, ],
+  geom_text_repel(data = stats[stats$pmax >= 0.9, ],
                   aes(x = pmax, y = es_mean, label = gene_fac))+
   theme_bw(base_size = 12)+
   xlab(label = expression(pi))+
