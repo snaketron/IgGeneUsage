@@ -121,8 +121,8 @@ In the output of IgGeneUsage, we report the mean effect size ($\gamma$) and its
 of $\gamma$ excludes 0) are most likely to experience differential usage. 
 Additionally, we report the probability of differential gene usage ($\pi$):
 \begin{align}
-\pi = \max\left(\int_{\gamma = -\infty}^{0} p(\gamma)\mathrm{d}\gamma, 
-\int_{\gamma = 0}^{\infty} p(\gamma)\mathrm{d}\gamma\right)
+\pi = 2 \cdot \max\left(\int_{\gamma = -\infty}^{0} p(\gamma)\mathrm{d}\gamma, 
+\int_{\gamma = 0}^{\infty} p(\gamma)\mathrm{d}\gamma\right) - 1
 \end{align}
 with $\pi = 1$ for genes with strong differential usage, and $\pi = 0$ for 
 genes with negligible differential gene usage. Both metrics are computed based
