@@ -116,12 +116,12 @@ generated quantities {
   matrix [2, N_gene] Yhat_gene;
 
   // LOG-LIK
-  matrix [N_gene, N_sample] log_lik;
+  vector [N_gene] log_lik [N_sample];
 
   //TODO: speedup, run in C++ not big factor on performance
   for(j in 1:N_gene) {
     for(i in 1:N_sample) {
-      log_lik[j,i] = zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], z);
+      log_lik[i][j] = zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], z);
       Yhat[j, i] = zibb_rng(Y[j, i], N[i], a[i][j], b[i][j], z);
 
       if(Nreal[i] == 0.0) {
