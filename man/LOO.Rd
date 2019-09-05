@@ -1,26 +1,35 @@
-\name{DGU}
+\name{LOO}
 
 
 
-\alias{DGU}
+\alias{LOO}
 
 
 
 
 \title{
-Differential gene usage in immune repertoires
+Leave-one-out analysis for quantitative evaluation of the probability of DGU
 }
 
 
 
 \description{
 IgGeneUsage detects differential gene usage in immune repertoires that belong
-to two biological conditions.}
+to two biological conditions with its function DGU. To assert quantitatively
+the robustness of the estimated probability of DGU (pi), IgGeneUsage has a 
+built-in procedure for a fully Bayesian leave-one-out (LOO) analysis. During 
+each step of LOO, we discard the data of one of the repertoires, and use the 
+remaining data to analyze for DGU with IgGeneUsage. In each step we recorded 
+pi for all genes. Therefore, by evaluating the variability of pi for a given 
+gene, we can we assert quantitatively its robustness.
+
+Notice, however, that for datasets that include many repertoires (e.g. 100) LOO 
+can be computationally costly.}
 
 
 
 \usage{
-DGU(usage.data, mcmc.warmup, mcmc.steps,
+LOO(usage.data, mcmc.warmup, mcmc.steps,
     mcmc.chains, mcmc.cores, hdi.level,
     adapt.delta, max.treedepth)
 }
@@ -48,27 +57,17 @@ information.}
 
 
 \details{
-The input to IgGeneUsage is a table with usage frequencies for each gene of a
-repertoire that belongs to a particular biological condition. For the analysis 
-of differential gene usage between two biological conditions, IgGeneUsage 
-employs a Bayesian hierarchical model for zero-inflated beta-binomial (ZIBB)
-regression (see vignette 'User Manual: IgGeneUsage').
+IgGeneUsage invokes the function DGU in each LOO step. For more details
+see help for DGU or vignette 'User Manual: IgGeneUsage'.
 }
 
 \value{
-\item{glm.summary}{differential gene usage statistics for each gene.
-1) es = effect size on differential gene usage (mean, median standard error 
-(se), standard deviation (sd), L (low boundary of HDI), H (high boundary of 
-HDI); 2) contrast = direction of the effect; 3) pmax = probability of 
-differential gene usage}
-\item{test.summary}{differential gene usage statistics computed with the 
-Welch's t-test (columns start with 't'), and Wilcoxon signed-rank test (columns 
-start with 'u'). For both test report P-values, FDR-corrected P-values, 
-Bonferroni-corrected P-values. Additionally, we report t-value and 95\% CI 
-(from the t-test) and U-value (from the Wilcoxon signed-rank test).}
-\item{glm}{stanfit object}
-\item{ppc.data}{two types of posterior predictive checks: 1) repertoire-
-specific, 2) gene-specific}
+\item{loo.summary}{differential gene usage statistics for each gene of a given 
+LOO step. 1) es = effect size on differential gene usage (mean, median standard 
+error (se), standard deviation (sd), L (low boundary of HDI), H (high boundary 
+of HDI); 2) contrast = direction of the effect; 3) pmax = probability of 
+differential gene usage; 4) loo.id (LOO step ID); 5 Neff (effective sample 
+size), Rhat (potential scale reduction factor)}
 }
 
 \author{
@@ -86,8 +85,8 @@ head(Ig)
 # data(Ig_SE)
 
 
-# run differential gene usage (DGU)
-M <- DGU(usage.data = Ig,
+# run leave-one-out (LOO)
+L <- LOO(usage.data = Ig,
          mcmc.warmup = 500,
          mcmc.steps = 1500,
          mcmc.chains = 2,
@@ -98,4 +97,4 @@ M <- DGU(usage.data = Ig,
 }
 
 
-\seealso{LOO, Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE}
+\seealso{DGU, Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE}
