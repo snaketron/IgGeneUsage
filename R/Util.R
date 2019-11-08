@@ -247,15 +247,6 @@ getTTestStats <- function(usage.data) {
   tout.summary <- do.call(rbind, lapply(tout, getTTestSummary))
   tout.summary$gene_name <- usage.data$gene_names
 
-
-  # Removed (01. Sep. 2019)
-  # make sure NaNs and NAs are turned to 1's before correction
-  # tout.summary$t.test.pvalue <- ifelse(
-  #   test = is.finite(tout.summary$t.test.pvalue),
-  #   yes = tout.summary$t.test.pvalue,
-  #   no = 1)
-
-
   # multiple correction
   tout.summary$t.test.fdr.pvalue <- stats::p.adjust(
     p = tout.summary$t.test.pvalue, method = "fdr")
@@ -293,13 +284,6 @@ getManUStats <- function(usage.data) {
 
   mout.summary <- do.call(rbind, lapply(mout, getMSummary))
   mout.summary$gene_name <- usage.data$gene_names
-
-  # Removed (01. Sep. 2019)
-  # make sure NaNs and NAs are turned to 1's before correction
-  # mout.summary$u.test.pvalue <- ifelse(
-  #   test = is.finite(mout.summary$u.test.pvalue),
-  #   yes = mout.summary$u.test.pvalue,
-  #   no = 1)
 
   # multiple correction
   mout.summary$u.test.fdr.pvalue <- stats::p.adjust(
