@@ -164,7 +164,7 @@ kable(x = head(IGHV_HCV), row.names = FALSE)
 ## Data visualization
 Lets visualize the gene usage with ggplot2.
 
-```{r, fig.height = 6, fig.width = 10}
+```{r, fig.height = 5, fig.width = 8}
 # we can compute the total number of rearrangements per sample
 total.usage <- aggregate(gene_usage_count~sample_id+condition, 
                          FUN = sum, data = IGHV_HCV)
@@ -179,18 +179,19 @@ viz <- merge(x = IGHV_HCV, y = total.usage,
 # compute %
 viz$gene_usage_pct <- viz$gene_usage_count/viz$total*100
 
-# for this example lets only consider the top 50 genes
-# top <- aggregate(gene_usage_pct~gene_name, data = viz, FUN = mean)
-# top <- top[order(top$gene_usage_pct, decreasing = TRUE), ]
-# IGHV_HCV <- IGHV_HCV[IGHV_HCV$gene_name %in% top$gene_name[seq_len(40)], ]
-# viz <- viz[viz$gene_name %in% top$gene_name[seq_len(40)], ]
+# For this example lets only consider the top 50 genes
+# Hint: In real analyses you should not filter any gene
+top <- aggregate(gene_usage_pct~gene_name, data = viz, FUN = mean)
+top <- top[order(top$gene_usage_pct, decreasing = TRUE), ]
+IGHV_HCV <- IGHV_HCV[IGHV_HCV$gene_name %in% top$gene_name[seq_len(50)], ]
+viz <- viz[viz$gene_name %in% top$gene_name[seq_len(50)], ]
 
 # visualize
 ggplot(data = viz)+
   geom_point(aes(x = gene_name, y = gene_usage_pct, 
                  fill = condition, shape = condition),
              position = position_dodge(width = .7), stroke = 0)+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   ylab(label = "Usage [%]")+
   xlab(label = '')+
   theme(legend.position = "top")+
@@ -292,18 +293,20 @@ For points near the diagnoal $\rightarrow$ accurate prediction.
 The following figure shows that our model can reproduce the fitted data 
 $\rightarrow$ this is an indicator of a valid model.
 
-```{r, fig.height = 8, fig.width = 8}
+```{r, fig.height = 10, fig.width = 8}
 ggplot(data = M$ppc.data$ppc.repertoire)+
-  facet_wrap(facets = ~sample_name, ncol = 6)+
+  facet_wrap(facets = ~sample_name, ncol = 5)+
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
   geom_errorbar(aes(x = observed_count, y = ppc_mean_count, 
                     ymin = ppc_L_count, ymax = ppc_H_count), col = "darkgray")+
   geom_point(aes(x = observed_count, y = ppc_mean_count, 
-                 fill = condition), shape = 21, size = 2)+
-  theme_bw(base_size = 12)+
+                 fill = condition), shape = 21, size = 1)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
-  scale_x_log10()+
-  scale_y_log10()+
+  scale_x_log10(breaks = c(1, 10, 100, 1000), 
+                labels = expression(10^0, 10^1, 10^2, 10^3))+
+  scale_y_log10(breaks = c(1, 10, 100, 1000), 
+                labels = expression(10^0, 10^1, 10^2, 10^3))+
   xlab(label = "Observed usage [counts]")+
   ylab(label = "Predicted usage [counts]")+
   annotation_logticks(base = 10, sides = "lb")
@@ -325,8 +328,8 @@ ggplot(data = M$ppc.data$ppc.gene)+
   geom_errorbar(aes(x = observed_prop*100, ymin = ppc_L_prop*100, 
                     ymax = ppc_H_prop*100), col = "darkgray")+
   geom_point(aes(x = observed_prop*100, y = ppc_mean_prop*100, 
-                 fill = condition), shape = 21, size = 2)+
-  theme_bw(base_size = 12)+
+                 fill = condition), shape = 21, size = 1)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   xlab(label = "Observed usage [%]")+
   ylab(label = "Predicted usage [%]")+
@@ -378,7 +381,7 @@ ggplot(data = stats)+
   geom_point(aes(x = pmax, y = es_mean))+
   geom_text_repel(data = stats[stats$pmax >= 0.9, ],
                   aes(x = pmax, y = es_mean, label = gene_fac))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   xlab(label = expression(pi))
 ```
 
@@ -387,7 +390,7 @@ ggplot(data = stats)+
 Lets visualize the observed data of the genes with high probability of 
 differential gene usage ($\pi \geq 0.9$). Here we show the gene usage in %.
 
-```{r, fig.height = 4, fig.width = 6}
+```{r, fig.height = 3, fig.width = 6}
 promising.genes <- stats$gene_name[stats$pmax >= 0.9]
 
 ppc.gene <- M$ppc.data$ppc.gene
@@ -404,7 +407,7 @@ ggplot()+
              position = position_jitterdodge(jitter.width = 0.15, 
                                              jitter.height = 0, 
                                              dodge.width = 0.8))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   ylab(label = "Usage [%]")+
   xlab(label = '')
@@ -422,13 +425,13 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
   facet_wrap(facets = ~gene_name, ncol = 1, scales = "free_y")+
   geom_point(aes(x = sample_id, y = gene_usage_count, fill = condition, 
                  size = total/10^3), shape = 21)+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   ylab(label = "Usage [count]")+
   xlab(label = '')+
   theme(legend.position = "top")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
   scale_fill_manual(name = "Condition", values = c("orange", "#6666ff"))+
-  scale_size_continuous(name = "N (10^3)", range = c(2, 6))+
+  scale_size_continuous(name = expression("N ("*10^3*")"), range = c(1, 5))+
   ylab(label = "Usage [count]")+
   xlab(label = '')+
   scale_y_log10()+
@@ -453,14 +456,14 @@ ggplot()+
              linetype = "dashed", col = "darkgray")+
   geom_point(data = stats, col = "red", size = 2,
              aes(x = pmax, y = -log10(t.test.fdr.pvalue)))+
-  geom_text_repel(data = stats[stats$pmax >= 0.7, ], 
+  geom_text_repel(data = stats[stats$pmax >= 0.5, ], 
                   aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
                       label = gene_name), size = 4, 
                   min.segment.length = 0.1)+
   xlim(0, 1)+
   ylab(label = "-log10 (P-value) from t-test [FDR corrected]")+
   xlab(label = expression(pi))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   scale_color_discrete(name = '')
 ```
@@ -473,7 +476,7 @@ probable cause for the disagreement. Discarding information about the sample
 size, and thus about uncertainty could be an alternative explanation. Lets
 visualize the data for IGHV1-58 and IGHV3-72.
 
-```{r, fig.height = 4, fig.width = 6}
+```{r, fig.height = 3, fig.width = 6}
 promising.genes <- c("IGHV1-58", "IGHV3-72")
 
 ppc.gene <- M$ppc.data$ppc.gene
@@ -490,7 +493,7 @@ ggplot()+
              position = position_jitterdodge(jitter.width = 0.15, 
                                              jitter.height = 0, 
                                              dodge.width = 0.8))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   ylab(label = "Gene usage [%]")+
   xlab(label = '')
@@ -499,20 +502,20 @@ ggplot()+
 
 ### Outliers: IGHV1-58 and IGHV3-72 [counts]
 
-```{r, fig.height = 4, fig.width = 6}
+```{r, fig.height = 5, fig.width = 6}
 promising.genes <- c("IGHV1-58", "IGHV3-72")
 
 ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
   facet_wrap(facets = ~gene_name, ncol = 1, scales = "free_y")+
   geom_point(aes(x = sample_id, y = gene_usage_count, fill = condition, 
                  size = total/10^3), shape = 21)+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   ylab(label = "Usage [count]")+
   xlab(label = '')+
   theme(legend.position = "top")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
   scale_fill_manual(name = "Condition", values = c("orange", "#6666ff"))+
-  scale_size_continuous(name = "N (10^3)", range = c(2, 6))+
+  scale_size_continuous(name = expression("N ("*10^3*")"), range = c(1, 5))+
   ylab(label = "Usage [count]")+
   xlab(label = '')+
   scale_y_log10()+
@@ -538,14 +541,14 @@ ggplot()+
              linetype = "dashed", col = "darkgray")+
   geom_point(data = stats, col = "red", size = 2,
              aes(x = pmax, y = -log10(u.test.fdr.pvalue)))+
-  geom_text_repel(data = stats[stats$pmax >= 0.8, ], 
+  geom_text_repel(data = stats[stats$pmax >= 0.5, ], 
                   aes(x = pmax, y = -log10(u.test.fdr.pvalue), 
                       label = gene_name), size = 4, 
                   min.segment.length = 0.1)+
   xlim(0, 1)+
   ylab(label = "-log10 (P-value) from U-test [FDR corrected]")+
   xlab(label = expression(pi))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   scale_color_discrete(name = '')
 ```
@@ -602,7 +605,7 @@ ggplot(data = viz)+
                  shape = condition), stroke = 0, size = 3,
              position = position_jitterdodge(jitter.width = 0.25, 
                                              dodge.width = 0.75))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   ylab(label = "Usage [%]")+
   xlab(label = '')+
   theme(legend.position = "top")+
@@ -657,11 +660,13 @@ ggplot(data = M$ppc$ppc.repertoire)+
   geom_errorbar(aes(x = observed_count, y = ppc_mean_count, 
                     ymin = ppc_L_count, ymax = ppc_H_count), col = "darkgray")+
   geom_point(aes(x = observed_count, y = ppc_mean_count, 
-                 fill = condition), shape = 21, size = 2)+
-  theme_bw(base_size = 12)+
+                 fill = condition), shape = 21, size = 1)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
-  scale_x_log10()+
-  scale_y_log10()+
+  scale_x_log10(breaks = c(1, 10, 100, 1000), 
+                labels = expression(10^0, 10^1, 10^2, 10^3))+
+  scale_y_log10(breaks = c(1, 10, 100, 1000), 
+                labels = expression(10^0, 10^1, 10^2, 10^3))+
   xlab(label = "Observed usage [counts]")+
   ylab(label = "Predicted usage [counts]")+
   annotation_logticks(base = 10, sides = "bl")
@@ -678,8 +683,8 @@ ggplot(data = M$ppc.data$ppc.gene)+
   geom_errorbar(aes(x = observed_prop*100, ymin = ppc_L_prop*100, 
                     ymax = ppc_H_prop*100), col = "darkgray")+
   geom_point(aes(x = observed_prop*100, y = ppc_mean_prop*100, 
-                 fill = condition), shape = 21, size = 2)+
-  theme_bw(base_size = 12)+
+                 fill = condition), shape = 21, size = 1)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   xlab(label = "Observed usage [%]")+
   ylab(label = "Predicted usage [%]")+
@@ -699,8 +704,8 @@ kable(x = M$glm.summary, row.names = FALSE, digits = 3)
 ```
 
 The effect size and $\pi$ are related. Lets visualize them for each gene (shown 
-as a point). There are no genes with $\pi \approx 1$ $\rightarrow$ no evidence
-of differential gene usage based on IgGeneUsage. 
+as a point). There are no genes with $\pi \approx 1$ $\rightarrow$ no sufficiently
+strong evidence of differential gene usage based on IgGeneUsage. 
 
 ```{r, fig.height = 4, fig.width = 6}
 # format data
@@ -715,11 +720,10 @@ ggplot(data = stats)+
   geom_errorbar(aes(x = pmax, y = es_mean, ymin = es_L, ymax = es_H), 
                 col = "darkgray")+
   geom_point(aes(x = pmax, y = es_mean))+
-  geom_text_repel(data = stats[stats$pmax >= 0.9, ],
-                  aes(x = pmax, y = es_mean, label = gene_fac))+
-  theme_bw(base_size = 12)+
+  geom_text_repel(data = stats, aes(x = pmax, y = es_mean, label = gene_fac))+
+  theme_bw(base_size = 11)+
   xlab(label = expression(pi))+
-  scale_x_continuous(limits = c(0.48,  1))
+  xlim(0, 1)
 ```
 
 
@@ -732,14 +736,14 @@ ggplot()+
              linetype = "dashed", col = "darkgray")+
   geom_point(data = stats, col = "red", size = 2,
              aes(x = pmax, y = -log10(t.test.fdr.pvalue)))+
-  geom_text_repel(data = stats[stats$pmax >= 0.7, ], 
+  geom_text_repel(data = stats, 
                   aes(x = pmax, y = -log10(t.test.fdr.pvalue), 
                       label = gene_name), size = 4, 
                   min.segment.length = 0.1)+
   xlim(0, 1)+
   ylab(label = "-log10 (P-value) from t-test [FDR corrected]")+
   xlab(label = expression(pi))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   scale_color_discrete(name = '')
 ```
@@ -764,7 +768,7 @@ ggplot()+
              position = position_jitterdodge(jitter.width = 0.15, 
                                              jitter.height = 0, 
                                              dodge.width = 0.8))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")
 ```
 
@@ -778,13 +782,13 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
   facet_wrap(facets = ~gene_name, ncol = 1, scales = "free_y")+
   geom_point(aes(x = sample_id, y = gene_usage_count, fill = condition, 
                  size = total/10^3), shape = 21)+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   ylab(label = "Usage [count]")+
   xlab(label = '')+
   theme(legend.position = "top")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
   scale_fill_manual(name = "Condition", values = c("orange", "#6666ff"))+
-  scale_size_continuous(name = "N (10^3)", range = c(2, 6))+
+  scale_size_continuous(name = expression("N ("*10^3*")"), range = c(1, 5))+
   ylab(label = "Usage [count]")+
   xlab(label = '')+
   scale_y_log10()+
@@ -804,14 +808,14 @@ ggplot()+
              linetype = "dashed", col = "darkgray")+
   geom_point(data = stats, col = "red", size = 2,
              aes(x = pmax, y = -log10(u.test.fdr.pvalue)))+
-  geom_text_repel(data = stats[stats$pmax >= 0.8, ], 
+  geom_text_repel(data = stats, 
                   aes(x = pmax, y = -log10(u.test.fdr.pvalue), 
                       label = gene_name), size = 4, 
                   min.segment.length = 0.1)+
   xlim(0, 1)+
   ylab(label = "-log10 (P-value) from U-test [FDR corrected]")+
   xlab(label = expression(pi))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   scale_color_discrete(name = '')
 ```
@@ -880,7 +884,7 @@ ggplot(data = viz)+
                  shape = condition), stroke = 0, size = 2, alpha = 0.5,
              position = position_jitterdodge(jitter.width = 0.15, 
                                              dodge.width = 0.5))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   ylab(label = "Usage [%]")+
   xlab(label = 'Net Charge')+
   theme(legend.position = "top")+
@@ -941,8 +945,8 @@ ggplot(data = M$ppc.data$ppc.repertoire)+
   geom_errorbar(aes(x = observed_count, y = ppc_mean_count, 
                     ymin = ppc_L_count, ymax = ppc_H_count), col = "darkgray")+
   geom_point(aes(x = observed_count, y = ppc_mean_count, fill = condition),
-             shape = 21, size = 2.5)+
-  theme_bw(base_size = 12)+
+             shape = 21, size = 1)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   xlab(label = "Observed usage [counts]")+
   ylab(label = "Predicted usage [counts]")+
@@ -961,8 +965,8 @@ ggplot(data = M$ppc.data$ppc.gene)+
   geom_errorbar(aes(x = observed_prop*100, ymin = ppc_L_prop*100, 
                     ymax = ppc_H_prop*100), col = "darkgray")+
   geom_point(aes(x = observed_prop*100, y = ppc_mean_prop*100, 
-                 fill = condition), shape = 21, size = 2)+
-  theme_bw(base_size = 12)+
+                 fill = condition), shape = 21, size = 1)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   xlab(label = "Observed usage [%]")+
   ylab(label = "Predicted usage [%]")+
@@ -998,11 +1002,11 @@ ggplot(data = stats)+
   geom_errorbar(aes(x = pmax, y = es_mean, ymin = es_L, ymax = es_H), 
                 col = "darkgray")+
   geom_point(aes(x = pmax, y = es_mean))+
-  geom_text_repel(data = stats[stats$pmax >= 0.9, ],
+  geom_text_repel(data = stats,
                   aes(x = pmax, y = es_mean, label = gene_fac))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   xlab(label = expression(pi))+
-  scale_x_continuous(limits = c(0.48,  1))
+  scale_x_continuous(limits = c(0,  1))
 ```
 
 
@@ -1019,7 +1023,7 @@ ggplot(data = stats)+
   xlim(0, 1)+
   ylab(label = "-log10 (P-value) from t-test [FDR corrected]")+
   xlab(label = expression(pi))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   scale_color_discrete(name = '')
 ```
@@ -1039,7 +1043,7 @@ ggplot(data = stats)+
   xlim(0, 1)+
   ylab(label = "-log10(p-value) from U-test [FDR corrected]")+
   xlab(label = expression(pi))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   scale_color_discrete(name = '')
 ```
@@ -1066,7 +1070,7 @@ ggplot()+
              position = position_jitterdodge(jitter.width = 0.2, 
                                              jitter.height = 0, 
                                              dodge.width = 0.75))+
-  theme_bw(base_size = 12)+
+  theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   ylab(label = "Gene usage [%]")+
   xlab(label = '')

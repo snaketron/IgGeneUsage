@@ -1,5 +1,4 @@
 functions {
-  // skeleton from brms -> binomial_lpmf changed to beta_binomial_lpmf
   real zibb_lpmf(int y, int trials, real a, real b, real zi) {
     if (y == 0) {
       return log_sum_exp(bernoulli_lpmf(1 | zi),
@@ -11,8 +10,6 @@ functions {
     }
   }
 
-  // TODO: test rng extensively
-  // Affects predictions at repertoire (sample) level if zi >> 0
   int zibb_rng(int y, int trials, real a, real b, real zi) {
     if (bernoulli_rng(zi) == 1) {
       return (0);
@@ -99,7 +96,7 @@ model {
   }
   beta_gene_raw ~ normal(0, 1);
 
-  phi ~ exponential(tau); //pareto ||
+  phi ~ exponential(tau); //pareto 2
   tau ~ gamma(3, 0.1);
   z ~ beta(1, 3);
 }
