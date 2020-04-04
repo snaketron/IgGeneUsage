@@ -179,12 +179,12 @@ viz <- merge(x = IGHV_HCV, y = total.usage,
 # compute %
 viz$gene_usage_pct <- viz$gene_usage_count/viz$total*100
 
-# For this example lets only consider the top 50 genes
+# For this example lets only consider the top 45 genes
 # Hint: In real analyses you should not filter any gene
 top <- aggregate(gene_usage_pct~gene_name, data = viz, FUN = mean)
 top <- top[order(top$gene_usage_pct, decreasing = TRUE), ]
-IGHV_HCV <- IGHV_HCV[IGHV_HCV$gene_name %in% top$gene_name[seq_len(50)], ]
-viz <- viz[viz$gene_name %in% top$gene_name[seq_len(50)], ]
+IGHV_HCV <- IGHV_HCV[IGHV_HCV$gene_name %in% top$gene_name[seq_len(45)], ]
+viz <- viz[viz$gene_name %in% top$gene_name[seq_len(45)], ]
 
 # visualize
 ggplot(data = viz)+
@@ -221,8 +221,8 @@ site or on Github[^3].
 
 ```{r}
 M <- DGU(usage.data = IGHV_HCV, # input data
-         mcmc.warmup = 750, # how many MCMC warm-ups per chain (default: 500)
-         mcmc.steps = 2000, # how many MCMC steps per chain (default: 1,500)
+         mcmc.warmup = 500, # how many MCMC warm-ups per chain (default: 500)
+         mcmc.steps = 1500, # how many MCMC steps per chain (default: 1,500)
          mcmc.chains = 2, # how many MCMC chain to run (default: 4)
          mcmc.cores = 2, # how many PC cores to use? (e.g. parallel chains)
          hdi.level = 0.95, # highest density interval level (de fault: 0.95)
