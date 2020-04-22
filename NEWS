@@ -1,2 +1,6 @@
+Changes in version 1.1.6  (2020-04-01)
++ Corresponding methodology published in Bioinformatics
++ Speedup in posterior prediction
+
 Changes in version 0.99.0 (2019-07-15)
 + Submitted to Bioconductor
