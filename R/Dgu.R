@@ -36,6 +36,7 @@ DGU <- function(usage.data,
   usage.data.raw <- usage.data
   usage.data <- getUsageData(usage = usage.data.raw)
 
+  browser()
 
   # contrast
   contrast <- paste(unique(usage.data$Xorg[usage.data$X == 1]),
@@ -62,10 +63,11 @@ DGU <- function(usage.data,
   pars.relevant <- c("alpha_grand", "beta_grand",
                      "alpha_sigma", "beta_sigma",
                      "beta_gene_sigma", "phi",
-                     "tau", "beta", "alpha_gene",
-                     "beta_gene", "log_lik",
-                     "Yhat",  "Yhat_individual",
-                     "Yhat_gene")
+                     "tau", "z", 
+                     # "alpha", "beta", 
+                     "alpha_gene", "beta_gene", 
+                     "log_lik", "Yhat",  
+                     "Yhat_individual", "Yhat_gene")
   glm <- rstan::sampling(object = model,
                          data = usage.data,
                          chains = mcmc.chains,
