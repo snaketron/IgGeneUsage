@@ -1,0 +1,11 @@
+citEntry(entry = "article",
+         title = "IgGeneUsage: differential gene usage in immune repertoires",
+         author = personList( as.person("Simo Kitanovski"),
+                              as.person("Daniel Hoffmann")),
+         year = 2020,
+         journal = "Bioinformatics",
+         doi = "10.1093/bioinformatics/btaa174",
+         issue = 1367-4803,
+         textVersion = paste("Kitanovski, Simo, and Daniel Hoffmann.", 
+         "IgGeneUsage: differential gene usage in immune repertoires.", 
+         "Bioinformatics (2020)."))
