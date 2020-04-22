@@ -179,12 +179,12 @@ viz <- merge(x = IGHV_HCV, y = total.usage,
 # compute %
 viz$gene_usage_pct <- viz$gene_usage_count/viz$total*100
 
-# For this example lets only consider the top 50 genes
+# For this example lets only consider the top 45 genes
 # Hint: In real analyses you should not filter any gene
 top <- aggregate(gene_usage_pct~gene_name, data = viz, FUN = mean)
 top <- top[order(top$gene_usage_pct, decreasing = TRUE), ]
-IGHV_HCV <- IGHV_HCV[IGHV_HCV$gene_name %in% top$gene_name[seq_len(50)], ]
-viz <- viz[viz$gene_name %in% top$gene_name[seq_len(50)], ]
+IGHV_HCV <- IGHV_HCV[IGHV_HCV$gene_name %in% top$gene_name[seq_len(45)], ]
+viz <- viz[viz$gene_name %in% top$gene_name[seq_len(45)], ]
 
 # visualize
 ggplot(data = viz)+
