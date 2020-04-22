@@ -1,9 +1,9 @@
 Package: IgGeneUsage
 Type: Package
 Title: Differential gene usage in immune repertoires
-Version: 1.1.3
+Version: 1.1.6      
 Authors@R: 
-    person(given = "Simo",
+    person(given = "Simo",  
            family = "Kitanovski",
            role = c("aut", "cre"),
            email = "simo.kitanovski@uni-due.de")
