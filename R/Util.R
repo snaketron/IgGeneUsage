@@ -207,6 +207,8 @@ getPpcGene <- function(glm,
   yhat$observed_prop <- NA
   for(i in 1:nrow(yhat)) {
     yhat$gene_name[i] <- usage.data$gene_names[yhat$G[i]]
+    # # TODO: here check
+    # browser()
     yhat$observed_prop[i] <- mean(usage.data$Y[yhat$G[i], ]/usage.data$N)
     yhat$condition[i] <- usage.data$Xorg[usage.data$X == yhat$X[i]][1]
   }
