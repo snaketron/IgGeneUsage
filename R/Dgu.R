@@ -36,7 +36,6 @@ DGU <- function(usage.data,
   usage.data.raw <- usage.data
   usage.data <- getUsageData(usage = usage.data.raw)
 
-  browser()
 
   # contrast
   contrast <- paste(unique(usage.data$Xorg[usage.data$X == 1]),
