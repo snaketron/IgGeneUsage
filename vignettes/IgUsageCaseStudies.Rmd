@@ -224,7 +224,7 @@ M <- DGU(usage.data = IGHV_HCV, # input data
          mcmc.warmup = 750, # how many MCMC warm-ups per chain (default: 500)
          mcmc.steps = 2000, # how many MCMC steps per chain (default: 1,500)
          mcmc.chains = 2, # how many MCMC chain to run (default: 4)
-         mcmc.cores = 2, # how many PC cores to use? (e.g. parallel chains)
+         mcmc.cores = 1, # how many PC cores to use? (e.g. parallel chains)
          hdi.level = 0.95, # highest density interval level (de fault: 0.95)
          adapt.delta = 0.95, # MCMC target acceptance rate (default: 0.95)
          max.treedepth = 10) # tree depth evaluated at each step (default: 12)
@@ -623,7 +623,7 @@ M <- DGU(usage.data = Ig,
          mcmc.warmup = 500,
          mcmc.steps = 1500,
          mcmc.chains = 2,
-         mcmc.cores = 2,
+         mcmc.cores = 1,
          hdi.level = 0.95,
          adapt.delta = 0.95,
          max.treedepth = 12)
@@ -902,7 +902,7 @@ default values of most DGU arguments.
 ```{r}
 M <- DGU(usage.data = CDR3_Epitopes, 
          mcmc.chains = 2, 
-         mcmc.cores = 2)
+         mcmc.cores = 1)
 # default DGU parameters:
 # mcmc.warmup = 500
 # mcmc.steps = 1,500
