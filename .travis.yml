@@ -1,6 +1,6 @@
 language: r
-r: devel
-r: bioc-devel
+# r: devel
+r: bioc-release
 sudo: TRUE
 
 os: linux
