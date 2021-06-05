@@ -48,7 +48,7 @@ DGU <- function(usage.data,
   rstan::rstan_options(auto_write = TRUE)
   # model.file <- system.file("extdata", "zibb.stan",
   #                           package = "IgGeneUsage")
-  model.file <- system.file("extdata", "zibb.flex.stan",
+  model.file <- system.file("extdata", "zibb_flex.stan",
                             package = "IgGeneUsage")
   model <- rstan::stan_model(file = model.file,
                              auto_write = TRUE)
@@ -57,7 +57,6 @@ DGU <- function(usage.data,
   # setup control list
   control.list <- list(adapt_delta = adapt.delta,
                        max_treedepth = max.treedepth)
-
 
   # stan sampling
   # monitor subset of parameters -> memory concern
