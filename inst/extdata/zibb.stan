@@ -83,28 +83,28 @@ model {
 
 
   // priors
-  alpha_grand ~ normal(0, 10);
-  beta_grand ~ normal(0, 5);
+  alpha_grand ~ normal(0.0, 10.0);
+  beta_grand ~ normal(0.0, 5.0);
 
-  alpha_sigma ~ cauchy(0, 1);
-  beta_sigma ~ cauchy(0, 1);
-  beta_gene_sigma ~ cauchy(0, 1);
+  alpha_sigma ~ cauchy(0.0, 1.0);
+  beta_sigma ~ cauchy(0.0, 1.0);
+  beta_gene_sigma ~ cauchy(0.0, 1.0);
 
-  alpha_raw ~ normal(0, 1);
+  alpha_raw ~ normal(0.0, 1.0);
   for(i in 1:N_sample) {
-    beta_raw[i] ~ normal(0, 1);
+    beta_raw[i] ~ normal(0.0, 1.0);
   }
-  beta_gene_raw ~ normal(0, 1);
+  beta_gene_raw ~ normal(0.0, 1.0);
 
   phi ~ exponential(tau); //pareto 2
-  tau ~ gamma(3, 0.1);
-  z ~ beta(1, 3);
+  tau ~ gamma(3.0, 0.1);
+  z ~ beta(1.0, 3.0);
 }
 
 
 generated quantities {
   // PPC: count usage
-  int Yhat [N_gene, N_sample];
+  real Yhat [N_gene, N_sample];
 
   // PPC: proportion usage
   real Yhat_individual [N_gene, N_sample];
@@ -122,7 +122,7 @@ generated quantities {
       Yhat[j, i] = zibb_rng(Y[j, i], N[i], a[i][j], b[i][j], z);
 
       if(Nreal[i] == 0.0) {
-        Yhat_individual[j, i] = 0;
+        Yhat_individual[j, i] = 0.0;
       }
       else {
         Yhat_individual[j, i] = Yhat[j,i]/Nreal[i];
