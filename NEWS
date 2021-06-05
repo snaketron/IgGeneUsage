@@ -1,3 +1,7 @@
+Changes in verion 1.7.1 (2021-06-05)
++ Flexible partial pooling of zero-inflation across Ig genes incorporated 
+(model zibb_flex.stan).
+
 Changes in version 1.3.3  (2020-10-15)
 + More flexible model for microbial sample analysis provided in
 inst folder, however, no interface is provided to it.
