@@ -111,8 +111,8 @@ model {
   // zero-inflation hyperpriors
   z ~ beta(z_phi * z_mu, z_phi * (1 - z_mu));
   z_mu ~ beta(1.0, 3.0);
-  z_phi ~ pareto(0.1, 1.5);
-  // z_phi ~ exponential(0.1);
+  z_phi ~ exponential(0.1);
+  // z_phi ~ pareto(0.1, 1.5);
 }
 
 
