@@ -45,10 +45,23 @@ getUsageData <- function(usage) {
   Xmap <- numeric(length = length(X))
   Xmap[x1] <- 1
   Xmap[x2] <- -1
+  
+  
+  # process usage
+  for(i in 1:ncol(Y)) {
+    processed.usage.data <- data.frame(gene_usage_count = Y[,i],
+                                       total_usage_count = sum(Y[,i]),
+                                       gene_usage_prop = Y[,i]/sum(Y[,i]),
+                                       sample_id = sample_ids[i],
+                                       condition = X[i],
+                                       stringsAsFactors = F)
+    
+  }
 
   return (list(Y = Y, N = N, N_sample = ncol(Y), N_gene = nrow(Y),
                X = Xmap, Xorg = X, gene_names = gene_names,
-               sample_names = sample_ids))
+               sample_names = sample_ids,
+               processed.usage.data = processed.usage.data))
 }
 
 

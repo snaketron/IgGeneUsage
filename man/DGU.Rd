@@ -69,7 +69,10 @@ Bonferroni-corrected P-values. Additionally, we report t-value and 95\% CI
 \item{glm}{stanfit object}
 \item{ppc.data}{two types of posterior predictive checks: 1) repertoire-
 specific, 2) gene-specific}
+\item{usage.data}{processed gene usage data used for the model}
+\item{processed.usage.data}{processed gene usage data that resembles the input data}
 }
+
 
 \author{
   Simo Kitanovski <simo.kitanovski@uni-due.de>

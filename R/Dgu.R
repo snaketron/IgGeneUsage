@@ -135,6 +135,7 @@ DGU <- function(usage.data,
                  test.summary = test.summary,
                  glm = glm,
                  ppc.data = ppc.data,
-                 usage.data = usage.data)
+                 usage.data = usage.data,
+                 processed.usage.data = usage.data$processed.usage.data)
   return (result)
 }

@@ -50,7 +50,8 @@ parameters {
   vector [N_gene] beta_gene_raw;
   real <lower = 0> phi;
   real<lower = 0> tau;
-  vector <lower = 0, upper = 1> [N_gene] z;  // zero-inflation probability
+  // zero-inflation probability
+  vector <lower = 0, upper = 1> [N_gene] z;
   real<lower=0> z_mu;
   real<lower=0> z_phi;
 }
@@ -110,9 +111,8 @@ model {
   // zero-inflation hyperpriors
   z ~ beta(z_phi * z_mu, z_phi * (1 - z_mu));
   z_mu ~ beta(1.0, 3.0);
-  // z_phi ~ pareto(0.1, 1.5);
-  z_phi ~ exponential(0.1);
-  
+  z_phi ~ pareto(0.1, 1.5);
+  // z_phi ~ exponential(0.1);
 }
 
 
