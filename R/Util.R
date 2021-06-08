@@ -57,8 +57,8 @@ getUsageData <- function(usage) {
                                              sample_id = sample_ids[i],
                                              condition = X[i],
                                              stringsAsFactors = F))
-    rownames(processed.usage.data) <- NULL
   }
+  rownames(processed.usage.data) <- NULL
 
   return (list(Y = Y, N = N, N_sample = ncol(Y), N_gene = nrow(Y),
                X = Xmap, Xorg = X, gene_names = gene_names,
