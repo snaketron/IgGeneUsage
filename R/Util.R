@@ -48,14 +48,16 @@ getUsageData <- function(usage) {
   
   
   # process usage
+  processed.usage.data <- c()
   for(i in 1:ncol(Y)) {
-    processed.usage.data <- data.frame(gene_usage_count = Y[,i],
-                                       total_usage_count = sum(Y[,i]),
-                                       gene_usage_prop = Y[,i]/sum(Y[,i]),
-                                       sample_id = sample_ids[i],
-                                       condition = X[i],
-                                       stringsAsFactors = F)
-    
+    processed.usage.data <- rbind(processed.usage.data,
+                                  data.frame(gene_usage_count = Y[,i],
+                                             total_usage_count = sum(Y[,i]),
+                                             gene_usage_prop = Y[,i]/sum(Y[,i]),
+                                             sample_id = sample_ids[i],
+                                             condition = X[i],
+                                             stringsAsFactors = F))
+    rownames(processed.usage.data) <- NULL
   }
 
   return (list(Y = Y, N = N, N_sample = ncol(Y), N_gene = nrow(Y),
