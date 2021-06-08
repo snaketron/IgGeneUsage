@@ -46,25 +46,16 @@ getUsageData <- function(usage) {
   Xmap[x1] <- 1
   Xmap[x2] <- -1
   
+  # compute processed usage data
+  processed.usage <- getProcessedUsage(Y = Y, 
+                                       gene_names = gene_names, 
+                                       sample_ids = sample_ids, 
+                                       X = X)
   
-  # process usage
-  processed.usage.data <- c()
-  for(i in 1:ncol(Y)) {
-    processed.usage.data <- rbind(processed.usage.data,
-                                  data.frame(gene_usage_count = Y[,i],
-                                             gene_name = gene_names,
-                                             total_usage_count = sum(Y[,i]),
-                                             gene_usage_prop = Y[,i]/sum(Y[,i]),
-                                             sample_id = sample_ids[i],
-                                             condition = X[i],
-                                             stringsAsFactors = F))
-  }
-  rownames(processed.usage.data) <- NULL
-
   return (list(Y = Y, N = N, N_sample = ncol(Y), N_gene = nrow(Y),
                X = Xmap, Xorg = X, gene_names = gene_names,
-               sample_names = sample_ids,
-               processed.usage.data = processed.usage.data))
+               sample_names = sample_ids, 
+               processed.usage = processed.usage))
 }
 
 
@@ -311,3 +302,21 @@ getManUStats <- function(usage.data) {
 }
 
 
+
+
+getProcessedUsage <- function(Y, gene_names, sample_ids, X) {
+  # process usage
+  processed.usage.data <- c()
+  for(i in 1:ncol(Y)) {
+    processed.usage.data <- rbind(processed.usage.data,
+                                  data.frame(gene_usage_count = Y[,i],
+                                             gene_name = gene_names,
+                                             total_usage_count = sum(Y[,i]),
+                                             gene_usage_prop = Y[,i]/sum(Y[,i]),
+                                             sample_id = sample_ids[i],
+                                             condition = X[i],
+                                             stringsAsFactors = F))
+  }
+  rownames(processed.usage.data) <- NULL
+  return(processed.usage.data)
+}
