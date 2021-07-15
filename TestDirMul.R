@@ -29,14 +29,20 @@ fit.dm <- rstan::sampling(object = model.dir,
                           data = l,
                           chains = 4,
                           cores = 4,
-                          control = list(adapt_delta = 0.99))
+                          iter = 6000, 
+                          warmup = 3000,
+                          control = list(adapt_delta = 0.99,
+                                         max_treedepth = 12))
 
 
 fit.flex <- rstan::sampling(object = model.flex, 
                           data = l,
                           chains = 4,
                           cores = 4,
-                          control = list(adapt_delta = 0.99))
+                          iter = 6000, 
+                          warmup = 3000,
+                          control = list(adapt_delta = 0.99,
+                                         max_treedepth = 12))
 
 
 summary(fit.dm, par = "beta_gene")$summary
