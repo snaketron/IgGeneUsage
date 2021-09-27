@@ -825,3 +825,7 @@ ggplot()+
  * (in planning phase)
  
  
+ 
+# Leave-one-out based cross validation
+
+* (in planning phase)
