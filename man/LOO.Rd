@@ -77,8 +77,8 @@ size), Rhat (potential scale reduction factor)}
 
 \examples{
 # input data
-data(Ig)
-head(Ig)
+# data(Ig)
+# head(Ig)
 
 # Alternative:
 # use SummarizedExperiment input data

@@ -16,8 +16,8 @@ test_that("stan model availability check", {
   fit <- DGU(usage.data = Ig,
              mcmc.warmup = 500,
              mcmc.steps = 1500,
-             mcmc.chains = 2,
-             mcmc.cores = 2,
+             mcmc.chains = 1,
+             mcmc.cores = 1,
              hdi.level = 0.95,
              adapt.delta = 0.95,
              max.treedepth = 13)
