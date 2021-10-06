@@ -38,6 +38,8 @@ transformed data {
 
 
 parameters {
+  real alpha_grand;
+  real beta_grand;
   real <lower = 0> alpha_sigma;
   real <lower = 0> beta_sigma;
   real <lower = 0> beta_gene_sigma;
@@ -59,8 +61,8 @@ transformed parameters {
   vector <lower = 0> [N_gene] b [N_sample];
 
   // non-centered params (at repertoire level)
-  alpha_gene = 0 + alpha_sigma * alpha_raw;
-  beta_gene = 0 + beta_gene_sigma * beta_gene_raw;
+  alpha_gene = alpha_grand + alpha_sigma * alpha_raw;
+  beta_gene = beta_grand + beta_gene_sigma * beta_gene_raw;
 
   // non-centered params (at gene level)
   for(i in 1:N_sample) {
@@ -81,6 +83,9 @@ model {
 
 
   // priors
+  alpha_grand ~ normal(0.0, 10.0);
+  beta_grand ~ normal(0.0, 5.0);
+
   alpha_sigma ~ cauchy(0.0, 1.0);
   beta_sigma ~ cauchy(0.0, 1.0);
   beta_gene_sigma ~ cauchy(0.0, 1.0);

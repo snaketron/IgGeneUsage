@@ -90,8 +90,8 @@ head(Ig)
 
 # run differential gene usage (DGU)
 M <- DGU(usage.data = Ig,
-         mcmc.warmup = 500,
-         mcmc.steps = 1500,
+         mcmc.warmup = 250,
+         mcmc.steps = 1000,
          mcmc.chains = 2,
          mcmc.cores = 1,
          hdi.level = 0.95,
