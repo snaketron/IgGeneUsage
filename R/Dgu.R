@@ -60,7 +60,7 @@ DGU <- function(usage.data,
 
   # stan sampling
   # monitor subset of parameters -> memory concern
-  pars.relevant <- c("alpha_grand", "beta_grand",
+  pars.relevant <- c(#"alpha_grand", "beta_grand",
                      "alpha_sigma", "beta_sigma",
                      "beta_gene_sigma", "phi",
                      "tau", 
