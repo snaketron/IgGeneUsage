@@ -3,7 +3,8 @@ language: r
 r: bioc-release
 sudo: TRUE
 
-os: linux
+os: osx
+osx_image: xcode11.3
 
 
 repos:
@@ -21,8 +22,8 @@ cache:
 
 warnings_are_errors: FALSE
 
-r_build_args: '--no-build-vignettes'
-r_check_args: '--ignore-vignettes'
+#r_build_args: '--no-build-vignettes'
+#r_check_args: '--ignore-vignettes'
 
 
 script:
@@ -33,7 +34,7 @@ script:
 bioc_packages: SummarizedExperiment 
 
 before_install:
-  - sudo apt-get -y install libv8-dev
+  #- sudo apt-get -y install libv8-dev
   - R -q -e 'install.packages(c("BH", "Rcpp", "RcppEigen",
                                 "StanHeaders", "rstantools",
                                 "rstan", "covr"))'
