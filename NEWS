@@ -1,4 +1,4 @@
-Changes in version 1.7.23 (2021-10-10)
+Changes in version 1.7.24 (2021-10-14)
 + minor model update: top level hyperpriors on alpha gamma par. 
 means not needed anymore. Compare inst/extdata/zibb.stan vs. 
 inst/extdata/zibb_original.stan

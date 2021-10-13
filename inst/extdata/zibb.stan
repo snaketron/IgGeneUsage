@@ -85,11 +85,11 @@ model {
   beta_sigma ~ cauchy(0.0, 1.0);
   beta_gene_sigma ~ cauchy(0.0, 1.0);
 
-  alpha_raw ~ normal(0.0, 1.0);
+  alpha_raw ~ std_normal();
   for(i in 1:N_sample) {
-    beta_raw[i] ~ normal(0.0, 1.0);
+    beta_raw[i] ~ std_normal();
   }
-  beta_gene_raw ~ normal(0.0, 1.0);
+  beta_gene_raw ~ std_normal();
 
   phi ~ exponential(tau); //pareto 2
   tau ~ gamma(3.0, 0.1);
