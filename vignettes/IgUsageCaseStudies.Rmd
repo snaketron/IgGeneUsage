@@ -219,7 +219,7 @@ manual[^2] and adjust the MCMC arguments accordingly. If the warnings persist,
 please submit an issue with a reproducible script at the Bioconductor support 
 site or on Github[^3].
 
-```{r}
+```{r, eval=F}
 M <- DGU(usage.data = IGHV_HCV, # input data
          mcmc.warmup = 250, # how many MCMC warm-ups per chain (default: 500)
          mcmc.steps = 1000, # how many MCMC steps per chain (default: 1,500)
@@ -243,8 +243,8 @@ The following objects are provided as part of the output of DGU:
   this for further checks of your model (see section 'Model checking')
   * ppc.data: data on posterior predictive checks (see section 'Model checking')
 
-```{r}
-summary(M)
+```{r, eval=F}
+summary(M, eval=F)
 ```
 
 
@@ -271,13 +271,13 @@ summary(M)
 
   * divergences, tree-depth, energy
   
-```{r}
+```{r, eval=F}
 rstan::check_hmc_diagnostics(M$glm)
 ```
 
   * Rhat and Neff
 
-```{r, fig.height = 3, fig.width = 6}
+```{r, fig.height = 3, fig.width = 6, eval=F}
 gridExtra::grid.arrange(rstan::stan_rhat(object = M$glm),
                         rstan::stan_ess(object = M$glm),
                         nrow = 1)
@@ -294,7 +294,7 @@ For points near the diagonal $\rightarrow$ accurate prediction.
 The following figure shows that our model can reproduce the fitted data 
 $\rightarrow$ this is an indicator of a valid model.
 
-```{r, fig.height = 10, fig.width = 8}
+```{r, fig.height = 10, fig.width = 8, eval=F}
 ggplot(data = M$ppc.data$ppc.repertoire)+
   facet_wrap(facets = ~sample_name, ncol = 5)+
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
@@ -323,7 +323,7 @@ the model, and compare them against the observed mean usage (x-axis). If the
 points are near the diagnoal $\rightarrow$ accurate prediction. Errors show 
 95% HDI of mean posterior prediction.
 
-```{r, fig.height = 4, fig.width = 6}
+```{r, fig.height = 4, fig.width = 6, eval=F}
 ggplot(data = M$ppc.data$ppc.gene)+
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
   geom_errorbar(aes(x = observed_prop*100, ymin = ppc_L_prop*100, 
@@ -353,7 +353,7 @@ Legend:
   * contrast: the direction of the effect (e.g. tumor - healthy)
   * pmax: probability of differential gene usage ($\pi$ from model $M$)
 
-```{r}
+```{r, eval=F}
 kable(x = head(M$glm.summary), row.names = FALSE, digits = 3)
 ```
 
@@ -364,7 +364,7 @@ line represents null-effect ($\gamma = 0$). Notice that the gene with $\pi
 the null-effect. The genes with high degree of differential usage are easy to 
 detect with this figure.
 
-```{r, fig.height = 4, fig.width = 6}
+```{r, fig.height = 4, fig.width = 6, eval=F}
 # format data
 stats <- M$glm.summary
 stats <- stats[order(abs(stats$es_mean), decreasing = FALSE), ]
@@ -390,7 +390,7 @@ ggplot(data = stats)+
 Lets visualize the observed data of the genes with high probability of 
 differential gene usage ($\pi \geq 0.8$). Here we show the gene usage in %.
 
-```{r, fig.height = 3, fig.width = 6}
+```{r, fig.height = 3, fig.width = 6, eval=F}
 promising.genes <- stats$gene_name[stats$pmax >= 0.8]
 
 ppc.gene <- M$ppc.data$ppc.gene
@@ -418,7 +418,7 @@ ggplot()+
 Lets also visualize the gene usage frequencies. Point size represents 
 total usage in repertoire.
 
-```{r, fig.height = 5, fig.width = 6}
+```{r, fig.height = 5, fig.width = 6, eval=F}
 promising.genes <- stats$gene_name[stats$pmax >= 0.8]
 
 ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
@@ -450,7 +450,7 @@ FDR corrected P-values (-log10 scale) from the T-test. Dashed lines show
 significance levels of 0.05 and 0.01. We observe few disagreements between the 
 two tests. Lets inspect them in more detail.
 
-```{r, fig.height = 5, fig.width = 8}
+```{r, fig.height = 5, fig.width = 8, eval=F}
 ggplot()+
   geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), 
              linetype = "dashed", col = "darkgray")+
@@ -476,7 +476,7 @@ is the most probable cause for the disagreement. Discarding information about
 the sample size, and thus about uncertainty could be an alternative explanation. 
 Lets visualize the data for these genes.
 
-```{r, fig.height = 4, fig.width = 5}
+```{r, fig.height = 4, fig.width = 5, eval=F}
 promising.genes <- c("IGHV3-21", "IGHV3-72", "IGHV3-9")
 
 ppc.gene <- M$ppc.data$ppc.gene
@@ -502,7 +502,7 @@ ggplot()+
 
 ### Outliers: IGHV1-58 and IGHV3-72 [counts]
 
-```{r, fig.height = 6, fig.width = 6}
+```{r, fig.height = 6, fig.width = 6, eval=F}
 promising.genes <- c("IGHV3-21", "IGHV3-72", "IGHV3-9")
 
 ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
@@ -535,7 +535,7 @@ Lets also compare $\pi$ with the FDR corrected P-values (-log10 scale) from
 the U-test. Dashed lines show significance levels of 0.05 and 0.01. The U-test 
 finds no evidence of differential gene usage.
 
-```{r, fig.height = 6, fig.width = 8}
+```{r, fig.height = 6, fig.width = 8, eval=F}
 ggplot()+
   geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), 
              linetype = "dashed", col = "darkgray")+
