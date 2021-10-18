@@ -173,12 +173,12 @@ The data is already formatted such that it can directly be passed as input to
 IgGeneUsage. The following steps allow you to load the data, and to inspect 
 its column names and table entries.
 
-```{r}
+```{r, eval=F}
 data("IGHV_HCV", package = "IgGeneUsage")
 ```
 
 
-```{r}
+```{r, eval=F}
 kable(x = head(IGHV_HCV), row.names = FALSE)
 ```
 
@@ -187,7 +187,7 @@ kable(x = head(IGHV_HCV), row.names = FALSE)
 ## Data visualization
 Lets visualize the gene usage with ggplot2.
 
-```{r, fig.height = 5, fig.width = 8}
+```{r, fig.height = 5, fig.width = 8, eval=F}
 # we can compute the total number of rearrangements per sample
 total.usage <- aggregate(gene_usage_count~sample_id+condition, 
                          FUN = sum, data = IGHV_HCV)
@@ -594,11 +594,11 @@ vaccine-induced immune responses. Proc Natl Acad Sci USA. 2014 111:4928-33.
 The data is already formatted such that it can directly be passed as input to
 IgGeneUsage. Lets load the data, and to inspect its content.
 
-```{r}
+```{r, eval=F}
 data(Ig, package = "IgGeneUsage")
 ```
 
-```{r}
+```{r, eval=F}
 kable(x = head(Ig), row.names = FALSE)
 ```
 
@@ -607,7 +607,7 @@ kable(x = head(Ig), row.names = FALSE)
 ## Data visualization
 Lets look at the gene usage data with ggplot2.
 
-```{r, fig.height = 4, fig.width = 6}
+```{r, fig.height = 4, fig.width = 6, eval=F}
 # we can compute the total number of rearrangements per sample
 total.usage <- aggregate(gene_usage_count~sample_id+condition,
                          FUN = sum, data = Ig)
@@ -641,7 +641,7 @@ ggplot(data = viz)+
 Lets analyze the differential gene usage in the data Ig. We use the 
 default values of most DGU arguments.
 
-```{r}
+```{r, eval=F}
 M2 <- DGU(usage.data = Ig,
          mcmc.warmup = 250,
          mcmc.steps = 1000,
@@ -661,13 +661,13 @@ M2 <- DGU(usage.data = Ig,
 
   * divergences, tree-depth, energy
 
-```{r}
+```{r, eval=F}
 rstan::check_hmc_diagnostics(M2$glm)
 ```
 
   * Rhat and Neff
 
-```{r, fig.height = 3, fig.width = 6}
+```{r, fig.height = 3, fig.width = 6, eval=F}
 gridExtra::grid.arrange(rstan::stan_rhat(object = M2$glm),
                         rstan::stan_ess(object = M2$glm),
                         nrow = 1)
@@ -676,7 +676,7 @@ gridExtra::grid.arrange(rstan::stan_rhat(object = M2$glm),
 
 ### Posterior predictive checks: repertoire-specific
 
-```{r, fig.height = 5, fig.width = 8}
+```{r, fig.height = 5, fig.width = 8, eval=F}
 ggplot(data = M2$ppc$ppc.repertoire)+
   facet_wrap(facets = ~sample_name, ncol = 4)+
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
@@ -700,7 +700,7 @@ ggplot(data = M2$ppc$ppc.repertoire)+
 
 ### Posterior predictive checks: overall
 
-```{r, fig.height = 4, fig.width = 6}
+```{r, fig.height = 4, fig.width = 6, eval=F}
 ggplot(data = M2$ppc.data$ppc.gene)+
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
   geom_errorbar(aes(x = observed_prop*100, ymin = ppc_L_prop*100, 
@@ -722,7 +722,7 @@ ggplot(data = M2$ppc.data$ppc.gene)+
 ## Results
 Main results:
 
-```{r}
+```{r, eval=F}
 kable(x = M2$glm.summary, row.names = FALSE, digits = 3)
 ```
 
@@ -730,7 +730,7 @@ The effect size and $\pi$ are related. Lets visualize them for each gene (shown
 as a point). There are no genes with $\pi \approx 1$ $\rightarrow$ no sufficiently
 strong evidence of differential gene usage based on IgGeneUsage. 
 
-```{r, fig.height = 4, fig.width = 6}
+```{r, fig.height = 4, fig.width = 6, eval=F}
 # format data
 stats <- M2$glm.summary
 stats <- stats[order(abs(stats$es_mean), decreasing = FALSE), ]
@@ -753,7 +753,7 @@ ggplot(data = stats)+
 
 ## Comparison with the Welch's t-test (T-test)
 
-```{r, fig.height = 6, fig.width = 8}
+```{r, fig.height = 6, fig.width = 8, eval=F}
 ggplot()+
   geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), 
              linetype = "dashed", col = "darkgray")+
@@ -774,7 +774,7 @@ ggplot()+
 
 ### Outlier: IGHV5
 
-```{r, fig.height = 5, fig.width = 8}
+```{r, fig.height = 5, fig.width = 8, eval=F}
 promising.genes <- unique(M2$usage.data$gene_names)
 
 ppc.gene <- M2$ppc.data$ppc.gene
@@ -798,7 +798,7 @@ ggplot()+
 
 ### Outliers IGHV5 (original data)
 
-```{r, fig.height = 4, fig.width = 7}
+```{r, fig.height = 4, fig.width = 7, eval=F}
 promising.genes <- "IGHV5"
 
 ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
@@ -825,7 +825,7 @@ ggplot(data = viz[viz$gene_name %in% promising.genes, ])+
 ## Comparison with the Wilcoxon signed-rank test (U-test)
 No evidence of differential usage (at FDR level 0.05)
 
-```{r, fig.height = 4.5, fig.width = 8}
+```{r, fig.height = 4.5, fig.width = 8, eval=F}
 ggplot()+
   geom_hline(yintercept = c(-log10(0.05), -log10(0.01)), 
              linetype = "dashed", col = "darkgray")+
