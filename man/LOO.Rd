@@ -76,24 +76,28 @@ size), Rhat (potential scale reduction factor)}
 
 
 \examples{
+## Not run:
+
 # input data
-# data(Ig)
-# head(Ig)
+data(Ig)
+head(Ig)
 
 # Alternative:
 # use SummarizedExperiment input data
-# data(Ig_SE)
+data(Ig_SE)
 
 
 # run leave-one-out (LOO)
-# L <- LOO(usage.data = Ig,
-#          mcmc.warmup = 250,
-#          mcmc.steps = 1000,
-#          mcmc.chains = 2,
-#          mcmc.cores = 1,
-#          hdi.level = 0.95,
-#          adapt.delta = 0.95,
-#          max.treedepth = 13)
+L <- LOO(usage.data = Ig,
+         mcmc.warmup = 250,
+         mcmc.steps = 1000,
+         mcmc.chains = 2,
+         mcmc.cores = 1,
+         hdi.level = 0.95,
+         adapt.delta = 0.95,
+         max.treedepth = 13)
+
+## End(Not run)
 }
 
 

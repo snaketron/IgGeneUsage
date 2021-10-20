@@ -79,6 +79,8 @@ specific, 2) gene-specific}
 
 
 \examples{
+## Not run:
+
 # input data
 data(Ig)
 head(Ig)
@@ -97,6 +99,8 @@ M <- DGU(usage.data = Ig,
          hdi.level = 0.95,
          adapt.delta = 0.95,
          max.treedepth = 13)
+
+## End(Not run)
 }
 
 

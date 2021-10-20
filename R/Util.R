@@ -229,7 +229,7 @@ getPpcGene <- function(glm,
 # two sided t.test
 getTTestStats <- function(usage.data) {
   getTTest <- function(x, Ys, Xs, Ns) {
-    return(try(stats::t.test((Ys[x, ]/Ns)~Xs)))
+    return(try(stats::t.test((Ys[x, ]/Ns)~Xs), silent = TRUE))
   }
   getTTestSummary <- function(x) {
     if(inherits(x = x, what = 'try-error') == TRUE) {
@@ -270,7 +270,7 @@ getTTestStats <- function(usage.data) {
 getManUStats <- function(usage.data) {
 
   getMTest <- function(x, Ys, Xs, Ns) {
-    return(try(stats::wilcox.test((Ys[x, ]/Ns)~Xs)))
+    return(try(stats::wilcox.test((Ys[x, ]/Ns)~Xs), silent = TRUE))
   }
 
   getMSummary <- function(x) {
@@ -315,7 +315,7 @@ getProcessedUsage <- function(Y, gene_names, sample_ids, X) {
                                              gene_usage_prop = Y[,i]/sum(Y[,i]),
                                              sample_id = sample_ids[i],
                                              condition = X[i],
-                                             stringsAsFactors = F))
+                                             stringsAsFactors = FALSE))
   }
   rownames(processed.usage.data) <- NULL
   return(processed.usage.data)
