@@ -119,8 +119,7 @@ LOO_DGU <- function(usage.data,
   
   # stan sampling
   # monitor subset of parameters -> memory concern
-  pars.relevant <- c("alpha_grand", "beta_grand",
-                     "alpha_sigma", "beta_sigma",
+  pars.relevant <- c("alpha_sigma", "beta_sigma",
                      "beta_gene_sigma", "phi",
                      "tau", "beta", "alpha_gene",
                      "beta_gene")
