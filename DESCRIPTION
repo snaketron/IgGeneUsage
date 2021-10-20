@@ -18,8 +18,7 @@ Depends:
     R (>= 3.6.0),
     Rcpp (>= 0.12.0),
     SummarizedExperiment,
-    StanHeaders (> 2.18.1),
-    BH
+    StanHeaders (> 2.18.1)
 Imports: 
     rstan (>= 2.19.2),
     reshape2 (>= 1.4.3)
