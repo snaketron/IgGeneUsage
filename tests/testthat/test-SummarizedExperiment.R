@@ -1,4 +1,5 @@
 context("Tests Summarized Experiment check")
+cat("Tests Summarized Experiment check \n")
 
 
 test_that("Summarized Experiment check", {

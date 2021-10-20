@@ -1,4 +1,5 @@
 context("Tests stan model")
+cat("Tests stan model \n")
 
 test_that("stan model availability check", {
   

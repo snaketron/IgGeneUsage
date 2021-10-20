@@ -1,5 +1,5 @@
 context("Tests input rules")
-
+cat("Tests input rules \n")
 
 test_that("Null input", {
 

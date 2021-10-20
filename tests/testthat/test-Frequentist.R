@@ -1,5 +1,5 @@
 context("Tests Frequentist methods")
-
+cat("Tests Frequentist methods \n")
 
 test_that("T-test check", {
 
