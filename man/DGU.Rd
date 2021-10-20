@@ -79,11 +79,9 @@ specific, 2) gene-specific}
 
 
 \examples{
-## Not run:
-
 # input data
-data(Ig)
-head(Ig)
+# data(Ig)
+# head(Ig)
 
 # Alternative:
 # use SummarizedExperiment input data
@@ -91,16 +89,14 @@ head(Ig)
 
 
 # run differential gene usage (DGU)
-M <- DGU(usage.data = Ig,
-         mcmc.warmup = 250,
-         mcmc.steps = 1000,
-         mcmc.chains = 2,
-         mcmc.cores = 1,
-         hdi.level = 0.95,
-         adapt.delta = 0.95,
-         max.treedepth = 13)
-
-## End(Not run)
+# M <- DGU(usage.data = Ig,
+#          mcmc.warmup = 250,
+#          mcmc.steps = 1000,
+#          mcmc.chains = 2,
+#          mcmc.cores = 1,
+#          hdi.level = 0.95,
+#          adapt.delta = 0.95,
+#          max.treedepth = 13)
 }
 
 

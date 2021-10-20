@@ -77,7 +77,6 @@ size), Rhat (potential scale reduction factor)}
 
 \examples{
 ## Not run:
-
 # input data
 data(Ig)
 head(Ig)
@@ -96,7 +95,6 @@ L <- LOO(usage.data = Ig,
          hdi.level = 0.95,
          adapt.delta = 0.95,
          max.treedepth = 13)
-
 ## End(Not run)
 }
 
