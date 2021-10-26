@@ -1,7 +1,7 @@
 Package: IgGeneUsage
 Type: Package
 Title: Differential gene usage in immune repertoires
-Version: 1.9.0
+Version: 1.9.1
 Authors@R: 
     person(given = "Simo",  
            family = "Kitanovski",
@@ -10,7 +10,7 @@ Authors@R:
 Description: Detection of biases in immunoglobulin (Ig) gene usage between 
     adaptive immune repertoires that belong to different biological conditions 
     is an important task in immune repertoire profiling. IgGeneUsage detects 
-    aberrant Ig gene usage using probabilistic model which is analyzed 
+    aberrant Ig gene usage using a probabilistic model which is analyzed 
     computationally by Bayes inference.
 License: file LICENSE
 Depends: 
