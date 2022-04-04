@@ -231,6 +231,7 @@ getTTestStats <- function(usage.data) {
   getTTest <- function(x, Ys, Xs, Ns) {
     return(try(stats::t.test((Ys[x, ]/Ns)~Xs), silent = TRUE))
   }
+  
   getTTestSummary <- function(x) {
     if(inherits(x = x, what = 'try-error') == TRUE) {
       return(data.frame(t.test.pvalue = NA,
