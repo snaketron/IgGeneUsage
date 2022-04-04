@@ -1,3 +1,6 @@
+Changes in version 1.9.3 (2022-03-31)
++ input data checks extended
+
 Changes in version 1.7.24 (2021-10-14)
 + minor model update: top level hyperpriors on alpha gamma par. 
 means not needed anymore. Compare inst/extdata/zibb.stan vs. 
