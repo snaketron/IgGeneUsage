@@ -77,9 +77,10 @@ checkUsageData <- function(usage.data) {
     stop("exactly 2 biological conditions must be provided.")
   }
   
-  if(min(length(unique(usage.data$sample_id[unique(usage.data$condition)[1]])),
-         length(unique(usage.data$sample_id[unique(usage.data$condition)[2]])))
-     ==1) {
+  if(min(length(unique(usage.data$sample_id[usage.data$condition==unique(
+    usage.data$condition)[1]])),
+    length(unique(usage.data$sample_id[usage.data$condition==unique(
+      usage.data$condition)[2]])))==1) {
     warning("no replicates provided for at least one of the conditions.")
   }
 }
