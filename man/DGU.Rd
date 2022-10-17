@@ -1,39 +1,38 @@
 \name{DGU}
 
-
-
 \alias{DGU}
 
-
-
-
 \title{
-Differential gene usage in immune repertoires
+Differential immunoglobulin (Ig) gene usage in immune repertoires
 }
-
-
 
 \description{
-IgGeneUsage detects differential gene usage in immune repertoires that belong
-to two biological conditions.}
-
-
+IgGeneUsage detects differential gene usage (DGU) in immune repertoires that 
+belong to two biological conditions.}
 
 \usage{
-DGU(usage.data, mcmc.warmup, mcmc.steps,
-    mcmc.chains, mcmc.cores, hdi.level,
-    adapt.delta, max.treedepth)
+DGU(usage.data, 
+    mcmc.warmup, 
+    mcmc.steps,
+    mcmc.chains, 
+    mcmc.cores, 
+    hdi.level,
+    adapt.delta, 
+    max.treedepth)
 }
 
-
 \arguments{
-\item{usage.data}{Data.frame with 4 columns: 'sample_id' = character identifier
-of each repertoire, 'condition' = character key representing each of the two
-biological conditions, 'gene_name' = character name of each gene to be tested
-for differential usage, 'gene_usage_count' = number of rearrangements belonging
-to a specific sample_id x condition x gene_name. Alternatively, usage.data can
-be a SummarizedExperiment object. See examplary data 'data(Ig_SE)' for more 
-information.}
+\item{usage.data}{Data.frame with 4 columns: 
+\itemize{
+\item 'sample_id' = character, repertoire name (e.g. R1)
+\item 'condition' = character, name of biological conditions (e.g. tumor)
+\item 'gene_name' = character, Ig gene name (e.g. IGHV1-69)
+\item 'gene_usage_count' = number, frequency (=usage) of rearrangements from 
+       sample_id x condition x gene_name
+}
+usage.data can also be be a SummarizedExperiment object. See examplary data 
+'data(Ig_SE)' for more information.
+}
 \item{mcmc.chains, mcmc.warmup, mcmc.steps, mcmc.cores}{Number of MCMC chains
 (default = 4), number of cores to use (default = 1), length of MCMC chains
 (default = 1,500), length of adaptive part of MCMC chains (default = 500).}
@@ -42,30 +41,24 @@ information.}
 \item{max.treedepth}{MCMC setting (default = 12).}
 }
 
-
-
-
-
-
 \details{
-The input to IgGeneUsage is a table with usage frequencies for each gene of a
-repertoire that belongs to a particular biological condition. For the analysis 
-of differential gene usage between two biological conditions, IgGeneUsage 
-employs a Bayesian hierarchical model for zero-inflated beta-binomial (ZIBB)
-regression (see vignette 'User Manual: IgGeneUsage').
+The main input of IgGeneUsage is a table with Ig gene usage frequencies for 
+a set of repertoires that belong to one of two biological condition. For the 
+DGU analysis between two biological conditions, IgGeneUsage employs a Bayesian 
+hierarchical model for zero-inflated beta-binomial (ZIBB) regression (see 
+vignette 'User Manual: IgGeneUsage').
 }
 
 \value{
-\item{glm.summary}{differential gene usage statistics for each gene.
-1) es = effect size on differential gene usage (mean, median standard error 
-(se), standard deviation (sd), L (low boundary of HDI), H (high boundary of 
-HDI); 2) contrast = direction of the effect; 3) pmax = probability of 
-differential gene usage}
-\item{test.summary}{differential gene usage statistics computed with the 
-Welch's t-test (columns start with 't'), and Wilcoxon signed-rank test (columns 
-start with 'u'). For both test report P-values, FDR-corrected P-values, 
-Bonferroni-corrected P-values. Additionally, we report t-value and 95\% CI 
-(from the t-test) and U-value (from the Wilcoxon signed-rank test).}
+\item{glm.summary}{DGU statistics for each gene: 1) es = effect size on 
+DGU (mean, median standard error (se), standard deviation (sd), L (low boundary 
+of HDI), H (high boundary of HDI); 2) contrast = direction of the effect; 3) 
+pmax = probability of DGU}
+\item{test.summary}{DGU statistics computed with the Welch's t-test (columns 
+start with 't'), and Wilcoxon signed-rank test (columns start with 'u'). For 
+both test report P-values, FDR-corrected P-values, Bonferroni-corrected 
+P-values. Additionally, we report t-value and 95\% CI (from the t-test) and 
+U-value (from the Wilcoxon signed-rank test).}
 \item{glm}{stanfit object}
 \item{ppc.data}{two types of posterior predictive checks: 1) repertoire-
 specific, 2) gene-specific}
@@ -80,24 +73,27 @@ specific, 2) gene-specific}
 
 \examples{
 # input data
-# data(Ig)
-# head(Ig)
-
-# Alternative:
-# use SummarizedExperiment input data
-# data(Ig_SE)
-
+data(d_zibb)
+head(d_zibb)
 
 # run differential gene usage (DGU)
-# M <- DGU(usage.data = Ig,
-#          mcmc.warmup = 250,
-#          mcmc.steps = 1000,
-#          mcmc.chains = 2,
-#          mcmc.cores = 1,
-#          hdi.level = 0.95,
-#          adapt.delta = 0.95,
-#          max.treedepth = 13)
+M <- DGU(usage.data = d_zibb,
+         mcmc.warmup = 350,
+         mcmc.steps = 1500,
+         mcmc.chains = 2,
+         mcmc.cores = 1,
+         hdi.level = 0.95,
+         adapt.delta = 0.8,
+         max.treedepth = 10)
+
+# look at DGU results
+head(M$glm.summary)
+
+# look at DGU results (by frequentist methods)
+head(M$test.summary)
+
+# look at posterior predictive checks (PPC)
+head(M$ppc.data)
 }
 
-
-\seealso{LOO, Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE}
+\seealso{LOO, d_zibb, Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE}

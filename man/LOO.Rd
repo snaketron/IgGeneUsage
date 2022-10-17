@@ -14,35 +14,46 @@ Leave-one-out analysis for quantitative evaluation of the probability of DGU
 
 
 \description{
-IgGeneUsage detects differential gene usage in immune repertoires that belong
-to two biological conditions with its function DGU. To assert quantitatively
-the robustness of the estimated probability of DGU (pi), IgGeneUsage has a 
-built-in procedure for a fully Bayesian leave-one-out (LOO) analysis. During 
-each step of LOO, we discard the data of one of the repertoires, and use the 
-remaining data to analyze for DGU with IgGeneUsage. In each step we recorded 
-pi for all genes. Therefore, by evaluating the variability of pi for a given 
-gene, we can we assert quantitatively its robustness.
+IgGeneUsage detects differential gene usage (DGU) in immune repertoires that 
+belong to two biological conditions.
 
-Notice, however, that for datasets that include many repertoires (e.g. 100) LOO 
-can be computationally costly.}
+To quantify the robustness of the estimated probability of DGU (pmax), 
+IgGeneUsage has a built-in procedure for a fully Bayesian leave-one-out (LOO) 
+analysis. In each LOO step we discard the data of one of the repertoires, and 
+use the remaining data to analyze for DGU with IgGeneUsage. In each step we 
+record pmax for all genes. Finally, we evaluate the variability of pmax for a 
+given across the different LOO steps. Low variability in pmax: robust DGU; 
+high variability: unrobust DGU.
+
+For datasets that include many repertoires (e.g. 100) LOO can be 
+computationally costly.}
 
 
 
 \usage{
-LOO(usage.data, mcmc.warmup, mcmc.steps,
-    mcmc.chains, mcmc.cores, hdi.level,
-    adapt.delta, max.treedepth)
+LOO(usage.data, 
+    mcmc.warmup, 
+    mcmc.steps,
+    mcmc.chains, 
+    mcmc.cores, 
+    hdi.level,
+    adapt.delta, 
+    max.treedepth)
 }
 
 
 \arguments{
-\item{usage.data}{Data.frame with 4 columns: 'sample_id' = character identifier
-of each repertoire, 'condition' = character key representing each of the two
-biological conditions, 'gene_name' = character name of each gene to be tested
-for differential usage, 'gene_usage_count' = number of rearrangements belonging
-to a specific sample_id x condition x gene_name. Alternatively, usage.data can
-be a SummarizedExperiment object. See examplary data 'data(Ig_SE)' for more 
-information.}
+\item{usage.data}{Data.frame with 4 columns:
+\itemize{
+\item 'sample_id' = character, repertoire name (e.g. R1)
+\item 'condition' = character, name of biological conditions (e.g. tumor)
+\item 'gene_name' = character, Ig gene name (e.g. IGHV1-69)
+\item 'gene_usage_count' = number, frequency (=usage) of rearrangements from 
+       sample_id x condition x gene_name
+}
+usage.data can also be be a SummarizedExperiment object. See dataset
+'data(Ig_SE)' for more information.
+}
 \item{mcmc.chains, mcmc.warmup, mcmc.steps, mcmc.cores}{Number of MCMC chains
 (default = 4), number of cores to use (default = 1), length of MCMC chains
 (default = 1,500), length of adaptive part of MCMC chains (default = 500).}
@@ -51,23 +62,22 @@ information.}
 \item{max.treedepth}{MCMC setting (default = 12).}
 }
 
-
-
-
-
-
 \details{
 IgGeneUsage invokes the function DGU in each LOO step. For more details
 see help for DGU or vignette 'User Manual: IgGeneUsage'.
 }
 
 \value{
-\item{loo.summary}{differential gene usage statistics for each gene of a given 
-LOO step. 1) es = effect size on differential gene usage (mean, median standard 
-error (se), standard deviation (sd), L (low boundary of HDI), H (high boundary 
-of HDI); 2) contrast = direction of the effect; 3) pmax = probability of 
-differential gene usage; 4) loo.id (LOO step ID); 5 Neff (effective sample 
-size), Rhat (potential scale reduction factor)}
+\item{loo.summary}{DGU statistics for each Ig gene for specific LOO step:
+\itemize{
+\item es = effect size statistics: mean, median, standard error (se), 
+standard deviation (sd), L/H (low/high boundary of HDI)
+\item contrast = direction of the effect
+\item pmax = DGU probability
+\item loo.id (LOO step)
+\item Neff (effective sample size), Rhat (potential scale reduction factor)
+}
+}
 }
 
 \author{
@@ -77,24 +87,21 @@ size), Rhat (potential scale reduction factor)}
 
 \examples{
 # input data:
-# data(Ig)
-# head(Ig)
-
-# Alternative:
-# use SummarizedExperiment input data
-# data(Ig_SE)
-
+data("Ig", package = "IgGeneUsage")
+head(Ig)
 
 # run leave-one-out (LOO)
-# L <- LOO(usage.data = Ig,
-#          mcmc.warmup = 250,
-#          mcmc.steps = 1000,
-#          mcmc.chains = 2,
-#          mcmc.cores = 1,
-#          hdi.level = 0.95,
-#          adapt.delta = 0.95,
-#          max.treedepth = 13)
+L <- LOO(usage.data = Ig,
+         mcmc.warmup = 500,
+         mcmc.steps = 2000,
+         mcmc.chains = 3,
+         mcmc.cores = 1,
+         hdi.level = 0.95,
+         adapt.delta = 0.99,
+         max.treedepth = 10)
+         
+head(L$loo.summary)
 }
 
 
-\seealso{DGU, Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE}
+\seealso{DGU, Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE, d_zibb}
