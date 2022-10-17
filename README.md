@@ -7,4 +7,4 @@ IgGeneUsage: computational tool for the analysis of differential gene usage (DGU
 
 For more information see vignettes in folder vignette/. 
 
-![alt text](readme.png)
+![alt text](inst/extdata/readme.png)
