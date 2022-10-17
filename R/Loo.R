@@ -48,8 +48,8 @@ LOO <- function(usage.data,
   
   loo.out <- vector(mode = "list", length = length(Rs))
   names(loo.out) <- Rs
-  for(r in 1:length(Rs)) {
-    message(paste("LOO step: ", r, "\n", sep = ''))
+  for(r in base::seq_len(length.out = length(Rs))) {
+    base::message("LOO step: ", r, "\n", sep = '')
     
     # here subset data
     temp.usage.data <- usage.data[usage.data$sample_id != Rs[r], ]

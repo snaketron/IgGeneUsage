@@ -150,14 +150,16 @@ getPpcRepertoire <- function(glm,
 
   yhat.count$par <- NULL
   yhat.count$par.name <- NULL
-  colnames(yhat.count)[1:6] <- paste("ppc", colnames(yhat.count)[1:6],
-                                     "count", sep = "_")
+  colnames(yhat.count)[base::seq_len(length.out = 6)] <- paste(
+    "ppc", colnames(yhat.count)[base::seq_len(length.out = 6)],
+    "count", sep = "_")
 
   yhat.prop$par <- NULL
   yhat.prop$par.name <- NULL
-  colnames(yhat.prop)[1:6] <- paste("ppc", colnames(yhat.prop)[1:6],
-                                   "prop", sep = "_")
-
+  colnames(yhat.prop)[base::seq_len(length.out = 6)] <- paste(
+    "ppc", colnames(yhat.prop)[base::seq_len(length.out = 6)],
+    "prop", sep = "_")
+  
   yhat <- merge(x = yhat.count, y = yhat.prop, by = c("G", "R"))
   rm(yhat.count, yhat.prop)
 
@@ -167,14 +169,13 @@ getPpcRepertoire <- function(glm,
   yhat$observed_count <- NA
   yhat$observed_prop <- NA
 
-  for(i in 1:nrow(yhat)) {
+  for(i in base::seq_len(length.out = nrow(yhat))) {
     yhat$sample_name[i] <- usage.data$sample_names[yhat$R[i]]
     yhat$gene_name[i] <- usage.data$gene_names[yhat$G[i]]
     yhat$observed_count[i] <- usage.data$Y[yhat$G[i], yhat$R[i]]
     yhat$observed_prop[i] <- yhat$observed_count[i]/usage.data$N[yhat$R[i]]
     yhat$condition[i] <- usage.data$Xorg[yhat$sample_name[i]]
   }
-
   return (yhat)
 }
 
@@ -206,13 +207,14 @@ getPpcGene <- function(glm,
 
   yhat$par <- NULL
   yhat$par.name <- NULL
-  colnames(yhat)[1:6] <- paste("ppc", colnames(yhat)[1:6], "prop", sep = "_")
+  colnames(yhat)[base::seq_len(length.out = 6)] <- paste(
+    "ppc", colnames(yhat)[base::seq_len(length.out = 6)], "prop", sep = "_")
 
   yhat$X <- ifelse(test = yhat$X == 1, yes = 1, no = -1)
   yhat$condition <- NA
   yhat$gene_name <- NA
   yhat$observed_prop <- NA
-  for(i in 1:nrow(yhat)) {
+  for(i in base::seq_len(length.out = nrow(yhat))) {
     yhat$gene_name[i] <- usage.data$gene_names[yhat$G[i]]
     # # TODO: here check
     # browser()
@@ -247,12 +249,11 @@ getTTestStats <- function(usage.data) {
                       stringsAsFactors = FALSE))
   }
 
-  tout <- suppressWarnings(
-    expr = lapply(X = seq_len(length.out = usage.data$N_gene),
-                  FUN = getTTest,
-                  Ys = usage.data$Y,
-                  Xs = usage.data$X,
-                  Ns = usage.data$N))
+  tout <- lapply(X = seq_len(length.out = usage.data$N_gene),
+                 FUN = getTTest,
+                 Ys = usage.data$Y,
+                 Xs = usage.data$X,
+                 Ns = usage.data$N)
 
   tout.summary <- do.call(rbind, lapply(tout, getTTestSummary))
   tout.summary$gene_name <- usage.data$gene_names
@@ -284,13 +285,12 @@ getManUStats <- function(usage.data) {
                       u.test.wvalue = x$statistic,
                       stringsAsFactors = FALSE))
   }
-
-  mout <- suppressWarnings(
-    expr = lapply(X = seq_len(length.out = usage.data$N_gene),
-                  FUN = getMTest,
-                  Ys = usage.data$Y,
-                  Xs = usage.data$X,
-                  Ns = usage.data$N))
+  
+  mout <- lapply(X = seq_len(length.out = usage.data$N_gene),
+                 FUN = getMTest,
+                 Ys = usage.data$Y,
+                 Xs = usage.data$X,
+                 Ns = usage.data$N)
 
   mout.summary <- do.call(rbind, lapply(mout, getMSummary))
   mout.summary$gene_name <- usage.data$gene_names
@@ -308,7 +308,7 @@ getManUStats <- function(usage.data) {
 getProcessedUsage <- function(Y, gene_names, sample_ids, X) {
   # process usage
   processed.usage.data <- c()
-  for(i in 1:ncol(Y)) {
+  for(i in base::seq_len(length.out = ncol(Y))) {
     processed.usage.data <- rbind(processed.usage.data,
                                   data.frame(gene_usage_count = Y[,i],
                                              gene_name = gene_names,
