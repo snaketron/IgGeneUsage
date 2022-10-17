@@ -1,27 +1,28 @@
 Package: IgGeneUsage
 Type: Package
 Title: Differential gene usage in immune repertoires
-Version: 1.11.2
+Version: 1.11.3
 Authors@R: 
     person(given = "Simo",  
            family = "Kitanovski",
            role = c("aut", "cre"),
            email = "simo.kitanovski@uni-due.de")
-Description: Detection of biases in immunoglobulin (Ig) gene usage between 
-    adaptive immune repertoires that belong to different biological conditions 
+Description: Detection of biases in the usage of immunoglobulin (Ig) genes 
     is an important task in immune repertoire profiling. IgGeneUsage detects 
-    aberrant Ig gene usage using a probabilistic model which is analyzed 
-    computationally by Bayes inference.
-License: file LICENSE
+    aberrant Ig gene usage between biological conditions using a probabilistic 
+    model which is analyzed computationally by Bayes inference. With this
+    IgGeneUsage also avoids some common problems related to the current 
+    practice of null-hypothesis significance testing.
+License: MIT + file LICENSE
 Depends: 
-    methods,
     R (>= 4.2.0),
     Rcpp (>= 0.12.0),
     SummarizedExperiment,
     StanHeaders (> 2.18.1)
 Imports: 
     rstan (>= 2.19.2),
-    reshape2 (>= 1.4.3)
+    reshape2 (>= 1.4.3),
+    methods
 Suggests: 
     BiocStyle,
     knitr,
@@ -37,5 +38,6 @@ NeedsCompilation: no
 biocViews: DifferentialExpression, Regression, Genetics, Bayesian, 
     BiomedicalInformatics, ImmunoOncology, MathematicalBiology
 BugReports: https://github.com/snaketron/IgGeneUsage/issues
+URL: https://github.com/snaketron/IgGeneUsage
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
