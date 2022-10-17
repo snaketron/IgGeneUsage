@@ -11,8 +11,8 @@ A small example dataset that has the following features:
     \item 7 replicates (samples) per condition
     \item 12 Ig genes
   }
-This dataset was simulated from zero-inflated beta-binomial (ZIBB) distribution. 
-Simulation code is available in inst/scripts/d_zibb.R
+This dataset was simulated from zero-inflated beta-binomial (ZIBB) 
+distribution. Simulation code is available in inst/scripts/d_zibb.R
 }
 
 \usage{
@@ -31,9 +31,6 @@ This format is accepted by IgGeneUsage.
 }
 \source{
 Simulation code is provided in inst/scripts/d_zibb.R
-}
-\references{
-
 }
 \examples{
 data("d_zibb", package = "IgGeneUsage")
