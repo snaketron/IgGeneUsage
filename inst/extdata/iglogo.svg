@@ -17,8 +17,8 @@
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
    sodipodi:docname="iglogo.svg"
    inkscape:export-filename="/home/sktron/Desktop/work/R/IgGeneUsage/inst/extdata/iglogo.png"
-   inkscape:export-xdpi="299.9946"
-   inkscape:export-ydpi="299.9946">
+   inkscape:export-xdpi="267.04324"
+   inkscape:export-ydpi="267.04324">
   <defs
      id="defs2">
     <marker
@@ -699,9 +699,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="8"
-     inkscape:cx="36.374781"
-     inkscape:cy="113.42826"
+     inkscape:zoom="4"
+     inkscape:cx="61.326726"
+     inkscape:cy="66.949828"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -732,7 +732,7 @@
      id="layer1"
      transform="translate(0,-260)">
     <ellipse
-       style="opacity:1;vector-effect:none;fill:#efefef;fill-opacity:1;stroke:#000000;stroke-width:0.80000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;marker-start:none;marker-mid:none;marker-end:none"
+       style="opacity:1;vector-effect:none;fill:#f8f8f8;fill-opacity:1;stroke:#000000;stroke-width:0.80000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;marker-start:none;marker-mid:none;marker-end:none"
        id="path10"
        cx="19.118004"
        cy="278.45215"
