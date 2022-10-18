@@ -41,7 +41,7 @@ LOO <- function(usage.data,
   # compile model
   message("Compiling model ... \n")
   rstan::rstan_options(auto_write = TRUE)
-  model.file <- system.file("extdata/stan/", "zibb.stan",
+  model.file <- system.file("stan", "zibb.stan",
                             package = "IgGeneUsage")
   model <- rstan::stan_model(file = model.file, auto_write = TRUE)
   
