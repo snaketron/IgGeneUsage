@@ -45,9 +45,9 @@ DGU <- function(usage.data,
 
   # model
   message("Compiling model ... \n")
-  model.file <- system.file("extdata", "zibb.stan",
+  model.file <- system.file("extdata/stan", "zibb.stan",
                             package = "IgGeneUsage")
-  # model.file <- system.file("extdata", "zibb_flex.stan",
+  # model.file <- system.file("extdata/stan", "zibb_flex.stan",
   #                           package = "IgGeneUsage")
   model <- rstan::stan_model(file = model.file)
 
