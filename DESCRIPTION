@@ -1,7 +1,7 @@
 Package: IgGeneUsage
 Type: Package
 Title: Differential gene usage in immune repertoires
-Version: 1.11.7
+Version: 1.11.8
 Authors@R: 
     person(given = "Simo",  
            family = "Kitanovski",
@@ -19,10 +19,10 @@ Depends:
 Imports: 
     methods,
     reshape2 (>= 1.4.3),
-    rstan (>= 2.19.2),
+    Rcpp (>= 0.12.0),
+    RcppParallel (>= 5.0.1),
+    rstan (>= 2.18.1),
     rstantools (>= 2.2.0),
-    Rcpp (>= 0.12.0), 
-    RcppParallel (>= 5.0.1), 
     SummarizedExperiment
 Suggests: 
     BiocStyle,
@@ -41,9 +41,10 @@ LinkingTo:
     rstan (>= 2.18.1),
     StanHeaders (>= 2.18.0)
 SystemRequirements: GNU make
+Biarch: true
 Encoding: UTF-8
 LazyData: false
-NeedsCompilation: no
+NeedsCompilation: yes
 biocViews: DifferentialExpression, Regression, Genetics, Bayesian, 
     BiomedicalInformatics, ImmunoOncology, MathematicalBiology
 BugReports: https://github.com/snaketron/IgGeneUsage/issues
