@@ -4,7 +4,7 @@ cat("Tests stan model \n")
 
 test_that("stan model and DGU availability check", {
   
-  model.file <- system.file("extdata", "zibb.stan",
+  model.file <- system.file("stan", "zibb.stan",
                             package = "IgGeneUsage")
   model <- rstan::stan_model(file = model.file,
                              auto_write = TRUE)
@@ -33,7 +33,7 @@ test_that("stan model and DGU availability check", {
 
 test_that("stan model and LOO availability check", {
   
-  model.file <- system.file("extdata", "zibb.stan",
+  model.file <- system.file("stan", "zibb.stan",
                             package = "IgGeneUsage")
   model <- rstan::stan_model(file = model.file,
                              auto_write = TRUE)
