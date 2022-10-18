@@ -700,8 +700,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="4"
-     inkscape:cx="61.326726"
-     inkscape:cy="66.949828"
+     inkscape:cx="21.850552"
+     inkscape:cy="96.380382"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -737,7 +737,9 @@
        cx="19.118004"
        cy="278.45215"
        rx="17.876003"
-       ry="18.047855" />
+       ry="18.047855"
+       inkscape:export-xdpi="267"
+       inkscape:export-ydpi="267" />
     <path
        transform="matrix(1.0787207,0,0,0.69733422,1.656331,84.300424)"
        style="opacity:1;vector-effect:none;fill:#94b0d5;fill-opacity:1;stroke:none;stroke-width:0.17681026;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;font-variant-east_asian:normal"
@@ -820,11 +822,6 @@
        style="opacity:1;vector-effect:none;fill:#ff0000;fill-opacity:1;stroke:#e17d23;stroke-width:1.08878195;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="m 7.8445785,277.55062 v -2.35667 h -0.032284"
        id="path1822"
-       inkscape:connector-curvature="0" />
-    <path
-       style="opacity:1;vector-effect:none;fill:#ffffff;fill-opacity:1;stroke:#fffdfd;stroke-width:1.88976383;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#TriangleOutS-3)"
-       d="M 2.3264448,48.646243 V 2.684277"
-       id="path871-6-0"
        inkscape:connector-curvature="0" />
     <g
        id="g2603-0"
