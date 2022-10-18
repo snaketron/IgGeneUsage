@@ -52,7 +52,4 @@ test_that("stan model and LOO availability check", {
                  adapt.delta = 0.999,
                  max.treedepth = 10),
     NA)
-  
-  fit <- fit$glm
-  expect_is(object = fit, class = "stanfit")
 })
