@@ -1,4 +1,4 @@
-# IgGeneUsage <a href="https://github.com/snaketron/IgGeneUsage/"><img src="iglogo.png" height = 120 width = 120 alt="Logo"/>
+# IgGeneUsage <a href="https://github.com/snaketron/IgGeneUsage/"><img src="inst/extdata/iglogo.png" height = 120 width = 120 alt="Logo"/>
 
 [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-green.svg)](https://www.tidyverse.org/lifecycle/#stable) [![Build Status Travis](https://travis-ci.org/snaketron/IgGeneUsage.svg?branch=master)](https://travis-ci.org/snaketron/IgGeneUsage) [![codecov](https://codecov.io/gh/snaketron/IgGeneUsage/branch/master/graph/badge.svg)](https://codecov.io/github/snaketron/IgGeneUsage)
 
