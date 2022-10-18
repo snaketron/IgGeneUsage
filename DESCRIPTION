@@ -1,7 +1,7 @@
 Package: IgGeneUsage
 Type: Package
 Title: Differential gene usage in immune repertoires
-Version: 1.11.5
+Version: 1.11.7
 Authors@R: 
     person(given = "Simo",  
            family = "Kitanovski",
@@ -15,14 +15,13 @@ Description: Detection of biases in the usage of immunoglobulin (Ig) genes
     practice of null-hypothesis significance testing.
 License: MIT + file LICENSE
 Depends: 
-    R (>= 4.2.0),
-    Rcpp (>= 0.12.0),
-    SummarizedExperiment,
-    StanHeaders (> 2.18.1)
+    R (>= 4.2.0)
 Imports: 
-    rstan (>= 2.19.2),
+    methods,
     reshape2 (>= 1.4.3),
-    methods
+    rstan (>= 2.19.2),
+    rstantools (>= 2.2.0),
+    SummarizedExperiment
 Suggests: 
     BiocStyle,
     knitr,
@@ -32,6 +31,14 @@ Suggests:
     ggforce,
     gridExtra,
     ggrepel
+LinkingTo: 
+    BH (>= 1.66.0),
+    Rcpp (>= 0.12.0),
+    RcppEigen (>= 0.3.3.3.0),
+    RcppParallel (>= 5.0.1),
+    rstan (>= 2.18.1),
+    StanHeaders (>= 2.18.0)
+SystemRequirements: GNU make
 Encoding: UTF-8
 LazyData: false
 NeedsCompilation: no
@@ -41,3 +48,4 @@ BugReports: https://github.com/snaketron/IgGeneUsage/issues
 URL: https://github.com/snaketron/IgGeneUsage
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
+Biarch: true
