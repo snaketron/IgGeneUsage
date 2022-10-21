@@ -1,10 +1,11 @@
-Changes in version 1.11.2-1.11.9 (2022-10-18)
+Changes in version 1.11.2-1.11.10 (2022-10-21)
 + man files updated
 + vignette updated
 + d_zibb data and inst/scripts/d_zibb.R added: simulated data from
   zero-inflated beta-binomial (ZIBB) distribution
 + minor fixes, function clarity/readibility improved
 + probe compilation errors on Windows
++ stanmodels used properly in v. 1.11.10, no extra compilation
 
 Changes in version 1.9.3 (2022-03-31)
 + input data checks extended
