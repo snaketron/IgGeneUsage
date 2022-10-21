@@ -36,16 +36,7 @@ LOO <- function(usage.data,
   if(length(Rs) <= 2) {
     stop("To perform LOO you need to provide as input at least 3 repertoires")
   }
-  
-  
-  # compile model
-  message("Compiling model ... \n")
-  rstan::rstan_options(auto_write = TRUE)
-  model.file <- system.file("stan", "zibb.stan",
-                            package = "IgGeneUsage")
-  model <- rstan::stan_model(file = model.file, auto_write = TRUE)
-  
-  
+
   loo.out <- vector(mode = "list", length = length(Rs))
   names(loo.out) <- Rs
   for(r in base::seq_len(length.out = length(Rs))) {
@@ -62,8 +53,7 @@ LOO <- function(usage.data,
                    mcmc.cores = mcmc.cores,
                    hdi.level = hdi.level,
                    adapt.delta = adapt.delta,
-                   max.treedepth = max.treedepth,
-                   model = model)
+                   max.treedepth = max.treedepth)
     
     # collect results
     out$loo.id <- r
@@ -86,8 +76,7 @@ LOO_DGU <- function(usage.data,
                 mcmc.cores = 1,
                 hdi.level = 0.95,
                 adapt.delta = 0.95,
-                max.treedepth = 12,
-                model) {
+                max.treedepth = 12) {
   
   
   # before check convert summarized experiment object to data.frame
@@ -124,7 +113,7 @@ LOO_DGU <- function(usage.data,
                      "beta_gene_sigma", "phi",
                      "tau", "beta", "alpha_gene",
                      "beta_gene")
-  glm <- rstan::sampling(object = model,
+  glm <- rstan::sampling(object = stanmodels$zibb,
                          data = usage.data,
                          chains = mcmc.chains,
                          cores = mcmc.cores,

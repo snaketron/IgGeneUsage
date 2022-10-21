@@ -42,16 +42,6 @@ DGU <- function(usage.data,
                     " - ", unique(usage.data$Xorg[usage.data$X == -1]),
                     sep = '')
 
-
-  # model
-  message("Compiling model ... \n")
-  model.file <- system.file("stan", "zibb.stan",
-                            package = "IgGeneUsage")
-  # model.file <- system.file("extdata/stan", "zibb_flex.stan",
-  #                           package = "IgGeneUsage")
-  model <- rstan::stan_model(file = model.file)
-
-
   # setup control list
   control.list <- list(adapt_delta = adapt.delta,
                        max_treedepth = max.treedepth)
@@ -68,7 +58,7 @@ DGU <- function(usage.data,
                      "alpha_gene", "beta_gene", 
                      "log_lik", "Yhat",  
                      "Yhat_individual", "Yhat_gene")
-  glm <- rstan::sampling(object = model,
+  glm <- rstan::sampling(object = stanmodels$zibb,
                          data = usage.data,
                          chains = mcmc.chains,
                          cores = mcmc.cores,
