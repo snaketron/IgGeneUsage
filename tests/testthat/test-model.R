@@ -4,13 +4,8 @@ cat("Tests stan model \n")
 
 test_that("stan model and DGU availability check", {
   
-  model.file <- system.file("stan", "zibb.stan",
-                            package = "IgGeneUsage")
-  model <- rstan::stan_model(file = model.file,
-                             auto_write = TRUE)
-  
-  expect_equal(object = model@model_name, expected = "zibb")
-  expect_is(object = model, class = "stanmodel")
+  expect_equal(object = stanmodels$zibb@model_name, expected = "zibb")
+  expect_is(object = stanmodels$zibb, class = "stanmodel")
   
   data(Ig)
   fit <- expect_warning(
@@ -33,13 +28,8 @@ test_that("stan model and DGU availability check", {
 
 test_that("stan model and LOO availability check", {
   
-  model.file <- system.file("stan", "zibb.stan",
-                            package = "IgGeneUsage")
-  model <- rstan::stan_model(file = model.file,
-                             auto_write = TRUE)
-  
-  expect_equal(object = model@model_name, expected = "zibb")
-  expect_is(object = model, class = "stanmodel")
+  expect_equal(object = stanmodels$zibb@model_name, expected = "zibb")
+  expect_is(object = stanmodels$zibb, class = "stanmodel")
   
   data(Ig)
   fit <- expect_error(
