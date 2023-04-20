@@ -1,3 +1,8 @@
+Changes in version 1.12-1.13.2
++ variable naming and function naming scheme changed
++ paired-sample analysis stub created
++ multinomial model in testing
+
 Changes in version 1.11.2-1.11.11 (2022-10-24)
 + man files updated
 + vignette updated

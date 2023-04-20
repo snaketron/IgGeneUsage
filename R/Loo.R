@@ -1,160 +1,155 @@
 
 # Description:
 # LOO = leave-one-out
-# usage.data: 4 columns
+# ud: 4 columns
 #   * sample_id: char column
 #   * condition: char column
 #   * gene_name: char column
 #   * gene_usage_count: num column
-LOO <- function(usage.data,
-                mcmc.warmup = 500,
-                mcmc.steps = 1500,
-                mcmc.chains = 4,
-                mcmc.cores = 1,
-                hdi.level = 0.95,
-                adapt.delta = 0.95,
-                max.treedepth = 12) {
+LOO <- function(ud,
+                mcmc_warmup = 500,
+                mcmc_steps = 1500,
+                mcmc_chains = 4,
+                mcmc_cores = 1,
+                hdi_lvl = 0.95,
+                adapt_delta = 0.95,
+                max_treedepth = 12) {
   
   # before check convert summarized experiment object to data.frame
-  if(inherits(x = usage.data, what = "SummarizedExperiment") == TRUE) {
-    usage.data.raw <- usage.data
-    usage.data <- convertSummarizedExperiment(usage.data.se = usage.data.raw)
+  if(inherits(x = ud, what = "SummarizedExperiment") == TRUE) {
+    udr <- ud
+    ud <- convertSummarizedExperiment(ud_se = udr)
   }
   
   # check inputs
-  checkInput(usage.data = usage.data,
-             mcmc.chains = as.integer(x = mcmc.chains),
-             mcmc.cores = as.integer(x = mcmc.cores),
-             mcmc.steps = as.integer(x = mcmc.steps),
-             mcmc.warmup = as.integer(x = mcmc.warmup),
-             hdi.level = hdi.level)
+  checkInput(ud = ud,
+             mcmc_chains = as.integer(x = mcmc_chains),
+             mcmc_cores = as.integer(x = mcmc_cores),
+             mcmc_steps = as.integer(x = mcmc_steps),
+             mcmc_warmup = as.integer(x = mcmc_warmup),
+             hdi_lvl = hdi_lvl)
   
   # unique repertoire names
-  Rs <- unique(usage.data$sample_id)
+  Rs <- unique(ud$sample_id)
   
   # extra-stop condition
   if(length(Rs) <= 2) {
     stop("To perform LOO you need to provide as input at least 3 repertoires")
   }
-
-  loo.out <- vector(mode = "list", length = length(Rs))
-  names(loo.out) <- Rs
+  
+  loo_out <- vector(mode = "list", length = length(Rs))
+  names(loo_out) <- Rs
   for(r in base::seq_len(length.out = length(Rs))) {
     base::message("LOO step: ", r, "\n", sep = '')
     
     # here subset data
-    temp.usage.data <- usage.data[usage.data$sample_id != Rs[r], ]
+    temp_ud <- ud[ud$sample_id != Rs[r], ]
     
     # run DGU
-    out <- LOO_DGU(usage.data = temp.usage.data,
-                   mcmc.warmup = mcmc.warmup,
-                   mcmc.steps = mcmc.steps,
-                   mcmc.chains = mcmc.chains,
-                   mcmc.cores = mcmc.cores,
-                   hdi.level = hdi.level,
-                   adapt.delta = adapt.delta,
-                   max.treedepth = max.treedepth)
+    out <- LOO_DGU(ud = temp_ud,
+                   mcmc_warmup = mcmc_warmup,
+                   mcmc_steps = mcmc_steps,
+                   mcmc_chains = mcmc_chains,
+                   mcmc_cores = mcmc_cores,
+                   hdi_lvl = hdi_lvl,
+                   adapt_delta = adapt_delta,
+                   max_treedepth = max_treedepth)
     
     # collect results
     out$loo.id <- r
-    loo.out[[Rs[r]]] <- out
+    loo_out[[Rs[r]]] <- out
   }
   
   # compact to data.frame and return
-  loo.out <- do.call(rbind, loo.out)
-  return (list(loo.summary = loo.out))
+  loo_out <- do.call(rbind, loo_out)
+  return (list(loo.summary = loo_out))
 }
 
 
 
 # Description:
 # Light-weight version of DGU
-LOO_DGU <- function(usage.data,
-                mcmc.warmup = 500,
-                mcmc.steps = 1500,
-                mcmc.chains = 4,
-                mcmc.cores = 1,
-                hdi.level = 0.95,
-                adapt.delta = 0.95,
-                max.treedepth = 12) {
+LOO_DGU <- function(ud,
+                    mcmc_warmup = 500,
+                    mcmc_steps = 1500,
+                    mcmc_chains = 4,
+                    mcmc_cores = 1,
+                    hdi_lvl = 0.95,
+                    adapt_delta = 0.95,
+                    max_treedepth = 12) {
   
   
   # before check convert summarized experiment object to data.frame
-  if(inherits(x = usage.data, what = "SummarizedExperiment") == TRUE) {
-    usage.data.raw <- usage.data
-    usage.data <- convertSummarizedExperiment(usage.data.se = usage.data.raw)
+  if(inherits(x = ud, what = "SummarizedExperiment") == TRUE) {
+    udr <- ud
+    ud <- convertSummarizedExperiment(ud_se = udr)
   }
   
   # check inputs
-  checkInput(usage.data = usage.data,
-             mcmc.chains = as.integer(x = mcmc.chains),
-             mcmc.cores = as.integer(x = mcmc.cores),
-             mcmc.steps = as.integer(x = mcmc.steps),
-             mcmc.warmup = as.integer(x = mcmc.warmup),
-             hdi.level = hdi.level)
+  checkInput(ud = ud,
+             mcmc_chains = base::as.integer(x = mcmc_chains),
+             mcmc_cores = base::as.integer(x = mcmc_cores),
+             mcmc_steps = base::as.integer(x = mcmc_steps),
+             mcmc_warmup = base::as.integer(x = mcmc_warmup),
+             hdi_lvl = hdi_lvl)
   
   # format input usage
-  usage.data.raw <- usage.data
-  usage.data <- getUsageData(usage = usage.data.raw)
+  udr <- ud
+  ud <- get_usage(u = udr)
   
   # contrast
-  contrast <- paste(unique(usage.data$Xorg[usage.data$X == 1]),
-                    " - ", unique(usage.data$Xorg[usage.data$X == -1]),
-                    sep = '')
-  
+  contrast <- paste0(unique(ud$Xorg[ud$X == 1]),
+                     " - ", 
+                     unique(ud$Xorg[ud$X == -1]))
   
   # setup control list
-  control.list <- list(adapt_delta = adapt.delta,
-                       max_treedepth = max.treedepth)
+  control_list <- list(adapt_delta = adapt_delta,
+                       max_treedepth = max_treedepth)
   
   # stan sampling
   # monitor subset of parameters -> memory concern
-  pars.relevant <- c("alpha_sigma", "beta_sigma",
-                     "beta_gene_sigma", "phi",
-                     "tau", "beta", "alpha_gene",
-                     "beta_gene")
+  pars_rel <- c("alpha_sigma", "beta_sigma",
+                "beta_gene_sigma", "phi",
+                "tau", "beta", "alpha_gene",
+                "beta_gene")
   glm <- rstan::sampling(object = stanmodels$zibb,
-                         data = usage.data,
-                         chains = mcmc.chains,
-                         cores = mcmc.cores,
-                         iter = mcmc.steps,
-                         warmup = mcmc.warmup,
+                         data = ud,
+                         chains = mcmc_chains,
+                         cores = mcmc_cores,
+                         iter = mcmc_steps,
+                         warmup = mcmc_warmup,
                          refresh = 250,
-                         control = control.list,
-                         pars = pars.relevant,
+                         control = control_list,
+                         pars = pars_rel,
                          algorithm = "NUTS")
-  
   
   # get summary
   message("Computing summaries ... \n")
-  glm.summary <- rstan::summary(object = glm, digits = 4,
+  glm_summary <- rstan::summary(object = glm, 
+                                digits = 4,
                                 pars = "beta_gene",
-                                prob = c(0.5, (1-hdi.level)/2,
-                                         1-(1-hdi.level)/2))
-  glm.summary <- glm.summary$summary
-  glm.summary <- data.frame(glm.summary)
-  colnames(glm.summary) <- c("es_mean", "es_mean_se",
+                                prob = c(0.5, (1-hdi_lvl)/2,
+                                         1-(1-hdi_lvl)/2))
+  glm_summary <- glm_summary$summary
+  glm_summary <- data.frame(glm_summary)
+  colnames(glm_summary) <- c("es_mean", "es_mean_se",
                              "es_sd", "es_median",
                              "es_L", "es_H",
                              "Neff", "Rhat")
-  glm.summary$contrast <- contrast
-  
+  glm_summary$contrast <- contrast
   
   # extract data
   message("Posterior extraction ... \n")
-  glm.ext <- rstan::extract(object = glm)
-  
+  glm_ext <- rstan::extract(object = glm)
   
   # get pmax
   message("Computing probability of DGU ... \n")
-  glm.summary$pmax <- getPmax(glm.ext = glm.ext)
-  
+  glm_summary$pmax <- getPmax(glm_ext = glm_ext)
   
   # add gene id
-  glm.summary$gene_name <- usage.data$gene_names
+  glm_summary$gene_name <- ud$gene_names
   
-  
-  return (glm.summary)
+  return(glm_summary)
 }
 
 
