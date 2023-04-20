@@ -52,10 +52,10 @@ get_usage <- function(u) {
   X_m[x2] <- -1
   
   # compute processed usage data
-  pu <- getProcessedUsage(Y = Y, 
-                          gene_names = gene_names, 
-                          sample_ids = sample_ids, 
-                          X = X)
+  pu <- get_processed_ud(Y = Y, 
+                         gene_names = gene_names, 
+                         sample_ids = sample_ids, 
+                         X = X)
   
   return (list(Y = Y, 
                N = N, 
@@ -149,7 +149,7 @@ get_paired_usage <- function(u) {
 # Takes an input ud of class SummarizedExperiment,
 # and creates data.frame. Given that this function is used
 # before the input control, it also does some rudimentary checks
-convertSummarizedExperiment <- function(ud_se) {
+get_SummarizedExperiment <- function(ud_se) {
   # get count data
   c_d <- SummarizedExperiment::assay(x = ud_se)
   c_d <- reshape2::melt(data = c_d, 
@@ -178,7 +178,7 @@ convertSummarizedExperiment <- function(ud_se) {
 }
 
 
-getPmax <- function(glm_ext) {
+get_pmax <- function(glm_ext) {
   
   getPmaxGene <- function(x, beta_data) {
     p <- beta_data[,x]
@@ -201,9 +201,9 @@ getPmax <- function(glm_ext) {
 
 # Description
 # Posterior-predictive check within repertoires
-getPpcRepertoire <- function(glm,
-                             ud,
-                             hdi_lvl) {
+get_ppc_rep <- function(glm,
+                        ud,
+                        hdi_lvl) {
   
   # summaries
   yhat <- summary(object = glm, pars = c("Yhat", "Yhat_individual"),
@@ -262,12 +262,13 @@ getPpcRepertoire <- function(glm,
 
 # Description
 # Posterior-predictive check across genes
-getPpcGene <- function(glm,
-                       ud,
-                       hdi_lvl) {
+get_ppc_gene <- function(glm,
+                         ud,
+                         hdi_lvl) {
   
   # summaries
-  yhat <- summary(object = glm, pars = c("Yhat_gene"),
+  yhat <- summary(object = glm, 
+                  pars = c("Yhat_gene"),
                   prob = c(0.5, (1-hdi_lvl)/2, 1-(1-hdi_lvl)/2))
   yhat <- yhat$summary
   yhat <- data.frame(yhat)
@@ -295,8 +296,6 @@ getPpcGene <- function(glm,
   yhat$observed_prop <- NA
   for(i in base::seq_len(length.out = nrow(yhat))) {
     yhat$gene_name[i] <- ud$gene_names[yhat$G[i]]
-    # # TODO: here check
-    # browser()
     yhat$observed_prop[i] <- mean(ud$Y[yhat$G[i], ]/ud$N)
     yhat$condition[i] <- ud$Xorg[ud$X == yhat$X[i]][1]
   }
@@ -306,12 +305,13 @@ getPpcGene <- function(glm,
 
 
 # two sided t.test
-getTTestStats <- function(ud) {
-  getTTest <- function(x, Ys, Xs, Ns) {
+get_ttest <- function(ud) {
+  
+  get_ttest_run <- function(x, Ys, Xs, Ns) {
     return(try(stats::t.test((Ys[x, ]/Ns)~Xs), silent = TRUE))
   }
   
-  getTTestSummary <- function(x) {
+  get_ttest_summary <- function(x) {
     if(inherits(x = x, what = 'try-error') == TRUE) {
       return(data.frame(t_test_pvalue = NA,
                         t_test_tvalue = NA,
@@ -327,12 +327,12 @@ getTTestStats <- function(ud) {
   }
   
   tout <- lapply(X = seq_len(length.out = ud$N_gene),
-                 FUN = getTTest,
+                 FUN = get_ttest_run,
                  Ys = ud$Y,
                  Xs = ud$X,
                  Ns = ud$N)
   
-  tout.summary <- do.call(rbind, lapply(tout, getTTestSummary))
+  tout.summary <- do.call(rbind, lapply(tout, get_ttest_summary))
   tout.summary$gene_name <- ud$gene_names
   
   # multiple correction
@@ -343,13 +343,13 @@ getTTestStats <- function(ud) {
 }
 
 
-getManUStats <- function(ud) {
+get_manu <- function(ud) {
   
-  getMTest <- function(x, Ys, Xs, Ns) {
+  get_manu_run <- function(x, Ys, Xs, Ns) {
     return(try(stats::wilcox.test((Ys[x, ]/Ns)~Xs), silent = TRUE))
   }
   
-  getMSummary <- function(x) {
+  get_manu_summary <- function(x) {
     if(inherits(x = x, what = "try-error") == TRUE) {
       return(data.frame(u_test_pvalue = NA,
                         u_test_wvalue = NA,
@@ -361,12 +361,12 @@ getManUStats <- function(ud) {
   }
   
   mout <- lapply(X = seq_len(length.out = ud$N_gene),
-                 FUN = getMTest,
+                 FUN = get_manu_run,
                  Ys = ud$Y,
                  Xs = ud$X,
                  Ns = ud$N)
   
-  mout_summary <- do.call(rbind, lapply(mout, getMSummary))
+  mout_summary <- do.call(rbind, lapply(X = mout, FUN = get_manu_summary))
   mout_summary$gene_name <- ud$gene_names
   
   # multiple correction
@@ -377,22 +377,22 @@ getManUStats <- function(ud) {
 }
 
 
-getProcessedUsage <- function(Y, 
-                              gene_names, 
-                              sample_ids, 
-                              X) {
+get_processed_ud <- function(Y, 
+                             gene_names, 
+                             sample_ids, 
+                             X) {
   # process usage
-  pud <- c()
+  pud <- vector(mode = "list", length = ncol(Y))
   for(i in base::seq_len(length.out = ncol(Y))) {
-    pud <- rbind(pud,
-                 data.frame(gene_usage_count = Y[,i],
-                            gene_name = gene_names,
-                            total_usage_count = sum(Y[,i]),
-                            gene_usage_prop = Y[,i]/sum(Y[,i]),
-                            sample_id = sample_ids[i],
-                            condition = X[i],
-                            stringsAsFactors = FALSE))
+    pud[[i]] <- data.frame(gene_usage_count = Y[,i],
+                           gene_name = gene_names,
+                           total_usage_count = sum(Y[,i]),
+                           gene_usage_prop = Y[,i]/sum(Y[,i]),
+                           sample_id = sample_ids[i],
+                           condition = X[i],
+                           stringsAsFactors = FALSE)
   }
+  pud <- do.call(rbind, pud)
   rownames(pud) <- NULL
   return(pud)
 }

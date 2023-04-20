@@ -31,19 +31,19 @@ computationally costly.}
 
 
 \usage{
-LOO(usage.data, 
-    mcmc.warmup, 
-    mcmc.steps,
-    mcmc.chains, 
-    mcmc.cores, 
-    hdi.level,
-    adapt.delta, 
-    max.treedepth)
+LOO(ud, 
+    mcmc_warmup, 
+    mcmc_steps,
+    mcmc_chains, 
+    mcmc_cores, 
+    hdi_lvl,
+    adapt_delta, 
+    max_treedepth)
 }
 
 
 \arguments{
-\item{usage.data}{Data.frame with 4 columns:
+\item{ud}{Data.frame with 4 columns:
 \itemize{
 \item 'sample_id' = character, repertoire name (e.g. R1)
 \item 'condition' = character, name of biological conditions (e.g. tumor)
@@ -51,15 +51,15 @@ LOO(usage.data,
 \item 'gene_usage_count' = number, frequency (=usage) of rearrangements from 
        sample_id x condition x gene_name
 }
-usage.data can also be be a SummarizedExperiment object. See dataset
+ud can also be be a SummarizedExperiment object. See dataset
 'data(Ig_SE)' for more information.
 }
-\item{mcmc.chains, mcmc.warmup, mcmc.steps, mcmc.cores}{Number of MCMC chains
+\item{mcmc_chains, mcmc_warmup, mcmc_steps, mcmc_cores}{Number of MCMC chains
 (default = 4), number of cores to use (default = 1), length of MCMC chains
 (default = 1,500), length of adaptive part of MCMC chains (default = 500).}
-\item{hdi.level}{Highest density interval (HDI) (default = 0.95).}
-\item{adapt.delta}{MCMC setting (default = 0.95).}
-\item{max.treedepth}{MCMC setting (default = 12).}
+\item{hdi_lvl}{Highest density interval (HDI) (default = 0.95).}
+\item{adapt_delta}{MCMC setting (default = 0.95).}
+\item{max_treedepth}{MCMC setting (default = 12).}
 }
 
 \details{
@@ -68,13 +68,13 @@ see help for DGU or vignette 'User Manual: IgGeneUsage'.
 }
 
 \value{
-\item{loo.summary}{DGU statistics for each Ig gene for specific LOO step:
+\item{loo_summary}{DGU statistics for each Ig gene for specific LOO step:
 \itemize{
 \item es = effect size statistics: mean, median, standard error (se), 
 standard deviation (sd), L/H (low/high boundary of HDI)
 \item contrast = direction of the effect
 \item pmax = DGU probability
-\item loo.id (LOO step)
+\item loo_id (LOO step)
 \item Neff (effective sample size), Rhat (potential scale reduction factor)
 }
 }
@@ -91,16 +91,16 @@ data("Ig", package = "IgGeneUsage")
 head(Ig)
 
 # run leave-one-out (LOO)
-L <- LOO(usage.data = Ig,
-         mcmc.warmup = 500,
-         mcmc.steps = 2000,
-         mcmc.chains = 3,
-         mcmc.cores = 1,
-         hdi.level = 0.95,
-         adapt.delta = 0.99,
-         max.treedepth = 10)
+L <- LOO(ud = Ig,
+         mcmc_warmup = 500,
+         mcmc_steps = 2000,
+         mcmc_chains = 3,
+         mcmc_cores = 1,
+         hdi_lvl = 0.95,
+         adapt_delta = 0.99,
+         max_treedepth = 10)
          
-head(L$loo.summary)
+head(L$loo_summary)
 }
 
 

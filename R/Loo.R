@@ -18,32 +18,32 @@ LOO <- function(ud,
   # before check convert summarized experiment object to data.frame
   if(inherits(x = ud, what = "SummarizedExperiment") == TRUE) {
     udr <- ud
-    ud <- convertSummarizedExperiment(ud_se = udr)
+    ud <- get_SummarizedExperiment(ud_se = udr)
   }
   
   # check inputs
   checkInput(ud = ud,
-             mcmc_chains = as.integer(x = mcmc_chains),
-             mcmc_cores = as.integer(x = mcmc_cores),
-             mcmc_steps = as.integer(x = mcmc_steps),
-             mcmc_warmup = as.integer(x = mcmc_warmup),
+             mcmc_chains = base::as.integer(x = mcmc_chains),
+             mcmc_cores = base::as.integer(x = mcmc_cores),
+             mcmc_steps = base::as.integer(x = mcmc_steps),
+             mcmc_warmup = base::as.integer(x = mcmc_warmup),
              hdi_lvl = hdi_lvl)
   
   # unique repertoire names
-  Rs <- unique(ud$sample_id)
+  rs <- unique(ud$sample_id)
   
   # extra-stop condition
-  if(length(Rs) <= 2) {
+  if(length(rs) <= 2) {
     stop("To perform LOO you need to provide as input at least 3 repertoires")
   }
   
-  loo_out <- vector(mode = "list", length = length(Rs))
-  names(loo_out) <- Rs
-  for(r in base::seq_len(length.out = length(Rs))) {
+  loo_out <- vector(mode = "list", length = length(rs))
+  names(loo_out) <- rs
+  for(r in base::seq_len(length.out = length(rs))) {
     base::message("LOO step: ", r, "\n", sep = '')
     
     # here subset data
-    temp_ud <- ud[ud$sample_id != Rs[r], ]
+    temp_ud <- ud[ud$sample_id != rs[r], ]
     
     # run DGU
     out <- LOO_DGU(ud = temp_ud,
@@ -57,7 +57,7 @@ LOO <- function(ud,
     
     # collect results
     out$loo.id <- r
-    loo_out[[Rs[r]]] <- out
+    loo_out[[rs[r]]] <- out
   }
   
   # compact to data.frame and return
@@ -78,28 +78,26 @@ LOO_DGU <- function(ud,
                     adapt_delta = 0.95,
                     max_treedepth = 12) {
   
-  
-  # before check convert summarized experiment object to data.frame
+  # before input checks, convert summarized experiment object to data.frame
   if(inherits(x = ud, what = "SummarizedExperiment") == TRUE) {
     udr <- ud
-    ud <- convertSummarizedExperiment(ud_se = udr)
+    ud <- get_SummarizedExperiment(ud_se = udr)
   }
   
   # check inputs
-  checkInput(ud = ud,
-             mcmc_chains = base::as.integer(x = mcmc_chains),
-             mcmc_cores = base::as.integer(x = mcmc_cores),
-             mcmc_steps = base::as.integer(x = mcmc_steps),
-             mcmc_warmup = base::as.integer(x = mcmc_warmup),
-             hdi_lvl = hdi_lvl)
+  check_input(ud = ud,
+              mcmc_chains = base::as.integer(x = mcmc_chains),
+              mcmc_cores = base::as.integer(x = mcmc_cores),
+              mcmc_steps = base::as.integer(x = mcmc_steps),
+              mcmc_warmup = base::as.integer(x = mcmc_warmup),
+              hdi_lvl = hdi_lvl)
   
   # format input usage
   udr <- ud
   ud <- get_usage(u = udr)
   
   # contrast
-  contrast <- paste0(unique(ud$Xorg[ud$X == 1]),
-                     " - ", 
+  contrast <- paste0(unique(ud$Xorg[ud$X == 1]), " - ", 
                      unique(ud$Xorg[ud$X == -1]))
   
   # setup control list
@@ -107,21 +105,18 @@ LOO_DGU <- function(ud,
                        max_treedepth = max_treedepth)
   
   # stan sampling
-  # monitor subset of parameters -> memory concern
-  pars_rel <- c("alpha_sigma", "beta_sigma",
-                "beta_gene_sigma", "phi",
-                "tau", "beta", "alpha_gene",
-                "beta_gene")
   glm <- rstan::sampling(object = stanmodels$zibb,
                          data = ud,
                          chains = mcmc_chains,
                          cores = mcmc_cores,
                          iter = mcmc_steps,
                          warmup = mcmc_warmup,
-                         refresh = 250,
                          control = control_list,
-                         pars = pars_rel,
-                         algorithm = "NUTS")
+                         algorithm = "NUTS",
+                         pars = c("alpha_sigma", "beta_sigma",
+                                  "beta_gene_sigma", "phi",
+                                  "tau", "beta", "alpha_gene",
+                                  "beta_gene"))
   
   # get summary
   message("Computing summaries ... \n")
@@ -144,7 +139,7 @@ LOO_DGU <- function(ud,
   
   # get pmax
   message("Computing probability of DGU ... \n")
-  glm_summary$pmax <- getPmax(glm_ext = glm_ext)
+  glm_summary$pmax <- get_pmax(glm_ext = glm_ext)
   
   # add gene id
   glm_summary$gene_name <- ud$gene_names
