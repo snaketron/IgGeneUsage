@@ -65,6 +65,7 @@ DGU <- function(ud,
                                 pars = "beta_gene",
                                 prob = c(0.5, (1-hdi_lvl)/2,
                                          1-(1-hdi_lvl)/2))
+  
   glm_summary <- glm_summary$summary
   glm_summary <- data.frame(glm_summary)
   colnames(glm_summary) <- c("es_mean", "es_mean_se",

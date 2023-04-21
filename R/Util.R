@@ -52,7 +52,7 @@ get_usage <- function(u) {
   X_m[x2] <- -1
   
   # compute processed usage data
-  pu <- get_processed_ud(Y = Y, 
+  pu <- get_proc_ud(Y = Y, 
                          gene_names = gene_names, 
                          sample_ids = sample_ids, 
                          X = X)
@@ -65,7 +65,7 @@ get_usage <- function(u) {
                Xorg = X, 
                gene_names = gene_names,
                sample_names = sample_ids, 
-               pu = pu))
+               proc_ud = pu))
 }
 
 
@@ -137,11 +137,11 @@ get_paired_usage <- function(u) {
   return (base::list(Y_1 = Y_1, 
                      Y_2 = Y_2, 
                      N = N, 
-                     N_sample = base::nrow(Y), 
+                     N_sample = base::ncol(Y_1), 
                      N_gene = base::nrow(Y_1), 
                      gene_names = base::rownames(Y_1),
                      sample_names = base::colnames(Y_1), 
-                     pu = Y))
+                     proc_ud = Y))
 }
 
 
@@ -377,7 +377,7 @@ get_manu <- function(ud) {
 }
 
 
-get_processed_ud <- function(Y, 
+get_proc_ud <- function(Y, 
                              gene_names, 
                              sample_ids, 
                              X) {
