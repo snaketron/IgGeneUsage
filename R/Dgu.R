@@ -42,7 +42,7 @@ DGU <- function(ud,
                        max_treedepth = max_treedepth)
   
   # stan sampling
-  glm <- rstan::sampling(object = stanmodels$zibb,
+  glm <- rstan::sampling(object = stanmodels$zibb_flex,#stanmodels$zibb,
                          data = ud,
                          chains = mcmc_chains,
                          cores = mcmc_cores,
@@ -53,7 +53,7 @@ DGU <- function(ud,
                          pars = c("alpha_sigma", "beta_sigma",
                                   "beta_gene_sigma", "phi",
                                   "tau", 
-                                  "z",
+                                  "z", "z_mu", "z_phi",
                                   "alpha_gene", "beta_gene", 
                                   "log_lik", "Yhat",  
                                   "Yhat_individual", "Yhat_gene"))
