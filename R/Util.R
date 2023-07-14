@@ -187,7 +187,7 @@ get_pmax <- function(glm_ext) {
     return(o)
   }
   
-  beta_data <- glm_ext$beta_gene
+  beta_data <- glm_ext$beta_gene_mu
   pmax <- vapply(X = seq_len(length.out = ncol(beta_data)),
                  FUN = getPmaxGene,
                  beta_data = beta_data,

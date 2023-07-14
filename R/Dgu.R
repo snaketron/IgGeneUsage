@@ -50,19 +50,22 @@ DGU <- function(ud,
                          warmup = mcmc_warmup,
                          algorithm = "NUTS",
                          control = control_list,
-                         pars = c("alpha_sigma", "beta_sigma",
-                                  "beta_gene_sigma", "phi",
-                                  "tau", 
+                         pars = c("alpha_pop_mu", 
+                                  "alpha_pop_sigma", "beta_pop_sigma",
+                                  "alpha_gene_sigma", "beta_gene_sigma",
+                                  "phi",
                                   "z", "z_mu", "z_phi",
-                                  "alpha_gene", "beta_gene", 
-                                  "log_lik", "Yhat",  
-                                  "Yhat_individual", "Yhat_gene"))
+                                  "alpha_gene_mu", "beta_gene_mu",
+                                  "log_lik", 
+                                  "Yhat", "Yhat_individual", "Yhat_gene"))
+  
+  
   
   # get summary
   message("Computing summaries ... \n")
   glm_summary <- rstan::summary(object = glm, 
                                 digits = 4,
-                                pars = "beta_gene",
+                                pars = "beta_gene_mu",
                                 prob = c(0.5, (1-hdi_lvl)/2,
                                          1-(1-hdi_lvl)/2))
   
@@ -77,7 +80,8 @@ DGU <- function(ud,
   
   # extract data
   message("Posterior extraction ... \n")
-  glm_ext <- rstan::extract(object = glm)
+  glm_ext <- rstan::extract(object = glm, 
+                            par = "beta_gene_mu")
   
   # get pmax
   message("Computing probability of DGU ... \n")
