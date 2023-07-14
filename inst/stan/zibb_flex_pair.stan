@@ -1,15 +1,5 @@
-// generated with brms 2.18.0
 functions {
-  /* zero-inflated beta-binomial log-PDF of a single response
-   * Args:
-   *   y: the response value
-   *   trials: number of trials of the binomial part
-   *   mu: mean parameter of the beta distribution
-   *   phi: precision parameter of the beta distribution
-   *   zi: zero-inflation probability
-   * Returns:
-   *   a scalar to be added to the log posterior
-   */
+
   real zibb_lpmf(int y, int trials, real mu, real phi, real zi) {
     if (y == 0) {
       return log_sum_exp(bernoulli_lpmf(1 | zi),
@@ -22,18 +12,7 @@ functions {
              beta_binomial_lpmf(y | trials, mu * phi, (1 - mu) * phi);
     }
   }
-  /* zero-inflated beta-binomial log-PDF of a single response
-   * logit parameterization of the zero-inflation part
-   * Args:
-   *   y: the response value
-   *   trials: number of trials of the binomial part
-   *   mu: mean parameter of the beta distribution
-   *   phi: precision parameter of the beta distribution
-   *   zi: linear predictor for zero-inflation part
-   * Returns:
-   *   a scalar to be added to the log posterior
-   */
-   
+
   int zibb_rng(int y, int trials, real mu, real phi, real zi) {
     if (bernoulli_rng(zi) == 1) {
       return (0);
@@ -58,14 +37,25 @@ transformed data {
 }
 
 parameters {
-  real <lower = 0> alpha_sigma_gene;
-  real <lower = 0> beta_sigma_gene;
-  real <lower = 0> beta_sigma_pop;
+  // pop intercept mean
+  real alpha_pop_mu;
+  
+  // scales
+  real <lower = 0> alpha_gene_sigma;
+  real <lower = 0> alpha_pop_sigma;
+  real <lower = 0> beta_gene_sigma;
+  real <lower = 0> beta_pop_sigma;
+  
+  // aux variables
+  vector [N_gene] alpha_gene_z;
+  vector [N_gene] beta_gene_z;
   vector [N_gene] alpha_z [N_sample];
   vector [N_gene] beta_z [N_sample];
-  vector [N_gene] beta_z_gene;
+  
+  // overdispersion
   real <lower = 0> phi;
-  vector [N_gene] alpha_mu_gene;
+  real<lower = 0> tau;
+  
   // zero-inflation probability
   vector <lower = 0, upper = 1> [N_gene] z;
   real<lower=0, upper=1> z_mu;
@@ -73,39 +63,50 @@ parameters {
 }
 
 
-
 transformed parameters {
   vector [N_gene] alpha [N_sample];
   vector [N_gene] beta [N_sample];
-  vector [N_gene] beta_mu_gene;
+  vector [N_gene] alpha_gene_mu;
+  vector [N_gene] beta_gene_mu;
   
   // non-centered params (at gene pop. level)
-  // z = inv_logit(0 + z_sigma_pop * z_z_gene);
-  beta_mu_gene = 0 + beta_sigma_pop * beta_z_gene;
+  alpha_gene_mu = alpha_pop_mu + alpha_pop_sigma * alpha_gene_z;
+  beta_gene_mu = 0 + beta_pop_sigma * beta_gene_z;
 
   // non-centered params (at gene level)
   for(i in 1:N_sample) {
-    alpha[i] = alpha_mu_gene + alpha_sigma_gene * alpha_z[i];
-    beta[i] = beta_mu_gene + beta_sigma_gene * beta_z[i];
+    alpha[i] = alpha_gene_mu + alpha_gene_sigma * alpha_z[i];
+    beta[i] = beta_gene_mu + beta_gene_sigma * beta_z[i];
   }
 }
 
 
 model {
+  // prior pop. intercept
+  target += normal_lpdf(alpha_pop_mu | 0.0, 5.0);
+  
+  // zero-inflation
   target += beta_lpdf(z_mu | 1.0, 5.0);
   target += exponential_lpdf(z_phi | 0.05);
   target += beta_proportion_lpdf(z | z_mu, z_phi);
   
-  target += cauchy_lpdf(beta_sigma_pop | 0, 1);
-  target += cauchy_lpdf(alpha_sigma_gene | 0, 1);
-  target += cauchy_lpdf(beta_sigma_gene | 0, 1);
+  //pareto 2 for overdispersion
+  target += gamma_lpdf(tau | 3.0, 0.1);
+  target += exponential_lpdf(phi | tau);
+  
+  // prior on scales
+  target += cauchy_lpdf(alpha_pop_sigma | 0, 1);
+  target += cauchy_lpdf(beta_pop_sigma | 0, 1);
+  target += cauchy_lpdf(alpha_gene_sigma | 0, 1);
+  target += cauchy_lpdf(beta_gene_sigma | 0, 1);
+  
+  // prior on aux. parameters
   for(i in 1:N_sample) {
     target += normal_lpdf(alpha_z[i] | 0, 1);
     target += normal_lpdf(beta_z[i] | 0, 1);
   }
-  target += normal_lpdf(beta_z_gene | 0, 1);
-  target += normal_lpdf(alpha_mu_gene | 0, 5);
-  target += exponential_lpdf(phi | 0.05);
+  target += std_normal_lpdf(alpha_gene_z);
+  target += std_normal_lpdf(beta_gene_z);
   
   // likelihood: TODO speedup
   for(i in 1:N_sample) {
