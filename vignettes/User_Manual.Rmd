@@ -133,6 +133,9 @@ slightly easier to interpret.
 
 
 # Updated model for `r Biocpkg("IgGeneUsage")` version > 1.7.25
+Major difference: the zero-inflation parameter $\kappa$ is allowed to vary 
+from gene-to-gene.
+
 \begin{align}
 p(Y_{ij} \mid M) = \begin{cases} 
 \kappa + (1 - \kappa) \operatorname{BB}\left(0 \mid N_{i}, \theta_{ij}, \phi 
@@ -144,12 +147,16 @@ p(Y_{ij} \mid M) = \begin{cases}
 \alpha_{ij}\sim\operatorname{Normal}\left(\delta_{j},\delta_{\sigma} \right)\\
 \beta_{ij}\sim\operatorname{Normal}\left(\gamma_{j},\gamma_{\sigma} \right)\\
 \gamma_{j}\sim\operatorname{Normal}\left(0.0,\hat{\gamma}_{\sigma} \right) \\
-\delta_{j}\sim\operatorname{Normal}\left(0.0,\hat{\delta}_{\sigma} \right) \\
+\delta_{j} \sim \operatorname{Normal}\left(\hat{\delta}_{\mu}, 
+\hat{\delta}_{\sigma} \right) \\
+\hat{\delta}_{\mu} \sim \operatorname{Normal}\left(0.0, 5.0\right) \\
 \gamma_{\sigma}, \hat{\gamma}_{\sigma}, \delta_{\sigma}, \hat{\delta}_{\sigma} 
 \sim \operatorname{Cauchy^{+}}\left(0, 1\right) \\
 \phi \sim \operatorname{Exponential}\left(\tau\right) \\
 \tau \sim \operatorname{Gamma}\left(3, 0.1\right) \\
-\kappa \sim \operatorname{Beta}\left(1, 3\right)
+\kappa_{j} \sim \operatorname{Beta_proportion}\left({\kappa_\mu}, {\kappa_\phi}\right)
+\kappa_{\mu} \sim \operatorname{Beta}\left({1, 5\right)
+\kappa_{\phi} \sim \operatorname{Exponential}\left(0.05\right)
 \end{align}
 
 

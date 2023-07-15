@@ -28,12 +28,15 @@ data {
   int <lower = 0> N_gene; // number of genes
   int Y_1 [N_gene, N_sample]; // number of successes (cells) in samples x gene
   int Y_2 [N_gene, N_sample]; // number of successes (cells) in samples x gene
-  int N [N_sample, 2]; // number of total tries (repertoire size)
+  int N_1 [N_sample]; // number of total tries 
+  int N_2 [N_sample]; // number of total tries
 }
 
 transformed data {
-  real N_real [N_sample,2];
-  N_real = N;
+  real Nr_1 [N_sample];
+  real Nr_2 [N_sample];
+  Nr_1 = N_1;
+  Nr_2 = N_2;
 }
 
 parameters {
@@ -95,15 +98,15 @@ model {
   target += exponential_lpdf(phi | tau);
   
   // prior on scales
-  target += cauchy_lpdf(alpha_pop_sigma | 0, 1);
-  target += cauchy_lpdf(beta_pop_sigma | 0, 1);
-  target += cauchy_lpdf(alpha_gene_sigma | 0, 1);
-  target += cauchy_lpdf(beta_gene_sigma | 0, 1);
+  target += cauchy_lpdf(alpha_pop_sigma | 0.0, 1.0);
+  target += cauchy_lpdf(beta_pop_sigma | 0.0, 1.0);
+  target += cauchy_lpdf(alpha_gene_sigma | 0.0, 1.0);
+  target += cauchy_lpdf(beta_gene_sigma | 0.0, 1.0);
   
   // prior on aux. parameters
   for(i in 1:N_sample) {
-    target += normal_lpdf(alpha_z[i] | 0, 1);
-    target += normal_lpdf(beta_z[i] | 0, 1);
+    target += std_normal_lpdf(alpha_z[i]);
+    target += std_normal_lpdf(beta_z[i]);
   }
   target += std_normal_lpdf(alpha_gene_z);
   target += std_normal_lpdf(beta_gene_z);
@@ -111,24 +114,26 @@ model {
   // likelihood: TODO speedup
   for(i in 1:N_sample) {
     for(j in 1:N_gene) {
-      target += zibb_lpmf(Y_1[j,i] | N[i,1], inv_logit(alpha[i][j]-beta[i][j]), phi, z[j]);
-      target += zibb_lpmf(Y_2[j,i] | N[i,2], inv_logit(alpha[i][j]+beta[i][j]), phi, z[j]);
+      target += zibb_lpmf(Y_1[j,i] | N_1[i], inv_logit(alpha[i][j]-beta[i][j]), phi, z[j]);
+      target += zibb_lpmf(Y_2[j,i] | N_2[i], inv_logit(alpha[i][j]+beta[i][j]), phi, z[j]);
     }
   }
 }
 
 generated quantities {
   // PPC: count usage
-  int Y_hat_1 [N_gene,N_sample];
-  int Y_hat_2 [N_gene,N_sample];
+  int Yhat_1 [N_gene,N_sample];
+  int Yhat_2 [N_gene,N_sample];
+  
+  real Yhat_rep_1 [N_gene,N_sample];
+  real Yhat_rep_2 [N_gene,N_sample];
 
   // LOG-LIK
   real a [N_gene, N_sample, 2];
   real log_lik [N_sample, 2];
   
-  // PPC: count usage in gene
-  int Y_hat_group_1 [N_gene];
-  int Y_hat_group_2 [N_gene];
+  // PPC: proportion usage at a gene level in condition
+  matrix [2, N_gene] Yhat_condition;
   
   real mu [2];
 
@@ -136,12 +141,30 @@ generated quantities {
     for(j in 1:N_gene) {
       mu[1] = inv_logit(alpha[i][j]-beta[i][j]);
       mu[2] = inv_logit(alpha[i][j]+beta[i][j]);
-      a[j,i,1] = zibb_lpmf(Y_1[j,i] | N[i,1], mu[1], phi, z[j]);
-      a[j,i,2] = zibb_lpmf(Y_2[j,i] | N[i,2], mu[2], phi, z[j]);
-      Y_hat_1[j,i] = zibb_rng(Y_1[j,i],N[i,1], mu[1], phi, z[j]);
-      Y_hat_2[j,i] = zibb_rng(Y_2[j,i],N[i,2], mu[2], phi, z[j]);
+      a[j,i,1] = zibb_lpmf(Y_1[j,i] | N_1[i], mu[1], phi, z[j]);
+      a[j,i,2] = zibb_lpmf(Y_2[j,i] | N_2[i], mu[2], phi, z[j]);
+      Yhat_1[j,i] = zibb_rng(Y_1[j,i],N_1[i], mu[1], phi, z[j]);
+      Yhat_2[j,i] = zibb_rng(Y_2[j,i],N_2[i], mu[2], phi, z[j]);
+      
+      if(Nr_1[i] == 0.0) {
+        Yhat_rep_1[j,i] = 0;
+      }
+      else {
+        Yhat_rep_1[j,i] = Yhat_1[j,i]/Nr_1[i];
+      }
+      if(Nr_2[i] == 0.0) {
+        Yhat_rep_2[j,i] = 0;
+      }
+      else {
+        Yhat_rep_2[j,i] = Yhat_2[j,i]/Nr_2[i];
+      }
     }
     log_lik[i,1] = sum(a[,i,1]);
     log_lik[i,2] = sum(a[,i,2]);
+  }
+  
+  for(j in 1:N_gene) {
+    Yhat_condition[1, j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]*1.0);
+    Yhat_condition[2, j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]*(-1.0));
   }
 }

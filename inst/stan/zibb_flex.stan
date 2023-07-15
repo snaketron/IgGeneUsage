@@ -128,10 +128,10 @@ generated quantities {
   int Yhat [N_gene, N_sample];
 
   // PPC: proportion usage
-  real Yhat_individual [N_gene, N_sample];
+  real Yhat_rep [N_gene, N_sample];
 
-  // PPC: proportion usage at a gene level
-  matrix [2, N_gene] Yhat_gene;
+  // PPC: proportion usage at a gene level in condition
+  matrix [2, N_gene] Yhat_condition;
 
   // LOG-LIK
   vector [N_gene] log_lik [N_sample];
@@ -143,13 +143,13 @@ generated quantities {
       Yhat[j, i] = zibb_rng(Y[j, i], N[i], a[i][j], b[i][j], z[j]);
 
       if(Nreal[i] == 0.0) {
-        Yhat_individual[j, i] = 0;
+        Yhat_rep[j, i] = 0;
       }
       else {
-        Yhat_individual[j, i] = Yhat[j,i]/Nreal[i];
+        Yhat_rep[j, i] = Yhat[j,i]/Nreal[i];
       }
     }
-    Yhat_gene[1, j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]*1.0);
-    Yhat_gene[2, j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]*(-1.0));
+    Yhat_condition[1, j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]*1.0);
+    Yhat_condition[2, j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]*(-1.0));
   }
 }

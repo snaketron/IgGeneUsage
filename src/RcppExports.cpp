@@ -13,9 +13,13 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 
 RcppExport SEXP _rcpp_module_boot_stan_fit4zibb_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4zibb_flex_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4zibb_flex_pair_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4zibb_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4zibb_mod, 0},
+    {"_rcpp_module_boot_stan_fit4zibb_flex_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4zibb_flex_mod, 0},
+    {"_rcpp_module_boot_stan_fit4zibb_flex_pair_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4zibb_flex_pair_mod, 0},
     {NULL, NULL, 0}
 };
 
