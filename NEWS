@@ -1,3 +1,6 @@
+Changes in version 1.15
++ model for paired design analysis
+
 Changes in version 1.12-1.13.2
 + variable naming and function naming scheme changed
 + paired-sample analysis stub created
