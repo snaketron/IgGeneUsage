@@ -89,7 +89,7 @@ model {
   target += normal_lpdf(alpha_pop_mu | 0.0, 5.0);
   
   // zero-inflation
-  target += beta_lpdf(z_mu | 1.0, 5.0);
+  target += beta_lpdf(z_mu | 1.0, 50.0);
   target += exponential_lpdf(z_phi | 0.05);
   target += beta_proportion_lpdf(z | z_mu, z_phi);
   

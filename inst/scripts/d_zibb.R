@@ -18,9 +18,9 @@ data {
   int<lower=0> N [N_rep*2];
   vector [N_gene] as;
   vector [N_gene] bs;
+  vector [N_gene] zs;
   real sigma;
   real phi;
-  real z;
 }
 
 generated quantities {
@@ -36,7 +36,7 @@ generated quantities {
       b_sim = normal_rng(bs[g], sigma);
       a = inv_logit(a_sim + b_sim*1) * phi;
       b = phi - a;
-      ysim[g,s] = zibb_rng(N[s], a, b, z);
+      ysim[g,s] = zibb_rng(N[s], a, b, zs[g]);
     }
   }
   for(s in 1:N_rep) {
@@ -45,7 +45,7 @@ generated quantities {
       b_sim = normal_rng(bs[g], sigma);
       a = inv_logit(a_sim + b_sim*-1) * phi;
       b = phi - a;
-      ysim[g,N_rep+s] = zibb_rng(N[N_rep+s], a, b, z);
+      ysim[g,N_rep+s] = zibb_rng(N[N_rep+s], a, b, zs[g]);
     }
   }
 }
@@ -58,17 +58,18 @@ m <- rstan::stan_model(model_code = sim_stan)
 N_rep <- 5
 N_gene <- 20
 Y_max <- 500
-as <- -rexp(n = N_gene, rate = 0.2)
-bs <- sample(x = c(-1, 1), size = length(as), replace = T)*as/20
-bs[which.max(as)] <- 2
+as <- rnorm(n = N_gene, mean = 0, sd = 2)
+bs <- c(rnorm(n = N_gene-5, mean = 0, sd = 0.25),
+        rnorm(n = 5, mean = 0, sd = 1))
+zs <- runif(n = N_gene, min = 0, max = 0.1)
 d <- list(N_rep = N_rep, 
           N_gene = N_gene, 
           N = rep(x = Y_max, times = N_rep*2),
           as = as,
           bs = bs,
+          zs = zs,
           sigma = 0.25,
-          phi = 20,
-          z = 0.05)
+          phi = 20)
 
 # simulate
 sim <- rstan::sampling(object = m,

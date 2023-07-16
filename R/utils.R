@@ -59,7 +59,7 @@ get_unpaired_usage <- function(u) {
   # sorted unique conditions
   cs <- base::sort(unique(u$condition), decreasing = TRUE)
   # design vector X
-  X <- base::ifelse(test = sample_ids %in% u$sample_id[u$codition == cs[1]], 
+  X <- base::ifelse(test = sample_ids %in% u$sample_id[u$condition == cs[1]], 
                     yes = +1, no = -1)
   X_org <- ifelse(test = X==1, yes = cs[1], no = cs[2])
   
