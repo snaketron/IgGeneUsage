@@ -131,7 +131,7 @@ generated quantities {
   real Yhat_rep [N_gene, N_sample];
 
   // PPC: proportion usage at a gene level in condition
-  matrix [2, N_gene] Yhat_condition;
+  vector [N_gene] Yhat_condition [2];
 
   // LOG-LIK
   vector [N_gene] log_lik [N_sample];
@@ -149,7 +149,7 @@ generated quantities {
         Yhat_rep[j, i] = Yhat[j,i]/Nreal[i];
       }
     }
-    Yhat_condition[1, j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]*1.0);
-    Yhat_condition[2, j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]*(-1.0));
+    Yhat_condition[1][j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]*1.0);
+    Yhat_condition[2][j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]*(-1.0));
   }
 }

@@ -23,7 +23,7 @@ DGU <- function(ud,
               mcmc_warmup = base::as.integer(x = mcmc_warmup),
               hdi_lvl = hdi_lvl)
   
-  browser()
+  # browser()
   # format input usage
   udr <- ud
   ud <- get_usage(u = udr)
@@ -39,11 +39,31 @@ DGU <- function(ud,
   # stan sampling
   if(analysis_type == "paired") {
     # model <- rstan::stan_model(file = "inst/stan/zibb_flex_pair.stan")
-    # model <- stanmodels$zibb_flex_pair
+    model <- stanmodels$zibb_flex_pair
+    pars <- c("alpha_pop_mu", 
+              "alpha_pop_sigma", "beta_pop_sigma",
+              "alpha_gene_sigma", "beta_gene_sigma",
+              "phi",
+              "z", "z_mu", "z_phi",
+              "alpha_gene_mu", "beta_gene_mu",
+              "log_lik", 
+              "Yhat_1", "Yhat_2", 
+              "Yhat_rep_1", "Yhat_rep_2",
+              "Yhat_condition")
   } 
   else {
     # model <- rstan::stan_model(file = "inst/stan/zibb_flex.stan")
-    # model <-  stanmodels$zibb_flex
+    model <-  stanmodels$zibb_flex
+    pars <- c("alpha_pop_mu", 
+              "alpha_pop_sigma", "beta_pop_sigma",
+              "alpha_gene_sigma", "beta_gene_sigma",
+              "phi",
+              "z", "z_mu", "z_phi",
+              "alpha_gene_mu", "beta_gene_mu",
+              "log_lik", 
+              "Yhat", 
+              "Yhat_rep", 
+              "Yhat_condition")
   }
   glm <- rstan::sampling(object = model,
                          data = ud,
@@ -53,16 +73,7 @@ DGU <- function(ud,
                          warmup = mcmc_warmup,
                          algorithm = "NUTS",
                          control = control_list,
-                         pars = c("alpha_pop_mu", 
-                                  "alpha_pop_sigma", "beta_pop_sigma",
-                                  "alpha_gene_sigma", "beta_gene_sigma",
-                                  "phi",
-                                  "z", "z_mu", "z_phi",
-                                  "alpha_gene_mu", "beta_gene_mu",
-                                  "log_lik", 
-                                  "Yhat_1", "Yhat_2", 
-                                  "Yhat_rep_1", "Yhat_rep_2",
-                                  "Yhat_condition"))
+                         pars = pars)
   
   # get summary
   message("Computing summaries ... \n")
@@ -96,7 +107,8 @@ DGU <- function(ud,
   # ppc
   message("Computing posterior predictions ... \n")
   ppc <- list(
-    ppc_rep = get_ppc_rep(glm = glm, ud = ud, hdi_lvl = hdi_lvl),
+    ppc_rep = get_ppc_rep(glm = glm, ud = ud, hdi_lvl = hdi_lvl, 
+                          analysis_type = analysis_type),
     ppc_condition = get_ppc_condition(glm = glm, ud = ud, hdi_lvl = hdi_lvl))
   
   # frequentist tests, merge data
