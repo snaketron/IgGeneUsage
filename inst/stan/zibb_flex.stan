@@ -48,7 +48,7 @@ parameters {
   real <lower = 0> beta_gene_sigma;
   
   // aux variables
-  vector [N_gene] alpha_z [N_sample];
+  // vector [N_gene] alpha_z [N_sample];
   vector [N_gene] beta_z [N_sample];
   vector [N_gene] alpha_gene_z;
   vector [N_gene] beta_gene_z;
@@ -66,7 +66,7 @@ parameters {
 
 
 transformed parameters {
-  vector [N_gene] alpha [N_sample];
+  // vector [N_gene] alpha;
   vector [N_gene] beta [N_sample];
   vector [N_gene] alpha_gene_mu;
   vector [N_gene] beta_gene_mu;
@@ -80,8 +80,8 @@ transformed parameters {
   // non-centered params (at gene level)
   for(i in 1:N_sample) {
     beta[i] = beta_gene_mu + beta_gene_sigma * beta_z[i];
-    alpha[i] = alpha_gene_mu + alpha_gene_sigma * alpha_z[i];
-    a[i] = inv_logit(alpha[i] + beta[i]*X[i]) * phi;
+    // alpha[i] = alpha_gene_mu + alpha_gene_sigma * alpha_z[i];
+    a[i] = inv_logit(alpha_gene_mu + beta[i]*X[i]) * phi;
     b[i] = phi - a[i];
   }
 }
@@ -98,7 +98,7 @@ model {
   
   // zero-inflation
   target += exponential_lpdf(z_phi | 0.05);
-  target += beta_lpdf(z_mu | 1.0, 50.0);
+  target += beta_lpdf(z_mu | 1.0, 10.0);
   target += beta_proportion_lpdf(z | z_mu, z_phi);
   
   //pareto 2 for overdispersion
@@ -107,7 +107,7 @@ model {
   
   // dummy
   for(i in 1:N_sample) {
-    target += std_normal_lpdf(alpha_z[i]);
+    // target += std_normal_lpdf(alpha_z[i]);
     target += std_normal_lpdf(beta_z[i]);
   }
   target += std_normal_lpdf(alpha_gene_z);

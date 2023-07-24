@@ -88,20 +88,20 @@ model {
   // prior pop. intercept
   target += normal_lpdf(alpha_pop_mu | 0.0, 5.0);
   
-  // zero-inflation
-  target += beta_lpdf(z_mu | 1.0, 50.0);
-  target += exponential_lpdf(z_phi | 0.05);
-  target += beta_proportion_lpdf(z | z_mu, z_phi);
-  
-  //pareto 2 for overdispersion
-  target += gamma_lpdf(tau | 3.0, 0.1);
-  target += exponential_lpdf(phi | tau);
-  
   // prior on scales
   target += cauchy_lpdf(alpha_pop_sigma | 0.0, 1.0);
   target += cauchy_lpdf(beta_pop_sigma | 0.0, 1.0);
   target += cauchy_lpdf(alpha_gene_sigma | 0.0, 1.0);
   target += cauchy_lpdf(beta_gene_sigma | 0.0, 1.0);
+  
+  // zero-inflation
+  target += exponential_lpdf(z_phi | 0.05);
+  target += beta_lpdf(z_mu | 1.0, 10.0);
+  target += beta_proportion_lpdf(z | z_mu, z_phi);
+  
+  //pareto 2 for overdispersion
+  target += gamma_lpdf(tau | 3.0, 0.1);
+  target += exponential_lpdf(phi | tau);
   
   // prior on aux. parameters
   for(i in 1:N_sample) {
