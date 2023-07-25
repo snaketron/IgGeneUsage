@@ -7,8 +7,8 @@
 A small example dataset that has the following features:
 
   \itemize{
-    \item 5 repertoires (samples) sampled at two timepoints (paired data)
-    \item 20 Ig genes
+    \item 10 repertoires (samples) sampled at two timepoints (paired data)
+    \item 13 Ig genes
   }
 This dataset was simulated from zero-inflated beta-binomial (ZIBB) 
 distribution. Simulation code is available in inst/scripts/d_zibb_pair.R

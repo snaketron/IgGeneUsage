@@ -1,4 +1,5 @@
-set.seed(seed = 12345)
+set.seed(seed = 12347)
+require(rstan)
 
 # Stan generative model
 sim_stan <- "
@@ -18,9 +19,10 @@ data {
   int<lower=0> N [N_rep*2];
   vector [N_gene] as;
   vector [N_gene] bs;
-  real sigma;
+  vector [N_gene] zs;
+  real sigma_a;
+  real sigma_b;
   real phi;
-  real z;
 }
 
 generated quantities {
@@ -32,15 +34,18 @@ generated quantities {
   
   for(s in 1:N_rep) {
     for(g in 1:N_gene) {
-      a_sim = normal_rng(as[g], sigma);
-      b_sim = normal_rng(bs[g], sigma);
-      a = inv_logit(a_sim + b_sim*1) * phi;
-      b = phi - a;
-      ysim[g,s,1] = zibb_rng(N[s], a, b, z);
       
-      a = inv_logit(a_sim + b_sim*-1) * phi;
+      a_sim = normal_rng(as[g], sigma_a);
+      b_sim = normal_rng(bs[g], sigma_b);
+      
+      a = inv_logit(a_sim + b_sim) * phi;
       b = phi - a;
-      ysim[g,s,2] = zibb_rng(N[N_rep+s], a, b, z);
+      ysim[g,s,1] = zibb_rng(N[s], a, b, zs[g]);
+      
+      a = inv_logit(a_sim - b_sim) * phi;
+      b = phi - a;
+      ysim[g,s,2] = zibb_rng(N[N_rep+s], a, b, zs[g]);
+      
     }
   }
 }
@@ -51,19 +56,23 @@ m <- rstan::stan_model(model_code = sim_stan)
 
 
 # generate data based on following fixed parameters
-N_rep <- 5
-N_gene <- 20
-Y_max <- 100
-as <- rnorm(n = N_gene, mean = 0, sd = 2)
-bs <- rnorm(n = N_gene, mean = 0, sd = 1)
+N_rep <- 10
+N_gene <- 13
+Y_max <- 500
+as <- rnorm(n = N_gene, mean = -2, sd = 1)
+bs <- c(rnorm(n = N_gene-3, mean = 0, sd = 0.25),
+        rnorm(n = 3, mean = 0, sd = 0.5))
+zs <- c(runif(n = N_gene-3, min = 0, max = 0),
+        runif(n = 3, min = 0, max = 0.05))
 d <- list(N_rep = N_rep, 
           N_gene = N_gene, 
           N = rep(x = Y_max, times = N_rep*2),
           as = as,
           bs = bs,
-          sigma = 0.25,
-          phi = 20,
-          z = 0.05)
+          zs = zs,
+          sigma_a = 1,
+          sigma_b = 0.1,
+          phi = 50)
 
 
 # simulate

@@ -40,7 +40,8 @@ DGU <- function(ud,
   if(analysis_type == "paired") {
     # model <- rstan::stan_model(file = "inst/stan/zibb_flex_pair.stan")
     model <- stanmodels$zibb_flex_pair
-    pars <- c("alpha_pop_mu", 
+    pars <- c("beta",
+              "alpha_pop_mu", 
               "alpha_pop_sigma", "beta_pop_sigma",
               "alpha_gene_sigma", "beta_gene_sigma",
               "phi",
@@ -54,7 +55,8 @@ DGU <- function(ud,
   else {
     # model <- rstan::stan_model(file = "inst/stan/zibb_flex.stan")
     model <-  stanmodels$zibb_flex
-    pars <- c("alpha_pop_mu", 
+    pars <- c("beta",
+              "alpha_pop_mu", 
               "alpha_pop_sigma", "beta_pop_sigma",
               "alpha_gene_sigma", "beta_gene_sigma",
               "phi",
