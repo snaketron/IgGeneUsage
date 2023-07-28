@@ -54,19 +54,21 @@ get_ppc_rep_u <- function(glm,
   yhat <- merge(x = yhat_c, y = yhat_p, by = c("G", "R"))
   rm(yhat_c, yhat_p)
   
-  yhat$condition <- NA
-  yhat$sample_name <- NA
+  yhat$sample_id <- NA
   yhat$gene_name <- NA
   yhat$observed_count <- NA
   yhat$observed_prop <- NA
   
   for(i in base::seq_len(length.out = nrow(yhat))) {
-    yhat$sample_name[i] <- ud$sample_names[yhat$R[i]]
+    yhat$sample_id[i] <- ud$sample_names[yhat$R[i]]
     yhat$gene_name[i] <- ud$gene_names[yhat$G[i]]
     yhat$observed_count[i] <- ud$Y[yhat$G[i], yhat$R[i]]
     yhat$observed_prop[i] <- yhat$observed_count[i]/ud$N[yhat$R[i]]
-    yhat$condition[i] <- ud$X_org[yhat$sample_name[i]]
   }
+  
+  yhat <- base::merge(x = yhat, 
+                      y = ud$proc_ud[, c("sample_id", "condition")], 
+                      by = "sample_id", all.x = TRUE)
   return (yhat)
 }
 
@@ -158,18 +160,27 @@ get_ppc_condition <- function(glm,
                   pars = c("Yhat_condition"),
                   prob = c(0.5, (1-hdi_lvl)/2, 1-(1-hdi_lvl)/2))
   yhat <- yhat$summary
-  yhat <- data.frame(yhat)
-  colnames(yhat) <- c("mean", "se_mean", "sd", "median",
-                      "L", "H", "Neff", "Rhat")
+  yhat <- base::data.frame(yhat)
+  base::colnames(yhat) <- c("ppc_mean_prop", "ppc_se_mean_prop", 
+                            "ppc_sd_mean_prop", "ppc_median_prop", 
+                            "ppc_L_prop", "ppc_H_prop", 
+                            "Neff", "Rhat")
   yhat[, c("Rhat", "Neff")] <- NULL
-  yhat$par <- rownames(yhat)
-  yhat$par_name <- do.call(rbind, strsplit(x = yhat$par, split = "\\["))[, 1]
-  par_i <- do.call(rbind, strsplit(x = yhat$par, split = "\\["))[, 2]
-  par_i <- gsub(pattern = "\\]", replacement = '', x = par_i)
-  par_i <- do.call(rbind, strsplit(x = par_i, split = ','))
-  class(par_i) <- "numeric"
+  yhat$par <- base::rownames(yhat)
+  yhat$par_name <- base::do.call(
+    rbind, base::strsplit(x = yhat$par, split = "\\["))[, 1]
+  par_i <- do.call(rbind, base::strsplit(x = yhat$par, split = "\\["))[, 2]
+  par_i <- base::gsub(pattern = "\\]", replacement = '', x = par_i)
+  par_i <- base::do.call(rbind, base::strsplit(x = par_i, split = ','))
+  base::class(par_i) <- "numeric"
   yhat$X <- par_i[, 1]
   yhat$G <- par_i[, 2]
+  yhat$gene_name <- ud$gene_names[yhat$G]
+  yhat$condition <- ifelse(test = yhat$X == 1, yes = ud$X_org[ud$X==1][1],
+                          no = ud$X_org[ud$X==-1][1])
+  # yhat$condition <- ud$X_org[ud$X == yhat$X[i]][1]
+  # yhat$condition <- ifelse(test = )
+  #   ud$X_org[ud$X == yhat$X[i]][1]
   # rm(par_i)
   # 
   # yhat$par <- NULL
