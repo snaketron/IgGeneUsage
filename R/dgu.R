@@ -109,9 +109,14 @@ DGU <- function(ud,
   # ppc
   message("Computing posterior predictions ... \n")
   ppc <- list(
-    ppc_rep = get_ppc_rep(glm = glm, ud = ud, hdi_lvl = hdi_lvl, 
+    ppc_rep = get_ppc_rep(glm = glm, 
+                          ud = ud, 
+                          hdi_lvl = hdi_lvl, 
                           analysis_type = analysis_type),
-    ppc_condition = get_ppc_condition(glm = glm, ud = ud, hdi_lvl = hdi_lvl))
+    ppc_condition = get_ppc_condition(glm = glm, 
+                                      ud = ud, 
+                                      hdi_lvl = hdi_lvl,
+                                      analysis_type = analysis_type))
   
   # frequentist tests, merge data
   message("Computing frequentist DGU ... \n")

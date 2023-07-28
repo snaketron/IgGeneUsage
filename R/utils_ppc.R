@@ -153,7 +153,8 @@ get_ppc_rep_p <- function(glm,
 # Posterior-predictive in a biological condition
 get_ppc_condition <- function(glm,
                               ud,
-                              hdi_lvl) {
+                              hdi_lvl,
+                              analysis_type) {
   
   # summaries
   yhat <- summary(object = glm, 
@@ -176,27 +177,11 @@ get_ppc_condition <- function(glm,
   yhat$X <- par_i[, 1]
   yhat$G <- par_i[, 2]
   yhat$gene_name <- ud$gene_names[yhat$G]
-  yhat$condition <- ifelse(test = yhat$X == 1, yes = ud$X_org[ud$X==1][1],
-                          no = ud$X_org[ud$X==-1][1])
-  # yhat$condition <- ud$X_org[ud$X == yhat$X[i]][1]
-  # yhat$condition <- ifelse(test = )
-  #   ud$X_org[ud$X == yhat$X[i]][1]
-  # rm(par_i)
-  # 
-  # yhat$par <- NULL
-  # yhat$par_name <- NULL
-  # colnames(yhat)[base::seq_len(length.out = 6)] <- paste(
-  #   "ppc", colnames(yhat)[base::seq_len(length.out = 6)], "prop", sep = "_")
-  # 
-  # yhat$X <- ifelse(test = yhat$X == 1, yes = 1, no = -1)
-  # yhat$condition <- NA
-  # yhat$gene_name <- NA
-  # yhat$observed_prop <- NA
-  # for(i in base::seq_len(length.out = nrow(yhat))) {
-  #   yhat$gene_name[i] <- ud$gene_names[yhat$G[i]]
-  #   yhat$observed_prop[i] <- mean(ud$Y[yhat$G[i], ]/ud$N)
-  #   yhat$condition[i] <- ud$X_org[ud$X == yhat$X[i]][1]
-  # }
+  if(analysis_type=="unpaired") {
+    yhat$condition <- ifelse(test = yhat$X == 1, 
+                             yes = ud$X_org[ud$X==1][1],
+                             no = ud$X_org[ud$X==-1][1])
+  }
   
   return (yhat)
 }
