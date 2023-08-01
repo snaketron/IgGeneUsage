@@ -34,12 +34,10 @@ DGU <- function(ud,
   control_list <- list(adapt_delta = adapt_delta,
                        max_treedepth = max_treedepth)
   
-  
-  
   # stan sampling
   if(analysis_type == "paired") {
     # model <- rstan::stan_model(file = "inst/stan/zibb_flex_pair.stan")
-    model <- stanmodels$zibb_flex_pair
+    model <- stanmodels$dgu_pair
     pars <- c("beta",
               "alpha_pop_mu", 
               "alpha_pop_sigma", "beta_pop_sigma",
@@ -54,7 +52,7 @@ DGU <- function(ud,
   } 
   else {
     # model <- rstan::stan_model(file = "inst/stan/zibb_flex.stan")
-    model <-  stanmodels$zibb_flex
+    model <-  stanmodels$dgu_unpair
     pars <- c("beta",
               "alpha_pop_mu", 
               "alpha_pop_sigma", "beta_pop_sigma",

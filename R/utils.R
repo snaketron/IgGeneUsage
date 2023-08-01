@@ -143,3 +143,53 @@ get_paired_usage <- function(u) {
                      contrast = NA))
 }
 
+
+
+get_gu_usage <- function(u) {
+  k <- base::paste0(u$sample_id, '_', u$condition)
+  u$sample_id <- k
+  
+  # makes sure that we add usage = 0 for missing genes of certain samples 
+  u <- tidyr::complete(u, sample_id, gene_name,
+                       fill = base::list(gene_usage_count = 0))
+  
+  # format data
+  n <- stats::aggregate(gene_usage_count~sample_id+condition, 
+                        FUN = sum, data = u)
+  n$total_usage_count <- n$gene_usage_count
+  n$gene_usage_count <- NULL
+  
+  u <- merge(x = u, y = n, by = c("sample_id", "condition"))
+  u$gene_usage_prop <- u$gene_usage_count/u$total_usage_count
+  rm(n)
+  
+  # get Y matrix
+  Y <- reshape2::acast(data = u, 
+                       formula = gene_name~sample_id,
+                       drop = FALSE, 
+                       value.var = "gene_usage_count",
+                       fill = 0, 
+                       fun.aggregate = sum)
+  sample_ids <- base::colnames(Y)
+  gene_names <- base::rownames(Y)
+  
+  N <- base::apply(X = Y, MARGIN = 2, FUN = sum)
+  N <- base::as.numeric(N)
+  
+  group_org <- character(length = length(sample_id))
+  for(i in 1:length(sample_ids)) {
+    group_org[i] <- u$condition[u$sample == sample_ids[i]][1]
+  }
+  group <- as.numeric(as.factor(group_org))
+  
+  return (base::list(Y = Y, 
+                     N = base::as.numeric(N), 
+                     N_sample = base::ncol(Y), 
+                     N_gene = base::nrow(Y),
+                     gene_names = gene_names,
+                     sample_names = sample_ids, 
+                     group = group,
+                     group_org = group_org,
+                     N_group = length(group),
+                     proc_ud = u))
+}

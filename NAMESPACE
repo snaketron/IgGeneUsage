@@ -1,3 +1,4 @@
+export(GU)
 export(DGU)
 export(LOO)
 import(methods)

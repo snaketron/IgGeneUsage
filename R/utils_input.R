@@ -37,6 +37,43 @@ check_input <- function(ud,
 
 
 # Description:
+# Provided the input arguments, this function checks their
+# validity. It stops the execution if a problem is encountered
+# and prints out warnings.
+check_gu_input <- function(ud,
+                           mcmc_chains,
+                           mcmc_cores,
+                           mcmc_steps,
+                           mcmc_warmup,
+                           hdi_lvl) {
+  
+  
+  if(missing(ud) || is.null(ud) ||
+     missing(mcmc_chains) || is.null(mcmc_chains) ||
+     missing(mcmc_steps) || is.null(mcmc_steps) ||
+     missing(mcmc_warmup) || is.null(mcmc_warmup) ||
+     missing(mcmc_cores) || is.null(mcmc_cores) ||
+     missing(hdi_lvl) || is.null(hdi_lvl)) {
+    stop("arguments must be specified")
+  }
+  
+  analysis_type <- get_analysis_type(ud)
+  if(analysis_type == "paired") {
+    stop("Gene usage (GU) analysis requires table with 4 columns: 
+    'sample_id', 'gene_name', 'condition', 'gene_usage_count'")
+  }
+  if(analysis_type == "unpaired") {
+    check_usage_data_unpaired(ud = ud)
+  }
+  check_mcmc_steps(mcmc_steps = mcmc_steps,
+                   mcmc_warmup = mcmc_warmup)
+  check_mcmc_chains(mcmc_chains = mcmc_chains)
+  check_mcmc_cores(mcmc_cores = mcmc_cores)
+  check_hdi(hdi_lvl = hdi_lvl)
+}
+
+
+# Description:
 # Usage data check if data.frame
 check_usage_data_unpaired <- function(ud) {
   
