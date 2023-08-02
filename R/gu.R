@@ -15,12 +15,12 @@ GU <- function(ud,
                 max_treedepth = 12) {
   
   # check inputs
-  check_gu_input(ud = ud,
-                 mcmc_chains = base::as.integer(x = mcmc_chains),
-                 mcmc_cores = base::as.integer(x = mcmc_cores),
-                 mcmc_steps = base::as.integer(x = mcmc_steps),
-                 mcmc_warmup = base::as.integer(x = mcmc_warmup),
-                 hdi_lvl = hdi_lvl)
+  # check_gu_input(ud = ud,
+  #                mcmc_chains = base::as.integer(x = mcmc_chains),
+  #                mcmc_cores = base::as.integer(x = mcmc_cores),
+  #                mcmc_steps = base::as.integer(x = mcmc_steps),
+  #                mcmc_warmup = base::as.integer(x = mcmc_warmup),
+  #                hdi_lvl = hdi_lvl)
   
   udr <- ud
   ud <- get_gu_usage(u = udr)
@@ -32,15 +32,15 @@ GU <- function(ud,
   
   
   pars <- c("beta",
-            "alpha_pop_mu", 
+            "alpha_pop_mu",
             "alpha_pop_sigma", "beta_pop_sigma",
             "alpha_gene_sigma", "beta_gene_sigma",
             "phi",
             "z", "z_mu", "z_phi",
             "alpha_gene_mu", "beta_gene_mu",
-            "log_lik", 
-            "Yhat", 
-            "Yhat_rep", 
+            "log_lik",
+            "Yhat",
+            "Yhat_rep",
             "Yhat_condition")
   
   

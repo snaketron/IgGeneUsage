@@ -176,7 +176,7 @@ get_gu_usage <- function(u) {
   N <- base::apply(X = Y, MARGIN = 2, FUN = sum)
   N <- base::as.numeric(N)
   
-  group_org <- character(length = length(sample_id))
+  group_org <- character(length = length(sample_ids))
   for(i in 1:length(sample_ids)) {
     group_org[i] <- u$condition[u$sample == sample_ids[i]][1]
   }
@@ -188,8 +188,8 @@ get_gu_usage <- function(u) {
                      N_gene = base::nrow(Y),
                      gene_names = gene_names,
                      sample_names = sample_ids, 
-                     group = group,
+                     G = group,
                      group_org = group_org,
-                     N_group = length(group),
+                     N_group = length(unique(group)),
                      proc_ud = u))
 }
