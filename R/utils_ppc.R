@@ -9,6 +9,7 @@ get_ppc_rep <- function(glm, ud, hdi_lvl, analysis_type) {
   }
 }
 
+
 # Description
 # Posterior-predictive check in repertoires, unpaired analysis
 get_ppc_rep_u <- function(glm,
@@ -67,8 +68,8 @@ get_ppc_rep_u <- function(glm,
   }
   
   yhat <- base::merge(x = yhat, 
-                      y = ud$proc_ud[, c("sample_id", "condition")], 
-                      by = "sample_id", all.x = TRUE)
+                      y = ud$proc_ud[, c("sample_id", "condition", "gene_name")], 
+                      by = c("sample_id", "gene_name"), all.x = TRUE)
   return (yhat)
 }
 
@@ -167,6 +168,7 @@ get_ppc_condition <- function(glm,
                             "ppc_L_prop", "ppc_H_prop", 
                             "Neff", "Rhat")
   yhat[, c("Rhat", "Neff")] <- NULL
+  
   yhat$par <- base::rownames(yhat)
   yhat$par_name <- base::do.call(
     rbind, base::strsplit(x = yhat$par, split = "\\["))[, 1]
@@ -174,14 +176,22 @@ get_ppc_condition <- function(glm,
   par_i <- base::gsub(pattern = "\\]", replacement = '', x = par_i)
   par_i <- base::do.call(rbind, base::strsplit(x = par_i, split = ','))
   base::class(par_i) <- "numeric"
-  yhat$X <- par_i[, 1]
-  yhat$G <- par_i[, 2]
-  yhat$gene_name <- ud$gene_names[yhat$G]
-  if(analysis_type=="unpaired") {
-    yhat$condition <- ifelse(test = yhat$X == 1, 
-                             yes = ud$X_org[ud$X==1][1],
-                             no = ud$X_org[ud$X==-1][1])
+  
+  if(ud$N_group==1) {
+    yhat$group_id <- 1
+    yhat$gene_id <- par_i
+  } 
+  else {
+    yhat$group_id <- par_i[, 1]
+    yhat$gene_id <- par_i[, 2]
   }
   
+  yhat$gene_name <- ud$gene_names[yhat$gene_id]
+  yhat$condition <- ud$group_org[yhat$group_id]
+
+  yhat$gene_id <- NULL
+  yhat$group_id <- NULL
+  yhat$par <- NULL
   return (yhat)
 }
+

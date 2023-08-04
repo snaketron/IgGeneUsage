@@ -106,6 +106,9 @@ generated quantities {
 
   // LOG-LIK
   vector [N_gene] log_lik [N_sample];
+  
+  // probability
+  vector [N_gene] prob_gene = inv_logit(alpha_gene_mu);
 
   //TODO: speedup, run in C++ not big factor on performance
   for(j in 1:N_gene) {

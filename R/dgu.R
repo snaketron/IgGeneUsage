@@ -77,32 +77,9 @@ DGU <- function(ud,
   
   # get summary
   message("Computing summaries ... \n")
-  glm_summary <- rstan::summary(object = glm, 
-                                digits = 4,
-                                pars = "beta_gene_mu",
-                                prob = c(0.5, (1-hdi_lvl)/2,
-                                         1-(1-hdi_lvl)/2))
-  
-  glm_summary <- glm_summary$summary
-  glm_summary <- data.frame(glm_summary)
-  colnames(glm_summary) <- c("es_mean", "es_mean_se",
-                             "es_sd", "es_median",
-                             "es_L", "es_H",
-                             "Neff", "Rhat")
-  glm_summary[, c("Rhat", "Neff")] <- NULL
-  glm_summary$contrast <- ud$contrast
-  
-  # extract data
-  message("Posterior extraction ... \n")
-  glm_ext <- rstan::extract(object = glm, 
-                            par = "beta_gene_mu")
-  
-  # get pmax
-  message("Computing probability of DGU ... \n")
-  glm_summary$pmax <- get_pmax(glm_ext = glm_ext)
-  
-  # add gene id
-  glm_summary$gene_name <- ud$gene_names
+  glm_summary <- get_glm_summary_dgu(glm = glm, 
+                                     hdi_lvl = hdi_lvl, 
+                                     ud = ud)
   
   # ppc
   message("Computing posterior predictions ... \n")

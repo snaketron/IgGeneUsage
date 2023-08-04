@@ -1,26 +1,4 @@
 
-# Description:
-# compute pmax -> probability of DGU
-get_pmax <- function(glm_ext) {
-  
-  getPmaxGene <- function(x, beta_data) {
-    p <- beta_data[,x]
-    l <- length(p)
-    o <- max(sum(p < 0)/l, sum(p>0)/l)
-    return(o)
-  }
-  
-  beta_data <- glm_ext$beta_gene_mu
-  pmax <- vapply(X = seq_len(length.out = ncol(beta_data)),
-                 FUN = getPmaxGene,
-                 beta_data = beta_data,
-                 FUN.VALUE = numeric(length = 1))
-  pmax <- 2 * pmax - 1
-  return(pmax)
-}
-
-
-
 # t.test
 get_ttest <- function(ud, 
                       paired) {
