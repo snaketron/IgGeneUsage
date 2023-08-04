@@ -1,10 +1,11 @@
+
 # Description
 # Posterior-predictive check in repertoires, wrapper for un-/paired analysis
-get_ppc_rep <- function(glm, ud, hdi_lvl, analysis_type) {
-  if(analysis_type=="unpaired") {
+get_ppc_rep <- function(glm, ud, hdi_lvl, analysis) {
+  if(analysis=="unpaired") {
     return(get_ppc_rep_u(glm = glm, ud = ud, hdi_lvl = hdi_lvl))
   }
-  if(analysis_type=="paired") {
+  if(analysis=="paired") {
     return(get_ppc_rep_p(glm = glm, ud = ud, hdi_lvl = hdi_lvl))
   }
 }
@@ -155,7 +156,7 @@ get_ppc_rep_p <- function(glm,
 get_ppc_condition <- function(glm,
                               ud,
                               hdi_lvl,
-                              analysis_type) {
+                              analysis) {
   
   # summaries
   yhat <- summary(object = glm, 
@@ -172,26 +173,30 @@ get_ppc_condition <- function(glm,
   yhat$par <- base::rownames(yhat)
   yhat$par_name <- base::do.call(
     rbind, base::strsplit(x = yhat$par, split = "\\["))[, 1]
-  par_i <- do.call(rbind, base::strsplit(x = yhat$par, split = "\\["))[, 2]
+  par_i <- base::do.call(rbind, base::strsplit(x = yhat$par, split = "\\["))[,2]
   par_i <- base::gsub(pattern = "\\]", replacement = '', x = par_i)
   par_i <- base::do.call(rbind, base::strsplit(x = par_i, split = ','))
   base::class(par_i) <- "numeric"
   
-  if(ud$N_group==1) {
+  if(analysis == "paired") {
     yhat$group_id <- 1
-    yhat$gene_id <- par_i
-  } 
-  else {
-    yhat$group_id <- par_i[, 1]
     yhat$gene_id <- par_i[, 2]
+  } 
+  if(analysis == "unpaired") {
+    if(ud$N_group==1) {
+      yhat$group_id <- 1
+      yhat$gene_id <- par_i
+    } else {
+      yhat$group_id <- par_i[, 1]
+      yhat$gene_id <- par_i[, 2]
+    }
   }
   
   yhat$gene_name <- ud$gene_names[yhat$gene_id]
-  yhat$condition <- ud$group_org[yhat$group_id]
+  yhat$condition <- ud$group_names[yhat$group_id]
 
   yhat$gene_id <- NULL
   yhat$group_id <- NULL
   yhat$par <- NULL
   return (yhat)
 }
-

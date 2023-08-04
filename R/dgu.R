@@ -28,42 +28,22 @@ DGU <- function(ud,
   udr <- ud
   ud <- get_usage(u = udr)
   
-  analysis_type <- get_analysis_type(udr)
+  analysis <- get_analysis_type(udr)
   
   # setup control list
-  control_list <- list(adapt_delta = adapt_delta,
-                       max_treedepth = max_treedepth)
+  control_list <- base::list(adapt_delta = adapt_delta,
+                             max_treedepth = max_treedepth)
   
   # stan sampling
-  if(analysis_type == "paired") {
-    # model <- rstan::stan_model(file = "inst/stan/zibb_flex_pair.stan")
-    model <- stanmodels$dgu_pair
-    pars <- c("beta",
-              "alpha_pop_mu", 
-              "alpha_pop_sigma", "beta_pop_sigma",
-              "alpha_gene_sigma", "beta_gene_sigma",
-              "phi",
-              "z", "z_mu", "z_phi",
-              "alpha_gene_mu", "beta_gene_mu",
-              "log_lik", 
-              "Yhat_1", "Yhat_2", 
-              "Yhat_rep_1", "Yhat_rep_2",
-              "Yhat_condition")
+  if(analysis == "paired") {
+    model <- rstan::stan_model(file = "inst/stan/dgu_pair.stan")
+    # model <- stanmodels$dgu_pair
+    pars <- get_pars(model = "DGU", analysis = "paired")
   } 
   else {
-    # model <- rstan::stan_model(file = "inst/stan/zibb_flex.stan")
-    model <-  stanmodels$dgu_unpair
-    pars <- c("beta",
-              "alpha_pop_mu", 
-              "alpha_pop_sigma", "beta_pop_sigma",
-              "alpha_gene_sigma", "beta_gene_sigma",
-              "phi",
-              "z", "z_mu", "z_phi",
-              "alpha_gene_mu", "beta_gene_mu",
-              "log_lik", 
-              "Yhat", 
-              "Yhat_rep", 
-              "Yhat_condition")
+    model <- rstan::stan_model(file = "inst/stan/dgu_unpair.stan")
+    # model <-  stanmodels$dgu_unpair
+    pars <- get_pars(model = "DGU", analysis = "unpaired")
   }
   glm <- rstan::sampling(object = model,
                          data = ud,
@@ -75,28 +55,30 @@ DGU <- function(ud,
                          control = control_list,
                          pars = pars)
   
+  
   # get summary
   message("Computing summaries ... \n")
   glm_summary <- get_glm_summary_dgu(glm = glm, 
                                      hdi_lvl = hdi_lvl, 
                                      ud = ud)
   
+
   # ppc
   message("Computing posterior predictions ... \n")
   ppc <- list(
     ppc_rep = get_ppc_rep(glm = glm, 
                           ud = ud, 
                           hdi_lvl = hdi_lvl, 
-                          analysis_type = analysis_type),
+                          analysis = analysis),
     ppc_condition = get_ppc_condition(glm = glm, 
                                       ud = ud, 
                                       hdi_lvl = hdi_lvl,
-                                      analysis_type = analysis_type))
+                                      analysis = analysis))
   
   # frequentist tests, merge data
   message("Computing frequentist DGU ... \n")
-  t_test_stats <- get_ttest(ud = ud, paired = analysis_type == "paired")
-  u_test_stats <- get_manu(ud = ud, paired = analysis_type == "paired")
+  t_test_stats <- get_ttest(ud = ud, paired = analysis == "paired")
+  u_test_stats <- get_manu(ud = ud, paired = analysis == "paired")
   test_summary <- merge(x = t_test_stats, y = u_test_stats, by = "gene_name")
   
   # result pack

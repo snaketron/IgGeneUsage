@@ -21,7 +21,7 @@ GU <- function(ud,
   #                mcmc_steps = base::as.integer(x = mcmc_steps),
   #                mcmc_warmup = base::as.integer(x = mcmc_warmup),
   #                hdi_lvl = hdi_lvl)
-  analysis_type <- "unpaired"
+  analysis <- "unpaired"
   udr <- ud
   ud <- get_gu_usage(u = udr)
   
@@ -31,19 +31,7 @@ GU <- function(ud,
   
   
   if(ud$N_group == 1) {
-    
-    pars <- c("alpha_pop_mu",
-              "alpha_pop_sigma",
-              "alpha_gene_sigma",
-              "phi",
-              "z", "z_mu", "z_phi",
-              "alpha_gene_mu",
-              "log_lik",
-              "Yhat",
-              "Yhat_rep",
-              "Yhat_condition",
-              "prob_gene")
-    
+    pars <- get_pars(model = "GU_univar", analysis = "unpaired")
     m_gu_univar <- rstan::stan_model(file = "inst/stan/gu_univar.stan")
     glm <- rstan::sampling(object = m_gu_univar,#stanmodels$gu_univar,
                            data = ud,
@@ -61,18 +49,7 @@ GU <- function(ud,
                                              ud = ud)
   } 
   else {
-    pars <- c("beta",
-              "alpha_pop_mu",
-              "alpha_pop_sigma", "beta_pop_sigma",
-              "alpha_gene_sigma", "beta_gene_sigma",
-              "phi",
-              "z", "z_mu", "z_phi",
-              "alpha_gene_mu", "beta_gene_mu",
-              "log_lik",
-              "Yhat",
-              "Yhat_rep",
-              "Yhat_condition")
-    
+    pars <- get_pars(model = "GU_anova", analysis = "unpaired")
     m_gu_anova <- rstan::stan_model(file = "inst/stan/gu_anova.stan")
     glm <- rstan::sampling(object = m_gu_anova,#stanmodels$gu_anova,
                            data = ud,
@@ -96,11 +73,11 @@ GU <- function(ud,
     ppc_rep = get_ppc_rep(glm = glm,
                           ud = ud,
                           hdi_lvl = hdi_lvl,
-                          analysis_type = analysis_type),
+                          analysis = analysis),
     ppc_condition = get_ppc_condition(glm = glm,
                                       ud = ud,
                                       hdi_lvl = hdi_lvl,
-                                      analysis_type = analysis_type))
+                                      analysis = analysis))
   
   # result pack
   return (list(glm_summary = glm_summary,
