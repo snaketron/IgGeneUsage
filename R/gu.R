@@ -32,8 +32,8 @@ GU <- function(ud,
   
   if(ud$N_group == 1) {
     pars <- get_pars(model = "GU_univar", analysis = "unpaired")
-    m_gu_univar <- rstan::stan_model(file = "inst/stan/gu_univar.stan")
-    glm <- rstan::sampling(object = m_gu_univar,#stanmodels$gu_univar,
+    # m_gu_univar <- rstan::stan_model(file = "inst/stan/gu_univar.stan")
+    glm <- rstan::sampling(object = stanmodels$gu_univar, #m_gu_univar,#,
                            data = ud,
                            chains = mcmc_chains,
                            cores = mcmc_cores,
@@ -50,8 +50,8 @@ GU <- function(ud,
   } 
   else {
     pars <- get_pars(model = "GU_anova", analysis = "unpaired")
-    m_gu_anova <- rstan::stan_model(file = "inst/stan/gu_anova.stan")
-    glm <- rstan::sampling(object = m_gu_anova,#stanmodels$gu_anova,
+    # m_gu_anova <- rstan::stan_model(file = "inst/stan/gu_anova.stan")
+    glm <- rstan::sampling(object = stanmodels$gu_anova,#m_gu_anova,#,
                            data = ud,
                            chains = mcmc_chains,
                            cores = mcmc_cores,

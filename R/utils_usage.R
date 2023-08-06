@@ -25,13 +25,14 @@ get_usage <- function(u) {
 # Description:
 # Parse input data for unpaired DGU analysis
 get_unpaired_usage <- function(u) {
-  k <- base::paste0(u$sample_id, '_', u$condition)
+  k <- base::paste0(u$sample_id, '|', u$condition)
   u$sample_id <- k
   
   # makes sure that we add usage = 0 for missing genes of certain samples 
   u <- tidyr::complete(u, sample_id, gene_name, 
                        fill = base::list(gene_usage_count = 0))
-  u$condition<-do.call(rbind, base::strsplit(x = u$sample_id, split="\\_"))[,2]
+  u$condition<-do.call(rbind, base::strsplit(
+    x = u$sample_id, split="\\|"))[,2]
   
   # format data
   n <- stats::aggregate(gene_usage_count~sample_id+condition, 
@@ -157,14 +158,14 @@ get_paired_usage <- function(u) {
 # Description
 # Parse input data for GU analysis
 get_gu_usage <- function(u) {
-  k <- base::paste0(u$sample_id, '_', u$condition)
+  k <- base::paste0(u$sample_id, '|', u$condition)
   u$sample_id <- k
   
   # makes sure that we add usage = 0 for missing genes of certain samples 
   u <- tidyr::complete(u, sample_id, gene_name,
                        fill = base::list(gene_usage_count = 0))
   u$condition <- base::do.call(rbind, base::strsplit(
-    x = u$sample_id, split = "\\_"))[,2]
+    x = u$sample_id, split = "\\|"))[,2]
   
   # format data
   n <- stats::aggregate(gene_usage_count~sample_id+condition, 

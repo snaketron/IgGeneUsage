@@ -25,7 +25,7 @@ data {
   int <lower=0> N_group; // number of groups
   int Y [N_gene, N_sample]; // number of successes (cells) in samples x gene
   int N [N_sample]; // number of total tries (repertoire size)
-  int <lower=1> G [N_sample]; // group index for each condition
+  int <lower=1> group_id [N_sample]; // group index for each condition
 }
 
 transformed data {
@@ -79,7 +79,7 @@ transformed parameters {
 
   // non-centered params (at gene level)
   for(i in 1:N_sample) {
-    beta[i] = beta_gene_mu[G[i]] + beta_gene_sigma[G[i]] * beta_z[i];
+    beta[i] = beta_gene_mu[group_id[i]] + beta_gene_sigma[group_id[i]] * beta_z[i];
     a[i] = inv_logit(alpha_gene_mu + beta[i]) * phi;
     b[i] = phi - a[i];
   }

@@ -22,9 +22,18 @@ get_glm_summary_gu_anova <- function(glm, hdi_lvl, ud) {
   glm_summary$gene_id <- base::as.numeric(par[,2])
   glm_summary$group_id <- base::as.numeric(par[,1])
   glm_summary$contrast <- ud$contrast
+  
+  # group map
+  group_map <- data.frame(group_name = ud$group_names,
+                          group_id = ud$group_id)
+  group_map <- group_map[duplicated(group_map)==F,]
+  rownames(group_map) <- group_map$group_id
+  
   glm_summary$gene_name <- ud$gene_names[glm_summary$gene_id]
-  glm_summary$group_name <- ud$group_names[glm_summary$group_id]
+  glm_summary$group_name <- group_map[as.character(glm_summary$group_id), 
+                                      "group_name"]
   glm_summary$pmax <- NA
+  
   
   # get pmax
   glm_ext <- rstan::extract(object = glm, par = "beta_gene_mu")$beta_gene_mu
