@@ -22,7 +22,7 @@ get_pars <- function(model, analysis) {
              "alpha_pop_sigma", "beta_pop_sigma",
              "alpha_gene_sigma", "beta_gene_sigma",
              "phi",
-             "z", "z_mu", "z_phi",
+             "z", #"z_mu", "z_phi",
              "alpha_gene_mu", "beta_gene_mu",
              "log_lik",
              "Yhat",
