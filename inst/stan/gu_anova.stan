@@ -42,9 +42,9 @@ parameters {
   
   // scales
   real <lower = 0> alpha_pop_sigma;
-  real <lower = 0> beta_pop_sigma;
   real <lower = 0> alpha_gene_sigma;
-  real <lower = 0> beta_gene_sigma;
+  real <lower = 0> beta_gene_sigma [N_group];
+  real <lower = 0> beta_pop_sigma [N_group];
   
   // aux variables
   // vector [N_gene] alpha_z [N_sample];
@@ -72,12 +72,12 @@ transformed parameters {
   // non-centered params (at repertoire level)
   alpha_gene_mu = alpha_pop_mu + alpha_pop_sigma * alpha_gene_z;
   for(j in 1:N_group) {
-    beta_gene_mu[j] = 0 + beta_pop_sigma * beta_gene_z[j];
+    beta_gene_mu[j] = 0 + beta_pop_sigma[j] * beta_gene_z[j];
   }
 
   // non-centered params (at gene level)
   for(i in 1:N_sample) {
-    beta[i] = beta_gene_mu[group_id[i]] + beta_gene_sigma * beta_z[i];
+    beta[i] = beta_gene_mu[group_id[i]]+beta_gene_sigma[group_id[i]]*beta_z[i];
     a[i] = inv_logit(alpha_gene_mu + beta[i]) * phi;
     b[i] = phi - a[i];
   }
@@ -87,7 +87,6 @@ transformed parameters {
 model {
   // priors
   target += normal_lpdf(alpha_pop_mu | 0.0, 5.0);
-  
   target += cauchy_lpdf(alpha_pop_sigma | 0.0, 1.0);
   target += cauchy_lpdf(beta_pop_sigma | 0.0, 1.0);
   target += cauchy_lpdf(alpha_gene_sigma | 0.0, 1.0);
