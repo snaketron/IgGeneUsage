@@ -56,13 +56,8 @@ get_unpaired_usage <- function(u) {
   N <- base::apply(X = Y, MARGIN = 2, FUN = base::sum)
   N <- base::as.numeric(N)
   
-  X <- base::numeric(length = base::length(N))
-  
   # sorted unique conditions
   cs <- base::sort(base::unique(u$condition), decreasing = TRUE)
-  # design vector X
-  X <- base::ifelse(test = sample_ids %in% u$sample_id[u$condition == cs[1]], 
-                    yes = +1, no = -1)
   
   # group
   group_names <- base::character(length = base::length(sample_ids))
@@ -74,6 +69,10 @@ get_unpaired_usage <- function(u) {
   # add contrast
   contrast <- base::paste0(base::unique(group_names[group_id == 1][1]), " - ", 
                            base::unique(group_names[group_id == 2][1]))
+  
+  # design vector X
+  X <- base::numeric(length = base::length(N))
+  X <- base::ifelse(test = group_id == 1, yes = +1, no = -1)
   
   return (base::list(Y = Y, 
                      N = base::as.numeric(N), 

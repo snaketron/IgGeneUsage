@@ -1,7 +1,10 @@
 
 # Description
 # Posterior-predictive check in repertoires, wrapper for un-/paired analysis
-get_ppc_rep <- function(glm, ud, hdi_lvl, analysis) {
+get_ppc_rep <- function(glm, 
+                        ud, 
+                        hdi_lvl, 
+                        analysis) {
   if(analysis=="unpaired") {
     return(get_ppc_rep_u(glm = glm, ud = ud, hdi_lvl = hdi_lvl))
   }
@@ -192,11 +195,19 @@ get_ppc_condition <- function(glm,
     }
   }
   
+  # group map
+  group_map <- base::data.frame(group_name = ud$group_names,
+                                group_id = ud$group_id)
+  group_map <- group_map[base::duplicated(group_map)==F,]
+  base::rownames(group_map) <- group_map$group_id
   yhat$gene_name <- ud$gene_names[yhat$gene_id]
-  yhat$condition <- ud$group_names[yhat$group_id]
-
+  yhat$condition <- group_map[base::as.character(
+    yhat$group_id), "group_name"]
+  
   yhat$gene_id <- NULL
   yhat$group_id <- NULL
   yhat$par <- NULL
+  yhat$par_name <- NULL
+  base::rownames(yhat) <- NULL
   return (yhat)
 }

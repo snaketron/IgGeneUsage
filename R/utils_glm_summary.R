@@ -24,14 +24,14 @@ get_glm_summary_gu_anova <- function(glm, hdi_lvl, ud) {
   glm_summary$contrast <- ud$contrast
   
   # group map
-  group_map <- data.frame(group_name = ud$group_names,
+  group_map <- base::data.frame(group_name = ud$group_names,
                           group_id = ud$group_id)
-  group_map <- group_map[duplicated(group_map)==F,]
-  rownames(group_map) <- group_map$group_id
+  group_map <- group_map[base::duplicated(group_map)==F,]
+  base::rownames(group_map) <- group_map$group_id
   
   glm_summary$gene_name <- ud$gene_names[glm_summary$gene_id]
-  glm_summary$group_name <- group_map[as.character(glm_summary$group_id), 
-                                      "group_name"]
+  glm_summary$condition <- group_map[base::as.character(
+    glm_summary$group_id), "group_name"]
   glm_summary$pmax <- NA
   
   
@@ -45,6 +45,7 @@ get_glm_summary_gu_anova <- function(glm, hdi_lvl, ud) {
   # remove unused vars
   glm_summary$gene_id <- NULL
   glm_summary$group_id <- NULL
+  base::rownames(glm_summary) <- NULL
   return(glm_summary)
 }
 
@@ -75,7 +76,7 @@ get_glm_summary_gu_univar <- function(glm, hdi_lvl, ud) {
   
   # remove unused vars
   glm_summary$gene_id <- NULL
-  
+  base::rownames(glm_summary) <- NULL
   return(glm_summary)
 }
 

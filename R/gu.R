@@ -15,12 +15,13 @@ GU <- function(ud,
                max_treedepth = 12) {
   
   # check inputs
-  # check_gu_input(ud = ud,
-  #                mcmc_chains = base::as.integer(x = mcmc_chains),
-  #                mcmc_cores = base::as.integer(x = mcmc_cores),
-  #                mcmc_steps = base::as.integer(x = mcmc_steps),
-  #                mcmc_warmup = base::as.integer(x = mcmc_warmup),
-  #                hdi_lvl = hdi_lvl)
+  check_gu_input(ud = ud,
+                 mcmc_chains = base::as.integer(x = mcmc_chains),
+                 mcmc_cores = base::as.integer(x = mcmc_cores),
+                 mcmc_steps = base::as.integer(x = mcmc_steps),
+                 mcmc_warmup = base::as.integer(x = mcmc_warmup),
+                 hdi_lvl = hdi_lvl)
+  
   analysis <- "unpaired"
   udr <- ud
   ud <- get_gu_usage(u = udr)
@@ -32,8 +33,9 @@ GU <- function(ud,
   
   if(ud$N_group == 1) {
     pars <- get_pars(model = "GU_univar", analysis = "unpaired")
-    # m_gu_univar <- rstan::stan_model(file = "inst/stan/gu_univar.stan")
-    glm <- rstan::sampling(object = stanmodels$gu_univar, #m_gu_univar,#,
+    model <- stanmodels$gu_univar
+    # model <- rstan::stan_model(file = "inst/stan/gu_univar.stan")
+    glm <- rstan::sampling(object = model,
                            data = ud,
                            chains = mcmc_chains,
                            cores = mcmc_cores,
@@ -50,8 +52,9 @@ GU <- function(ud,
   } 
   else {
     pars <- get_pars(model = "GU_anova", analysis = "unpaired")
-    # m_gu_anova <- rstan::stan_model(file = "inst/stan/gu_anova.stan")
-    glm <- rstan::sampling(object = stanmodels$gu_anova,#m_gu_anova,#,
+    # model <- rstan::stan_model(file = "inst/stan/gu_anova.stan")
+    model <- stanmodels$gu_anova
+    glm <- rstan::sampling(object = model,
                            data = ud,
                            chains = mcmc_chains,
                            cores = mcmc_cores,
@@ -82,5 +85,6 @@ GU <- function(ud,
   # result pack
   return (list(glm_summary = glm_summary,
                glm = glm,
+               ppc = ppc,
                ud = ud))
 }

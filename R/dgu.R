@@ -16,12 +16,12 @@ DGU <- function(ud,
                 max_treedepth = 12) {
   
   # check inputs
-  check_input(ud = ud,
-              mcmc_chains = base::as.integer(x = mcmc_chains),
-              mcmc_cores = base::as.integer(x = mcmc_cores),
-              mcmc_steps = base::as.integer(x = mcmc_steps),
-              mcmc_warmup = base::as.integer(x = mcmc_warmup),
-              hdi_lvl = hdi_lvl)
+  check_dgu_input(ud = ud,
+                  mcmc_chains = base::as.integer(x = mcmc_chains),
+                  mcmc_cores = base::as.integer(x = mcmc_cores),
+                  mcmc_steps = base::as.integer(x = mcmc_steps),
+                  mcmc_warmup = base::as.integer(x = mcmc_warmup),
+                  hdi_lvl = hdi_lvl)
   
   # browser()
   # format input usage
@@ -36,13 +36,13 @@ DGU <- function(ud,
   
   # stan sampling
   if(analysis == "paired") {
-    model <- rstan::stan_model(file = "inst/stan/dgu_pair.stan")
-    # model <- stanmodels$dgu_pair
+    # model <- rstan::stan_model(file = "inst/stan/dgu_pair.stan")
+    model <- stanmodels$dgu_pair
     pars <- get_pars(model = "DGU", analysis = "paired")
   } 
   else {
-    model <- rstan::stan_model(file = "inst/stan/dgu_unpair.stan")
-    # model <-  stanmodels$dgu_unpair
+    # model <- rstan::stan_model(file = "inst/stan/dgu_unpair.stan")
+    model <-  stanmodels$dgu_unpair
     pars <- get_pars(model = "DGU", analysis = "unpaired")
   }
   glm <- rstan::sampling(object = model,
@@ -85,6 +85,6 @@ DGU <- function(ud,
   return (list(glm_summary = glm_summary,
                test_summary = test_summary,
                glm = glm,
-               ppc_data = ppc,
+               ppc = ppc,
                ud = ud))
 }

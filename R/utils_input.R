@@ -3,12 +3,12 @@
 # Provided the input arguments, this function checks their
 # validity. It stops the execution if a problem is encountered
 # and prints out warnings.
-check_input <- function(ud,
-                        mcmc_chains,
-                        mcmc_cores,
-                        mcmc_steps,
-                        mcmc_warmup,
-                        hdi_lvl) {
+check_dgu_input <- function(ud,
+                            mcmc_chains,
+                            mcmc_cores,
+                            mcmc_steps,
+                            mcmc_warmup,
+                            hdi_lvl) {
   
   
   if(base::missing(ud) || base::is.null(ud) ||
@@ -22,10 +22,10 @@ check_input <- function(ud,
   
   analysis_type <- get_analysis_type(ud)
   if(analysis_type == "paired") {
-    check_usage_data_paired(ud = ud)
+    check_dgu_usage_data_paired(ud = ud)
   }
   if(analysis_type == "unpaired") {
-    check_usage_data_unpaired(ud = ud)
+    check_dgu_usage_data_unpaired(ud = ud)
   }
   check_mcmc_steps(mcmc_steps = mcmc_steps,
                    mcmc_warmup = mcmc_warmup)
@@ -61,7 +61,7 @@ check_gu_input <- function(ud,
     'sample_id', 'gene_name', 'condition', 'gene_usage_count'")
   }
   if(analysis_type == "unpaired") {
-    check_usage_data_unpaired(ud = ud)
+    check_gu_usage_data_unpaired(ud = ud)
   }
   check_mcmc_steps(mcmc_steps = mcmc_steps,
                    mcmc_warmup = mcmc_warmup)
@@ -72,7 +72,7 @@ check_gu_input <- function(ud,
 
 # Description:
 # Usage data check if data.frame
-check_usage_data_unpaired <- function(ud) {
+check_dgu_usage_data_unpaired <- function(ud) {
   
   if(base::is.data.frame(ud) == FALSE) {
     stop("ud must be data.frame")
@@ -125,7 +125,7 @@ check_usage_data_unpaired <- function(ud) {
 
 # Description:
 # Usage data check if data.frame
-check_usage_data_paired <- function(ud) {
+check_dgu_usage_data_paired <- function(ud) {
   
   if(base::is.data.frame(ud) == FALSE) {
     stop("ud must be data.frame")
@@ -166,6 +166,48 @@ check_usage_data_paired <- function(ud) {
      base::typeof(ud$gene_usage_count_2) != "double" &
      base::typeof(ud$gene_usage_count_2) != "integer") {
     stop("column gene_usage_count_2 must be of numeric type.")
+  }
+}
+
+# Description:
+# Usage data check if data.frame
+check_gu_usage_data_unpaired <- function(ud) {
+  
+  if(base::is.data.frame(ud) == FALSE) {
+    stop("ud must be data.frame")
+  }
+  
+  if(base::ncol(ud) != 4) {
+    stop("ud must contain the following columns: 'sample_id',
+         'condition', 'gene_name' and 'gene_usage_count'")
+  }
+  
+  cols <- c("sample_id", "condition", "gene_name", "gene_usage_count")
+  if(base::all(base::colnames(ud) %in% cols) == FALSE) {
+    stop("ud must contain the following columns: 'sample_id',
+         'condition', 'gene_name' and 'gene_usage_count'")
+  }
+  
+  if(base::nrow(ud) <= 1) {
+    stop("ud must contain at least 2 data points")
+  }
+  
+  if(base::typeof(ud$sample_id) != "character") {
+    stop("column sample_id must be of character type.")
+  }
+  
+  if(base::typeof(ud$condition) != "character") {
+    stop("column condition must be of character type.")
+  }
+  
+  if(base::typeof(ud$gene_name) != "character") {
+    stop("column gene_name must be of character type.")
+  }
+  
+  if(base::typeof(ud$gene_usage_count) != "numeric" &
+     base::typeof(ud$gene_usage_count) != "double" &
+     base::typeof(ud$gene_usage_count) != "integer") {
+    stop("column gene_usage_count must be of numeric type.")
   }
 }
 
