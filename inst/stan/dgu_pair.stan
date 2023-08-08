@@ -61,8 +61,6 @@ parameters {
   
   // zero-inflation probability
   vector <lower = 0, upper = 1> [N_gene] z;
-  real<lower=0, upper=1> z_mu;
-  real<lower=0> z_phi;
 }
 
 
@@ -95,9 +93,7 @@ model {
   target += cauchy_lpdf(beta_gene_sigma | 0.0, 1.0);
   
   // zero-inflation
-  target += exponential_lpdf(z_phi | 0.05);
-  target += beta_lpdf(z_mu | 1.0, 10.0);
-  target += beta_proportion_lpdf(z | z_mu, z_phi);
+  target += beta_lpdf(z | 0.1, 1.0);
   
   //pareto 2 for overdispersion
   target += gamma_lpdf(tau | 3.0, 0.1);

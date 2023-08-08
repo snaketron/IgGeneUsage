@@ -93,7 +93,7 @@ model {
   target += cauchy_lpdf(beta_gene_sigma | 0.0, 1.0);
   
   // zero-inflation
-  target += beta_lpdf(z | 1.0, 10.0);
+  target += beta_lpdf(z | 0.1, 1.0);
   
   //pareto 2 for overdispersion
   target += gamma_lpdf(tau | 3.0, 0.1);

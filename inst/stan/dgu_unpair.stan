@@ -59,8 +59,6 @@ parameters {
   
   // zero-inflation probability
   vector <lower = 0, upper = 1> [N_gene] z;
-  real <lower=0, upper = 1> z_mu;
-  real<lower=0> z_phi;
 }
 
 
@@ -80,7 +78,6 @@ transformed parameters {
   // non-centered params (at gene level)
   for(i in 1:N_sample) {
     beta[i] = beta_gene_mu + beta_gene_sigma * beta_z[i];
-    // alpha[i] = alpha_gene_mu + alpha_gene_sigma * alpha_z[i];
     a[i] = inv_logit(alpha_gene_mu + beta[i]*X[i]) * phi;
     b[i] = phi - a[i];
   }
@@ -97,9 +94,7 @@ model {
   target += cauchy_lpdf(beta_gene_sigma | 0.0, 1.0);
   
   // zero-inflation
-  target += exponential_lpdf(z_phi | 0.05);
-  target += beta_lpdf(z_mu | 1.0, 10.0);
-  target += beta_proportion_lpdf(z | z_mu, z_phi);
+  target += beta_lpdf(z | 0.1, 1.0);
   
   //pareto 2 for overdispersion
   target += gamma_lpdf(tau | 3.0, 0.1);
@@ -149,7 +144,7 @@ generated quantities {
         Yhat_rep[j, i] = Yhat[j,i]/Nreal[i];
       }
     }
-    Yhat_condition[1][j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]*1.0);
-    Yhat_condition[2][j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]*(-1.0));
+    Yhat_condition[1][j] = inv_logit(alpha_gene_mu[j]+beta_gene_mu[j]);
+    Yhat_condition[2][j] = inv_logit(alpha_gene_mu[j]-beta_gene_mu[j]);
   }
 }
