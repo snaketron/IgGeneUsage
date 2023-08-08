@@ -60,7 +60,7 @@ both test report P-values, FDR-corrected P-values, Bonferroni-corrected
 P-values. Additionally, we report t-value and 95\% CI (from the t-test) and 
 U-value (from the Wilcoxon signed-rank test).}
 \item{glm}{stanfit object}
-\item{ppc_data}{two types of posterior predictive checks: 1) repertoire-
+\item{ppc}{two types of posterior predictive checks: 1) repertoire-
 specific, 2) gene-specific}
 \item{ud}{processed gene usage data used for the model}
 }
@@ -93,7 +93,7 @@ head(M$glm_summary)
 head(M$test_summary)
 
 # look at posterior predictive checks (PPC)
-head(M$ppc_data)
+head(M$ppc)
 }
 
-\seealso{LOO, d_zibb, Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE}
+\seealso{LOO, GU, d_zibb, Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE}
