@@ -130,6 +130,13 @@ generated quantities {
 
   // LOG-LIK
   vector [N_gene] log_lik [N_sample];
+  
+  // DGU
+  real mu [N_gene, N_group];
+  real nmu [N_gene, N_group];
+  vector [N_gene] dgu [N_group*(N_group-1)/2];
+  
+  int c = 1;
 
   //TODO: speedup, run in C++ not big factor on performance
   for(j in 1:N_gene) {
@@ -147,5 +154,16 @@ generated quantities {
   }
   for(g in 1:N_group) {
     Yhat_condition[g] = inv_logit(alpha_gene_mu+beta_gene_mu[g]);
+    mu[,g] = to_array_1d(alpha_gene_mu + beta_gene_mu[g]);
+  }
+  for(g in 1:N_gene) {
+    nmu[g,] = to_array_1d(to_row_vector(mu[g,])-mean(mu[g,]));
+  }
+  
+  for(i in 1:(N_group-1)) {
+    for(j in (i+1):N_group) {
+      dgu[c] = to_vector(nmu[,i])-to_vector(nmu[,j]);
+      c = c + 1;
+    }
   }
 }

@@ -27,7 +27,8 @@ get_pars <- function(model, analysis) {
              "log_lik",
              "Yhat",
              "Yhat_rep",
-             "Yhat_condition"))
+             "Yhat_condition",
+             "dgu"))
   }
   
   if(model == "DGU" & analysis == "paired") {
