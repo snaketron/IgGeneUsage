@@ -134,7 +134,9 @@ generated quantities {
   // DGU
   real mu [N_gene, N_group];
   real nmu [N_gene, N_group];
-  vector [N_gene] dgu [N_group*(N_group-1)/2];
+  // vector [N_gene] dgu [N_group*(N_group-1)/2];
+  matrix [N_gene, N_group*(N_group-1)/2] dgu;
+  
   
   int c = 1;
 
@@ -162,7 +164,7 @@ generated quantities {
   
   for(i in 1:(N_group-1)) {
     for(j in (i+1):N_group) {
-      dgu[c] = to_vector(nmu[,i])-to_vector(nmu[,j]);
+      dgu[,c] = to_vector(nmu[,i])-to_vector(nmu[,j]);
       c = c + 1;
     }
   }

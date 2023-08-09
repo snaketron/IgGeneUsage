@@ -49,11 +49,13 @@ GU <- function(ud,
     glm_summary <- get_glm_summary_gu_univar(glm = glm, 
                                              hdi_lvl = hdi_lvl, 
                                              ud = ud)
+    
+    dgu_summary <- NA
   } 
   else {
     pars <- get_pars(model = "GU_anova", analysis = "unpaired")
-    # model <- rstan::stan_model(file = "inst/stan/gu_anova.stan")
-    model <- stanmodels$gu_anova
+    model <- rstan::stan_model(file = "inst/stan/gu_anova.stan")
+    # model <- stanmodels$gu_anova
     glm <- rstan::sampling(object = model,
                            data = ud,
                            chains = mcmc_chains,
@@ -68,6 +70,10 @@ GU <- function(ud,
     glm_summary <- get_glm_summary_gu_anova(glm = glm, 
                                             hdi_lvl = hdi_lvl, 
                                             ud = ud)
+    
+    dgu_summary <- get_dgu_summary(glm = glm, 
+                                   hdi_lvl = hdi_lvl, 
+                                   ud = ud)
   }
   
   # ppc
@@ -83,7 +89,8 @@ GU <- function(ud,
                                       analysis = analysis))
   
   # result pack
-  return (list(glm_summary = glm_summary,
+  return (list(dgu_summary = dgu_summary,
+               glm_summary = glm_summary,
                glm = glm,
                ppc = ppc,
                ud = ud))
