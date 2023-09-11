@@ -42,7 +42,6 @@ parameters {
   
   // scales
   real <lower = 0> alpha_pop_sigma;
-  real <lower = 0> alpha_gene_sigma;
   real <lower = 0> beta_gene_sigma [N_group];
   real <lower = 0> beta_pop_sigma [N_group];
   
@@ -89,7 +88,6 @@ model {
   target += normal_lpdf(alpha_pop_mu | 0.0, 5.0);
   target += cauchy_lpdf(alpha_pop_sigma | 0.0, 1.0);
   target += cauchy_lpdf(beta_pop_sigma | 0.0, 1.0);
-  target += cauchy_lpdf(alpha_gene_sigma | 0.0, 1.0);
   target += cauchy_lpdf(beta_gene_sigma | 0.0, 1.0);
   
   // zero-inflation

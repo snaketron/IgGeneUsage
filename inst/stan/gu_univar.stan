@@ -39,7 +39,6 @@ parameters {
   
   // scales
   real <lower = 0> alpha_pop_sigma;
-  real <lower = 0> alpha_gene_sigma;
   
   // aux variables
   vector [N_gene] alpha_gene_z;
@@ -72,7 +71,6 @@ model {
   target += normal_lpdf(alpha_pop_mu | 0.0, 5.0);
   
   target += cauchy_lpdf(alpha_pop_sigma | 0.0, 1.0);
-  target += cauchy_lpdf(alpha_gene_sigma | 0.0, 1.0);
   
   // zero-inflation
   target += beta_lpdf(z | 0.1, 1.0);
