@@ -3,9 +3,8 @@
 # analysis = unpaired or paired (only relevant if model = DGU)
 get_pars <- function(model, analysis) {
   if(model == "GU_univar") {
-    return(c("alpha_pop_mu",
+    return(c("alpha_pop_mu", 
              "alpha_pop_sigma",
-             "alpha_gene_sigma",
              "phi",
              "z",
              "alpha_gene_mu",
@@ -19,8 +18,9 @@ get_pars <- function(model, analysis) {
   if(model == "GU_anova") {
     return(c("beta",
              "alpha_pop_mu",
-             "alpha_pop_sigma", "beta_pop_sigma",
-             "alpha_gene_sigma", "beta_gene_sigma",
+             "alpha_pop_sigma", 
+             "beta_pop_sigma", 
+             "beta_gene_sigma",
              "phi",
              "z",
              "alpha_gene_mu", "beta_gene_mu",

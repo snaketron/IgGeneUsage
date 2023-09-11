@@ -6,7 +6,7 @@ get_pmax_dgu <- function(glm_ext) {
   get_pmax_gene <- function(x, beta_data) {
     p <- beta_data[,x]
     l <- base::length(p)
-    o <- base::max(base::sum(p < 0)/l, base::sum(p>0)/l)
+    o <- 2*base::max(base::sum(p < 0)/l, base::sum(p>0)/l)-1
     return(o)
   }
   
@@ -24,6 +24,6 @@ get_pmax_dgu <- function(glm_ext) {
 get_pmax <- function(x) {
   p <- x
   l <- base::length(p)
-  o <- base::max(base::sum(p < 0)/l, base::sum(p>0)/l)
+  o <- 2*base::max(base::sum(p < 0)/l, base::sum(p>0)/l)-1
   return(o)
 }
