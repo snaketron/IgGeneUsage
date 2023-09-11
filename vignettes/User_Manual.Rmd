@@ -144,7 +144,7 @@ p(Y_{ij} \mid M) = \begin{cases}
 \right), & \text{if $Y_{ij}$ > 0}
 \end{cases}\\
 \theta_{ij}=\operatorname{logit^{-1}}\left(\alpha_{ij}+\beta_{ij}X_{i}\right)\\
-\alpha_{ij}\sim\operatorname{Normal}\left(\delta_{j},\delta_{\sigma} \right)\\
+\alpha_{j}\sim\operatorname{Normal}\left(\hat{\alpha},\hat{\alpha}_{\sigma}\\
 \beta_{ij}\sim\operatorname{Normal}\left(\gamma_{j},\gamma_{\sigma} \right)\\
 \gamma_{j}\sim\operatorname{Normal}\left(0.0,\hat{\gamma}_{\sigma} \right) \\
 \delta_{j} \sim \operatorname{Normal}\left(\hat{\delta}_{\mu}, 
@@ -226,7 +226,7 @@ The following objects are provided as part of the output of DGU:
     Welch's t-test (T-test) and Wilcoxon signed-rank test (U-test)
   * `glm`: rstan ('stanfit') object of the fitted model $rightarrow$ used for
      model checks (see section 'Model checking')
-  * `ppc_data`: posterior predictive checks data (see section 'Model checking')
+  * `ppc`: posterior predictive checks data (see section 'Model checking')
 
 ```{r}
 summary(M)
@@ -275,20 +275,16 @@ compared with the observed data (x-axis). For points near the diagonal
 $\rightarrow$ accurate prediction.
 
 ```{r, fig.height = 5.5, fig.width = 6}
-ggplot(data = M$ppc_data$ppc_repertoire)+
-  facet_wrap(facets = ~sample_name, nrow = 3)+
+ggplot(data = M$ppc$ppc_rep)+
+  facet_wrap(facets = ~sample_id, ncol = 5)+
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
   geom_errorbar(aes(x = observed_count, y = ppc_mean_count, 
                     ymin = ppc_L_count, ymax = ppc_H_count), col = "darkgray")+
-  geom_point(aes(x = observed_count, y = ppc_mean_count, 
-                 fill = condition), shape = 21, size = 1)+
+  geom_point(aes(x = observed_count, y = ppc_mean_count), shape = 21, size = 1)+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
-  scale_x_log10()+
-  scale_y_log10()+
   xlab(label = "Observed usage [counts]")+
-  ylab(label = "Predicted usage [counts]")+
-  annotation_logticks(base = 10, sides = "lb")
+  ylab(label = "Predicted usage [counts]")
 ```
 
 
@@ -301,19 +297,16 @@ against the observed mean usage (x-axis). If the points are near the diagonal
 $\rightarrow$ accurate prediction. Errors are 95% HDIs of the mean.
 
 ```{r, fig.height = 4, fig.width = 4}
-ggplot(data = M$ppc_data$ppc_gene)+
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
-  geom_errorbar(aes(x = observed_prop*100, ymin = ppc_L_prop*100, 
-                    ymax = ppc_H_prop*100), col = "darkgray")+
-  geom_point(aes(x = observed_prop*100, y = ppc_mean_prop*100, 
-                 col = condition), size = 2)+
+ggplot(data = M$ppc$ppc_condition)+
+  geom_errorbar(aes(x = gene_name, ymin = ppc_L_prop*100, 
+                    ymax = ppc_H_prop*100), col = "darkgray", width = 0.1)+
+  geom_point(aes(x = gene_name, y = ppc_mean_prop*100,col = condition), 
+             size = 2)+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   xlab(label = "Observed usage [%]")+
   ylab(label = "Predicted usage [%]")+
-  scale_x_log10()+
-  scale_y_log10()+
-  annotation_logticks(base = 10, sides = "lb")
+  scale_y_log10()
 ```
 
 
@@ -373,10 +366,10 @@ differential gene usage ($\pi \geq 0.9$). Here we show the gene usage in %.
 ```{r, fig.height = 2.5, fig.width = 3}
 promising_genes <- stats$gene_name[stats$pmax >= 0.9]
 
-ppc_gene <- M$ppc_data$ppc_gene
+ppc_gene <- M$ppc$ppc_gene
 ppc_gene <- ppc_gene[ppc_gene$gene_name %in% promising_genes, ]
 
-ppc_rep <- M$ppc_data$ppc_repertoire
+ppc_rep <- M$ppc$ppc_rep
 ppc_rep <- ppc_rep[ppc_rep$gene_name %in% promising_genes, ]
 
 
