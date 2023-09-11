@@ -5,7 +5,7 @@
 #   * sample_id: char column
 #   * gene_name: char column
 #   * gene_usage_count: num column
-GU <- function(ud,
+DGU <- function(ud,
                mcmc_warmup = 500,
                mcmc_steps = 1500,
                mcmc_chains = 4,
@@ -30,11 +30,10 @@ GU <- function(ud,
   control_list <- list(adapt_delta = adapt_delta,
                        max_treedepth = max_treedepth)
   
-
   if(ud$N_group == 1) {
-    pars <- get_pars(model = "GU_univar", analysis = "unpaired")
-    # model <- stanmodels$gu_univar
-    model <- rstan::stan_model(file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/gu_univar.stan")
+    pars <- get_pars(model = "GU", analysis = "unpaired")
+    # model <- stanmodels$gu
+    model <- rstan::stan_model(file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/gu.stan")
     glm <- rstan::sampling(object = model,
                            data = ud,
                            chains = mcmc_chains,
@@ -53,10 +52,9 @@ GU <- function(ud,
     dgu_summary <- NA
   } 
   else {
-    pars <- get_pars(model = "GU_anova", analysis = "unpaired")
-    # model <- stanmodels$gu_anova
-    
-    model <- rstan::stan_model(file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/gu_anova.stan")
+    pars <- get_pars(model = "DGU", analysis = "unpaired")
+    # model <- stanmodels$dgu
+    model <- rstan::stan_model(file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/dgu.stan")
     glm <- rstan::sampling(object = model,
                            data = ud,
                            chains = mcmc_chains,
