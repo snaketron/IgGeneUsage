@@ -58,10 +58,10 @@ m <- rstan::stan_model(model_code = sim_stan)
 
 # generate data based on following fixed parameters
 N_rep <- 10
-N_gene <- 12
+N_gene <- 15
 Y_max <- 10^3
-as <- rnorm(n = N_gene, mean = 0, sd = 1)
-bs <- c(rnorm(n = N_gene-3, mean = 0, sd = 0.25),
+as <- rnorm(n = N_gene, mean = -2, sd = 1.5)
+bs <- c(rnorm(n = N_gene-3, mean = 0, sd = 0.1),
         rnorm(n = 3, mean = 0, sd = 1))
 zs <- c(runif(n = N_gene-3, min = 0, max = 0),
         runif(n = 3, min = 0, max = 0.05))
