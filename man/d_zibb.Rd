@@ -9,7 +9,7 @@ A small example dataset that has the following features:
   \itemize{
     \item 2 conditions
     \item 10 replicates (samples) per condition
-    \item 12 Ig genes
+    \item 15 Ig genes
   }
 This dataset was simulated from zero-inflated beta-binomial (ZIBB) 
 distribution. Simulation code is available in inst/scripts/d_zibb.R
