@@ -1,5 +1,5 @@
 
-get_glm_summary_gu_anova <- function(glm, hdi_lvl, ud) {
+get_gu_summary_anova <- function(glm, hdi_lvl, ud) {
   
   glm_summary <- rstan::summary(object = glm, 
                                 digits = 4,
@@ -25,7 +25,7 @@ get_glm_summary_gu_anova <- function(glm, hdi_lvl, ud) {
   
   # group map
   group_map <- base::data.frame(group_name = ud$group_names,
-                          group_id = ud$group_id)
+                                group_id = ud$group_id)
   group_map <- group_map[base::duplicated(group_map)==F,]
   base::rownames(group_map) <- group_map$group_id
   
@@ -50,7 +50,7 @@ get_glm_summary_gu_anova <- function(glm, hdi_lvl, ud) {
 }
 
 
-get_glm_summary_gu_univar <- function(glm, hdi_lvl, ud) {
+get_gu_summary_univar <- function(glm, hdi_lvl, ud) {
   
   glm_summary <- rstan::summary(object = glm, 
                                 digits = 4,
@@ -81,7 +81,7 @@ get_glm_summary_gu_univar <- function(glm, hdi_lvl, ud) {
 }
 
 
-get_glm_summary_dgu <- function(glm, hdi_lvl, ud) {
+get_dgu_summary <- function(glm, hdi_lvl, ud) {
   glm_summary <- rstan::summary(object = glm, 
                                 digits = 4,
                                 pars = "beta_gene_mu",

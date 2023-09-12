@@ -1,5 +1,5 @@
-\name{d_zibb}
-\alias{d_zibb}
+\name{d_zibb_1}
+\alias{d_zibb_1}
 \docType{data}
 \title{Simulated Ig gene usage data}
 
@@ -7,16 +7,16 @@
 A small example dataset that has the following features:
 
   \itemize{
-    \item 2 conditions
-    \item 10 replicates (samples) per condition
+    \item 1 conditions
+    \item 5 replicates (samples) per condition
     \item 15 Ig genes
   }
 This dataset was simulated from zero-inflated beta-binomial (ZIBB) 
-distribution. Simulation code is available in inst/scripts/d_zibb.R
+distribution. Simulation code is available in inst/scripts/d_zibb_1.R
 }
 
 \usage{
-data("d_zibb", package = "IgGeneUsage")
+data("d_zibb_1", package = "IgGeneUsage")
 }
 
 \format{
@@ -30,10 +30,10 @@ A data frame with 4 columns:
 This format is accepted by IgGeneUsage.
 }
 \source{
-Simulation code is provided in inst/scripts/d_zibb.R
+Simulation code is provided in inst/scripts/d_zibb_1.R
 }
 \examples{
-data("d_zibb", package = "IgGeneUsage")
-head(d_zibb)
+data("d_zibb_1", package = "IgGeneUsage")
+head(d_zibb_1)
 }
-\keyword{d_zibb}
+\keyword{d_zibb_1}

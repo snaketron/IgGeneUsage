@@ -104,4 +104,4 @@ head(L$loo_summary)
 }
 
 
-\seealso{DGU, Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE, d_zibb}
+\seealso{DGU, Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE, d_zibb_1, d_zibb_2, d_zibb_3}

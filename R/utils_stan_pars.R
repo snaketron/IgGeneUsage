@@ -1,7 +1,6 @@
 # Which model parameters should be monitored?
 # model = DGU or GU_univar or GU_anova
-# analysis = unpaired or paired (only relevant if model = DGU)
-get_pars <- function(model, analysis) {
+get_pars <- function(model) {
   if(model == "GU") {
     return(c("alpha_pop_mu", 
              "alpha_pop_sigma",

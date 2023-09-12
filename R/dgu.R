@@ -15,14 +15,13 @@ DGU <- function(ud,
                max_treedepth = 12) {
   
   # check inputs
-  check_gu_input(ud = ud,
-                 mcmc_chains = base::as.integer(x = mcmc_chains),
-                 mcmc_cores = base::as.integer(x = mcmc_cores),
-                 mcmc_steps = base::as.integer(x = mcmc_steps),
-                 mcmc_warmup = base::as.integer(x = mcmc_warmup),
-                 hdi_lvl = hdi_lvl)
+  check_dgu_input(ud = ud,
+                  mcmc_chains = base::as.integer(x = mcmc_chains),
+                  mcmc_cores = base::as.integer(x = mcmc_cores),
+                  mcmc_steps = base::as.integer(x = mcmc_steps),
+                  mcmc_warmup = base::as.integer(x = mcmc_warmup),
+                  hdi_lvl = hdi_lvl)
   
-  analysis <- "unpaired"
   udr <- ud
   ud <- get_gu_usage(u = udr)
   
@@ -31,9 +30,10 @@ DGU <- function(ud,
                        max_treedepth = max_treedepth)
   
   if(ud$N_group == 1) {
-    pars <- get_pars(model = "GU", analysis = "unpaired")
+    pars <- get_pars(model = "GU")
     # model <- stanmodels$gu
-    model <- rstan::stan_model(file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/gu.stan")
+    model <- rstan::stan_model(
+      file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/gu.stan")
     glm <- rstan::sampling(object = model,
                            data = ud,
                            chains = mcmc_chains,
@@ -45,16 +45,14 @@ DGU <- function(ud,
                            pars = pars)
     
     message("Computing summaries ... \n")
-    glm_summary <- get_glm_summary_gu_univar(glm = glm, 
-                                             hdi_lvl = hdi_lvl, 
-                                             ud = ud)
-    
+    gu_summary <- get_gu_summary_univar(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
     dgu_summary <- NA
   } 
   else {
-    pars <- get_pars(model = "DGU", analysis = "unpaired")
+    pars <- get_pars(model = "DGU")
     # model <- stanmodels$dgu
-    model <- rstan::stan_model(file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/dgu.stan")
+    model <- rstan::stan_model(
+      file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/dgu.stan")
     glm <- rstan::sampling(object = model,
                            data = ud,
                            chains = mcmc_chains,
@@ -66,30 +64,19 @@ DGU <- function(ud,
                            pars = pars)
     
     message("Computing summaries ... \n")
-    glm_summary <- get_glm_summary_gu_anova(glm = glm, 
-                                            hdi_lvl = hdi_lvl, 
-                                            ud = ud)
-    
-    dgu_summary <- get_dgu_summary(glm = glm, 
-                                   hdi_lvl = hdi_lvl, 
-                                   ud = ud)
+    gu_summary <- get_gu_summary_anova(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
+    dgu_summary <- get_dgu_summary(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
   }
   
   # ppc
   message("Computing posterior predictions ... \n")
   ppc <- list(
-    ppc_rep = get_ppc_rep(glm = glm,
-                          ud = ud,
-                          hdi_lvl = hdi_lvl,
-                          analysis = analysis),
-    ppc_condition = get_ppc_condition(glm = glm,
-                                      ud = ud,
-                                      hdi_lvl = hdi_lvl,
-                                      analysis = analysis))
+    ppc_rep = get_ppc_rep(glm = glm, ud = ud, hdi_lvl = hdi_lvl),
+    ppc_condition = get_ppc_condition(glm = glm, ud = ud, hdi_lvl = hdi_lvl))
   
   # result pack
   return (list(dgu_summary = dgu_summary,
-               glm_summary = glm_summary,
+               gu_summary = gu_summary,
                glm = glm,
                ppc = ppc,
                ud = ud))

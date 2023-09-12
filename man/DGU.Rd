@@ -50,18 +50,15 @@ vignette 'User Manual: IgGeneUsage').
 }
 
 \value{
-\item{glm_summary}{DGU statistics for each gene: 1) es = effect size on 
+\item{dgu_summary}{DGU statistics for each gene: 1) es = effect size on 
 DGU (mean, median standard error (se), standard deviation (sd), L (low boundary 
 of HDI), H (high boundary of HDI); 2) contrast = direction of the effect; 3) 
-pmax = probability of DGU}
-\item{test_summary}{DGU statistics computed with the Welch's t-test (columns 
-start with 't'), and Wilcoxon signed-rank test (columns start with 'u'). For 
-both test report P-values, FDR-corrected P-values, Bonferroni-corrected 
-P-values. Additionally, we report t-value and 95\% CI (from the t-test) and 
-U-value (from the Wilcoxon signed-rank test).}
+pmax = probability of DGU. This summary is only available if the input data
+contains at least two conditions}
+\item{gu_summary}{gene usage (GU) summary of each gene in each condition}
 \item{glm}{stanfit object}
 \item{ppc}{two types of posterior predictive checks: 1) repertoire-
-specific, 2) gene-specific}
+specific, 2) condition-specific}
 \item{ud}{processed gene usage data used for the model}
 }
 
@@ -73,11 +70,11 @@ specific, 2) gene-specific}
 
 \examples{
 # input data
-data(d_zibb)
-head(d_zibb)
+data(d_zibb_2)
+head(d_zibb_2)
 
 # run differential gene usage (DGU)
-M <- DGU(ud = d_zibb,
+M <- DGU(ud = d_zibb_2,
          mcmc_warmup = 350,
          mcmc_steps = 1500,
          mcmc_chains = 2,
@@ -96,4 +93,4 @@ head(M$test_summary)
 head(M$ppc)
 }
 
-\seealso{LOO, GU, d_zibb, Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE}
+\seealso{LOO, Ig, IGHV_Epitopes, IGHV_HCV, Ig_SE, d_zibb_1, d_zibb_2, d_zibb_3}
