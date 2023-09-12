@@ -2,7 +2,7 @@ get_contrast_map <- function(ud) {
   # group map
   group_map <- base::data.frame(group_name = ud$group_names,
                                 group_id = ud$group_id)
-  group_map <- group_map[base::duplicated(group_map)==F,]
+  group_map <- group_map[base::duplicated(group_map)==FALSE,]
   base::rownames(group_map) <- group_map$group_id
   
   # contrast map

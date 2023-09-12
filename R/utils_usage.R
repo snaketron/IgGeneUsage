@@ -172,7 +172,7 @@ get_gu_usage <- function(u) {
   n$total_usage_count <- n$gene_usage_count
   n$gene_usage_count <- NULL
   
-  u <- base::merge(x = u, y = n, by = c("sample_id", "condition"), all.x = T)
+  u <- base::merge(x = u, y = n, by = c("sample_id", "condition"), all.x = TRUE)
   u$gene_usage_prop <- u$gene_usage_count/u$total_usage_count
   
   # get Y matrix
