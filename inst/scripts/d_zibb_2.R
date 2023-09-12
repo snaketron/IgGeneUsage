@@ -57,7 +57,7 @@ generated quantities {
 m <- rstan::stan_model(model_code = sim_stan)
 
 # generate data based on following fixed parameters
-N_rep <- 10
+N_rep <- 5
 N_gene <- 15
 Y_max <- 10^3
 as <- rnorm(n = N_gene, mean = -2, sd = 1.5)

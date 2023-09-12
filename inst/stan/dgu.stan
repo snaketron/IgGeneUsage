@@ -135,6 +135,8 @@ generated quantities {
   // vector [N_gene] dgu [N_group*(N_group-1)/2];
   matrix [N_gene, N_group*(N_group-1)/2] dgu;
   
+  // probability
+  vector [N_gene] prob_gene [N_group];
   
   int c = 1;
 
@@ -154,6 +156,7 @@ generated quantities {
   }
   for(g in 1:N_group) {
     Yhat_condition[g] = inv_logit(alpha_gene_mu+beta_gene_mu[g]);
+    prob_gene[g] = inv_logit(alpha_gene_mu+beta_gene_mu[g]);
     mu[,g] = to_array_1d(alpha_gene_mu + beta_gene_mu[g]);
   }
   for(g in 1:N_gene) {

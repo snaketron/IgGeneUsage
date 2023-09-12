@@ -31,9 +31,9 @@ DGU <- function(ud,
   
   if(ud$N_group == 1) {
     pars <- get_pars(model = "GU")
-    # model <- stanmodels$gu
-    model <- rstan::stan_model(
-      file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/gu.stan")
+    model <- stanmodels$gu
+    # model <- rstan::stan_model(
+    #   file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/gu.stan")
     glm <- rstan::sampling(object = model,
                            data = ud,
                            chains = mcmc_chains,
@@ -50,9 +50,9 @@ DGU <- function(ud,
   } 
   else {
     pars <- get_pars(model = "DGU")
-    # model <- stanmodels$dgu
-    model <- rstan::stan_model(
-      file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/dgu.stan")
+    model <- stanmodels$dgu
+    # model <- rstan::stan_model(
+    #   file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/dgu.stan")
     glm <- rstan::sampling(object = model,
                            data = ud,
                            chains = mcmc_chains,

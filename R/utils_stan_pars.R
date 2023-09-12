@@ -28,7 +28,8 @@ get_pars <- function(model) {
              "Yhat",
              "Yhat_rep",
              "Yhat_condition",
-             "dgu"))
+             "dgu",
+             "prob_gene"))
   }
   stop("wrong stan pars")
 }

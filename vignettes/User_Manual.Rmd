@@ -1,7 +1,7 @@
 ---
 title: "User Manual: IgGeneUsage"
 author: "SK"
-date: "Oct 20, 2021"
+date: "Sep 12, 2023"
 output:
   BiocStyle::html_document
 vignette: >
@@ -18,18 +18,9 @@ knitr::opts_chunk$set(comment = FALSE,
 ```
 
 
-```{r}
-fs <- list.files(path = "../R/", full.names = T)
-for(f in fs) {
-source(f)
-}
-rm(f, fs)
-load("~/Desktop/work/R/IgGeneUsage/data/d_zibb_1.RData")
-```
-
 
 ```{r}
-# require(IgGeneUsage)
+require(IgGeneUsage)
 require(rstan)
 require(knitr)
 require(ggplot2)
@@ -37,7 +28,6 @@ require(ggforce)
 require(gridExtra)
 require(ggrepel)
 require(reshape2)
-rstan_options(auto_write = TRUE)
 ```
 
 
@@ -123,7 +113,7 @@ Model $M$ legend:
   * $\operatorname{logit^{-1}}$: inverse logistic function
 
 In the output of `r Biocpkg("IgGeneUsage")`, we report the mean effect 
-size ($\gamma$) and its 95% highest density interval (HDI). Genes with 
+size (es or $\gamma$) and its 95% highest density interval (HDI). Genes with 
 $\gamma \neq 0$ (e.g. if 95% HDI of $\gamma$ excludes 0) are most likely 
 to experience differential usage. Additionally, we report the probability of 
 differential gene usage ($\pi$):
@@ -133,8 +123,7 @@ differential gene usage ($\pi$):
 \end{align}
 with $\pi = 1$ for genes with strong differential usage, and $\pi = 0$ for 
 genes with negligible differential gene usage. Both metrics are computed based
-on the posterior distribution of $\gamma$, and are thus related. We find $\pi$ 
-slightly easier to interpret.
+on the posterior distribution of $\gamma$, and are thus related. 
 
 # Case Study A
 `r Biocpkg("IgGeneUsage")` has a couple of built-in Ig gene usage datasets. 
@@ -149,14 +138,14 @@ data("d_zibb_2", package = "IgGeneUsage")
 knitr::kable(head(d_zibb_2))
 ```
 
-We can also visualize `d_zibb` with `r CRANpkg("ggplot")`:
+We can also visualize `d_zibb_2` with `r CRANpkg("ggplot")`:
 
-```{r, fig.width=6, fig.height=3}
+```{r, fig.width=6, fig.height=3.25}
 ggplot(data = d_zibb_2)+
   geom_point(aes(x = gene_name, y = gene_usage_count, col = condition),
              position = position_dodge(width = .7), shape = 21)+
   theme_bw(base_size = 11)+
-  ylab(label = "Gene usage")+
+  ylab(label = "Gene usage [count]")+
   xlab(label = '')+
   theme(legend.position = "top")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
@@ -168,9 +157,9 @@ As main input `r Biocpkg("IgGeneUsage")` uses a data.frame formatted as
 `d_zibb_2`. Other input parameters allow you to configure specific settings 
 of the `r CRANpkg("rstan")` sampler.
 
-In this example we analyze `d_zibb_2` with 3 MCMC chains, 1500 iterations 
+In this example we analyze `d_zibb_2` with 2 MCMC chains, 1500 iterations 
 each including 500 warm-ups using a single CPU core (Hint: for parallel 
-chain execution set parameter `mcmc_cores` = 3). We report for each model 
+chain execution set parameter `mcmc_cores` = 2). We report for each model 
 parameter its mean and 95% highest density interval (HDIs).
 
 **Important remark:** you should run DGU analyses using default 
@@ -181,10 +170,10 @@ issue with a reproducible script at the Bioconductor support site or on
 Github[^3].
 
 ```{r}
-M <- DGU(ud = d_zibb_1, # input data
+M <- DGU(ud = d_zibb_2, # input data
          mcmc_warmup = 500, # how many MCMC warm-ups per chain (default: 500)
          mcmc_steps = 1500, # how many MCMC steps per chain (default: 1,500)
-         mcmc_chains = 3, # how many MCMC chain to run (default: 4)
+         mcmc_chains = 2, # how many MCMC chain to run (default: 4)
          mcmc_cores = 1, # how many PC cores to use? (e.g. parallel chains)
          hdi_lvl = 0.95, # highest density interval level (de fault: 0.95)
          adapt_delta = 0.8, # MCMC target acceptance rate (default: 0.95)
@@ -198,7 +187,7 @@ The following objects are provided as part of the output of DGU:
      DGU summary 
   * `gu_summary`: quantitative summary of the gene usage (GU) of each gene in 
      the different conditions
-  * `glm`: rstan ('stanfit') object of the fitted model $rightarrow$ used for
+  * `glm`: rstan ('stanfit') object of the fitted model $\rightarrow$ used for
      model checks (see section 'Model checking')
   * `ppc`: posterior predictive checks data (see section 'Model checking')
 
@@ -227,12 +216,14 @@ summary(M)
 ### MCMC sampling
 
   * divergences, tree-depth, energy
+  * none found
   
 ```{r}
 rstan::check_hmc_diagnostics(M$glm)
 ```
 
-  * Rhat and Neff
+  * rhat < 1.03 and n_eff > 0
+  
 
 ```{r, fig.height = 3, fig.width = 6}
 gridExtra::grid.arrange(rstan::stan_rhat(object = M$glm),
@@ -240,7 +231,7 @@ gridExtra::grid.arrange(rstan::stan_rhat(object = M$glm),
                         nrow = 1)
 ```
 
-
+## PPC: posterior predictive checks
 ### PPCs: repertoire-specific
 The model used by `r Biocpkg("IgGeneUsage")` is generative, i.e. with the 
 model we can generate usage of each Ig gene in a given repertoire (y-axis). 
@@ -248,7 +239,7 @@ Error bars show 95% HDI of mean posterior prediction. The predictions can be
 compared with the observed data (x-axis). For points near the diagonal 
 $\rightarrow$ accurate prediction.
 
-```{r, fig.height = 6.5, fig.width = 6.5}
+```{r, fig.height = 3.25, fig.width = 7}
 ggplot(data = M$ppc$ppc_rep)+
   facet_wrap(facets = ~sample_id, ncol = 5)+
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
@@ -258,10 +249,8 @@ ggplot(data = M$ppc$ppc_rep)+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   xlab(label = "Observed usage [counts]")+
-  ylab(label = "Predicted usage [counts]")
+  ylab(label = "PPC usage [counts]")
 ```
-
-
 
 
 ### PPCs: overall
@@ -280,7 +269,7 @@ ggplot(data = M$ppc$ppc_condition)+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   xlab(label = "Observed usage [%]")+
-  ylab(label = "Predicted usage [%]")
+  ylab(label = "PPC usage [%]")
 ```
 
 
@@ -288,10 +277,9 @@ ggplot(data = M$ppc$ppc_condition)+
 Each row of `glm_summary` summarizes the degree of DGU observed for specific 
 Igs. Two metrics are reported: 
 
-  * `es` (also referred to as `\gamma`): effect size encoded in(parameter 
-    $\gamma$ from model $M$) on DGU, where `contrast` gives the direction of 
-    the effect (e.g. tumor - healthy or healthy - tumor)
-  * `pmax` (also referred to as `\pi`): probability of DGU (parameter $\pi$ 
+  * `es` (also referred to as $\gamma$): effect size on DGU, where `contrast` 
+     gives the direction of the effect (e.g. tumor - healthy or healthy - tumor)
+  * `pmax` (also referred to as $\pi$): probability of DGU (parameter $\pi$ 
     from model $M$)
   
 For `es` we also have the mean, median standard error (se), standard 
@@ -301,7 +289,7 @@ deviation (sd), L (low bound of 95% HDI), H (high bound of 95% HDI)
 kable(x = head(M$dgu_summary), row.names = FALSE, digits = 3)
 ```
 
-
+### DGU: differential gene usage
 We know that the values of `\gamma` and `\pi` are related to each other. 
 Lets visualize them for all genes (shown as a point). Names are shown for 
 genes associated with $\pi \geq 0.9$. Dashed horizontal line represents 
@@ -311,7 +299,7 @@ Notice that the gene with $\pi \approx 1$ also has an effect size whose
 95% HDI (error bar) does not overlap the null-effect. The genes with high 
 degree of differential usage are easy to detect with this figure.
 
-```{r, fig.height = 4, fig.width = 6}
+```{r, fig.height = 4, fig.width = 5}
 # format data
 stats <- M$dgu_summary
 stats <- stats[order(abs(stats$es_mean), decreasing = FALSE), ]
@@ -322,13 +310,15 @@ ggplot(data = stats)+
   geom_hline(yintercept = 0, linetype = "dashed", col = "gray")+
   geom_errorbar(aes(x = pmax, y = es_mean, ymin = es_L, ymax = es_H), 
                 col = "darkgray")+
-  geom_point(aes(x = pmax, y = es_mean), col = "darkgray")+
+  geom_point(aes(x = pmax, y = es_mean, col = contrast))+
   geom_text_repel(data = stats[stats$pmax >= 0.9, ],
                   aes(x = pmax, y = es_mean, label = gene_fac),
                   min.segment.length = 0, size = 2.75)+
   theme_bw(base_size = 11)+
+  theme(legend.position = "top")+
   xlab(label = expression(pi))+
-  xlim(c(0, 1))
+  xlim(c(0, 1))+
+  ylab(expression(gamma))
 ```
 
 
@@ -360,14 +350,13 @@ ggplot()+
                 position = position_dodge(width = 0.35), width = 0.15)+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
-  ylab(label = "Usage [%]")+
+  ylab(label = "PPC usage [%]")+
   xlab(label = '')
 ```
 
 
 ### Promising hits [count]
-Lets also visualize the gene usage frequencies. Point size represents 
-total usage in repertoire.
+Lets also visualize the predicted gene usage counts in each repertoire.
 
 ```{r, fig.height = 3, fig.width = 5}
 ggplot()+
@@ -379,23 +368,54 @@ ggplot()+
                                              dodge.width = 0.5))+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
-  ylab(label = "Usage count")+
+  ylab(label = "PPC usage [count]")+
   xlab(label = '')
 ```
 
+## GU: gene usage summary
+`r Biocpkg("IgGeneUsage")` also reports the inferred gene usage (GU) 
+probability of individual genes in each condition. For a given gene we 
+report its mean GU (`prob_mean`) and the 95% (for instance) HDI (`prob_L`
+and `prob_H`).
+
+```{r, fig.width=5, fig.height=4}
+ggplot(data = M$gu_summary)+
+  geom_hline(yintercept = 0, linetype = "dashed", col = "gray")+
+  geom_errorbar(aes(x = gene_name, y = prob_mean, ymin = prob_L,
+                    ymax = prob_H, col = condition),
+                width = 0.1, position = position_dodge(width = 0.4))+
+  geom_point(aes(x = gene_name, y = prob_mean, col = condition), size = 1,
+             position = position_dodge(width = 0.4))+
+  theme_bw(base_size = 11)+
+  theme(legend.position = "top")+
+  ylab(label = "GU [probability]")
+```
 
 # Leave-one-out (LOO) analysis
+To assert the robustness of the probability of DGU ($\pi$) and the effect 
+size ($\gamma$), `r Biocpkg("IgGeneUsage")` has a built-in procedure for 
+fully Bayesian leave-one-out (LOO) analysis. 
+
+During each step of LOO, we discard the data of one of the R repertoires, 
+and use the remaining data to analyze for DGU. In each step we record 
+$\pi$ and $\gamma$ for all genes, including the mean and 95% HDI of 
+$\gamma$. We assert quantitatively the robustness of $\pi$ and $\gamma$ 
+by evaluating their variability for a specific gene. 
+
+This analysis can be computationally demanding.
 
 ```{r}
-L <- LOO(ud = d_zibb_1, # input data
+L <- LOO(ud = d_zibb_2, # input data
          mcmc_warmup = 500, # how many MCMC warm-ups per chain (default: 500)
-         mcmc_steps = 1500, # how many MCMC steps per chain (default: 1,500)
-         mcmc_chains = 2, # how many MCMC chain to run (default: 4)
-         mcmc_cores = 2, # how many PC cores to use? (e.g. parallel chains)
+         mcmc_steps = 1000, # how many MCMC steps per chain (default: 1,500)
+         mcmc_chains = 1, # how many MCMC chain to run (default: 4)
+         mcmc_cores = 1, # how many PC cores to use? (e.g. parallel chains)
          hdi_lvl = 0.95, # highest density interval level (de fault: 0.95)
          adapt_delta = 0.8, # MCMC target acceptance rate (default: 0.95)
          max_treedepth = 10) # tree depth evaluated at each step (default: 12)
 ```
+
+Next, we collected the results (GU and DGU) from each LOO iteration:
 
 ```{r}
 L_gu <- do.call(rbind, lapply(X = L, FUN = function(x){return(x$gu_summary)}))
@@ -403,17 +423,53 @@ L_dgu <- do.call(rbind, lapply(X = L, FUN = function(x){return(x$dgu_summary)}))
 ```
 
 
-```{r}
-ggplot(data = L_gu)+
+... and plot them:
+
+## LOO-DGU: variability of effect size $\gamma$
+
+```{r, fig.width=6.5, fig.height=4}
+ggplot(data = L_dgu)+
   geom_hline(yintercept = 0, linetype = "dashed", col = "gray")+
-  geom_errorbar(aes(x = gene_name, y = prob_mean, ymin = prob_L, 
-                    ymax = prob_H, group = loo_id), width = 0.1,
-                col = "darkgray", position = position_dodge(width = 0.2))+
-  geom_point(aes(x = gene_name, y = prob_mean, group = loo_id), 
-             col = "darkgray", position = position_dodge(width = 0.2))+
-  theme_bw(base_size = 11)
+  geom_errorbar(aes(x = gene_name, y = es_mean, ymin = es_L,
+                    ymax = es_H, col = contrast, group = loo_id),
+                width = 0.1, position = position_dodge(width = 0.5))+
+  geom_point(aes(x = gene_name, y = es_mean, col = contrast,
+                 group = loo_id), size = 1,
+             position = position_dodge(width = 0.5))+
+  theme_bw(base_size = 11)+
+  theme(legend.position = "top")+
+  ylab(expression(gamma))
 ```
 
+## LOO-DGU: variability of $\pi$
+
+```{r, fig.width=6.5, fig.height=4}
+ggplot(data = L_dgu)+
+  geom_point(aes(x = gene_name, y = pmax, col = contrast,
+                 group = loo_id), size = 1,
+             position = position_dodge(width = 0.5))+
+  theme_bw(base_size = 11)+
+  theme(legend.position = "top")+
+  ylab(expression(pi))
+```
+
+
+## LOO-GU: variability of the gene usage
+
+```{r, fig.width=6.5, fig.height=4}
+ggplot(data = L_gu)+
+  geom_hline(yintercept = 0, linetype = "dashed", col = "gray")+
+  geom_errorbar(aes(x = gene_name, y = prob_mean, ymin = prob_L,
+                    ymax = prob_H, col = condition, 
+                    group = interaction(loo_id, condition)),
+                width = 0.1, position = position_dodge(width = 0.5))+
+  geom_point(aes(x = gene_name, y = prob_mean, col = condition,
+                 group = interaction(loo_id, condition)), size = 1,
+             position = position_dodge(width = 0.5))+
+  theme_bw(base_size = 11)+
+  theme(legend.position = "top")+
+  ylab("GU [probability]")
+```
 
 # Session
 
