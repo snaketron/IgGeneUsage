@@ -1,6 +1,6 @@
 Changes in version 1.15
-+ model for paired design analysis
 + model for gene usage (GU) analysis
++ model for multi-condition analysis, ANOVA like
 
 Changes in version 1.12-1.13.2
 + variable naming and function naming scheme changed
