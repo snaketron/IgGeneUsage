@@ -48,7 +48,7 @@ parameters {
   real<lower = 0> tau;
   
   // zero-inflation probability
-  vector <lower = 0, upper = 1> [N_gene] z;
+  vector <lower = 0, upper = 1> [N_gene] kappa;
 }
 
 transformed parameters {
@@ -73,7 +73,8 @@ model {
   target += cauchy_lpdf(alpha_pop_sigma | 0.0, 1.0);
   
   // zero-inflation
-  target += beta_lpdf(z | 0.1, 1.0);
+  // target += beta_lpdf(kappa | 0.1, 1.0);
+  target += beta_lpdf(kappa | 0.2, 1.0);
   
   //pareto 2 for overdispersion
   target += gamma_lpdf(tau | 3.0, 0.1);
@@ -83,7 +84,7 @@ model {
   // likelihood
   for(i in 1:N_sample) {
     for(j in 1:N_gene) {
-      target += zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], z[j]);
+      target += zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], kappa[j]);
     }
   }
 }
@@ -107,8 +108,8 @@ generated quantities {
   //TODO: speedup, run in C++ not big factor on performance
   for(j in 1:N_gene) {
     for(i in 1:N_sample) {
-      log_lik[i][j] = zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], z[j]);
-      Yhat[j, i] = zibb_rng(Y[j, i], N[i], a[i][j], b[i][j], z[j]);
+      log_lik[i][j] = zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], kappa[j]);
+      Yhat[j, i] = zibb_rng(Y[j, i], N[i], a[i][j], b[i][j], kappa[j]);
 
       if(Nr[i] == 0.0) {
         Yhat_rep[j, i] = 0;
