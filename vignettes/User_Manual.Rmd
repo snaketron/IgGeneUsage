@@ -380,7 +380,6 @@ and `prob_H`).
 
 ```{r, fig.width=5, fig.height=4}
 ggplot(data = M$gu_summary)+
-  geom_hline(yintercept = 0, linetype = "dashed", col = "gray")+
   geom_errorbar(aes(x = gene_name, y = prob_mean, ymin = prob_L,
                     ymax = prob_H, col = condition),
                 width = 0.1, position = position_dodge(width = 0.4))+
