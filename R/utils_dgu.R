@@ -68,3 +68,50 @@ get_dgu_summary <- function(glm, hdi_lvl, ud) {
   return(dgu_summary)
 }
 
+
+get_dgu_prob_summary <- function(glm, hdi_lvl, ud) {
+  contrast_map <- get_contrast_map(ud)
+  
+  dgu_summary <- rstan::summary(object = glm, 
+                                digits = 4,
+                                pars = "dgu_prob",
+                                prob = c(0.5, (1-hdi_lvl)/2,
+                                         1-(1-hdi_lvl)/2))
+  
+  dgu_summary <- dgu_summary$summary
+  dgu_summary <- base::data.frame(dgu_summary)
+  base::colnames(dgu_summary) <- c("es_prob_mean", "es_prob_mean_se",
+                                   "es_prob_sd", "es_prob_median",
+                                   "es_prob_L", "es_prob_H",
+                                   "Neff", "Rhat")
+  dgu_summary[, c("Rhat", "Neff")] <- NULL
+  
+  par <- base::rownames(dgu_summary)
+  par <- base::gsub(pattern = "dgu_prob|\\[|\\]", replacement = '', x = par)
+  par <- base::do.call(rbind, base::strsplit(x = par, split = ','))
+  
+  
+  dgu_summary$gene_id <- base::as.numeric(par[,1])
+  dgu_summary$c_id <- base::as.numeric(par[,2])
+  dgu_summary <- base::merge(x = dgu_summary, 
+                             y = contrast_map, 
+                             by = "c_id", 
+                             all.x = TRUE)
+  
+  dgu_summary$gene_name <- ud$gene_names[dgu_summary$gene_id]
+  dgu_summary$pmax <- NA
+  
+  # get pmax
+  glm_ext <- rstan::extract(object = glm, par = "dgu_prob")$dgu_prob
+  for(i in base::seq_len(base::nrow(dgu_summary))) {
+    dgu_summary$pmax[i] <- get_pmax(
+      x = glm_ext[,dgu_summary$gene_id[i], dgu_summary$c_id[i]])
+  }
+  
+  # remove unused vars
+  dgu_summary$gene_id <- NULL
+  dgu_summary$c_id <- NULL
+  base::rownames(dgu_summary) <- NULL
+  return(dgu_summary)
+}
+

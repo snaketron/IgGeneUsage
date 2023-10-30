@@ -11,7 +11,7 @@ get_pars <- function(model) {
              "Yhat",
              "Yhat_rep",
              "Yhat_condition",
-             "prob_gene"))
+             "theta_condition"))
   }
   
   if(model == "DGU") {
@@ -29,7 +29,9 @@ get_pars <- function(model) {
              "Yhat_rep",
              "Yhat_condition",
              "dgu",
-             "prob_gene"))
+             "dgu_prob",
+             "theta_condition",
+             "theta_rep"))
   }
   stop("wrong stan pars")
 }

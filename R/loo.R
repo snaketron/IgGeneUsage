@@ -65,6 +65,9 @@ LOO <- function(ud,
     if(is.data.frame(out$dgu_summary)==TRUE) {
       out$dgu_summary$loo_id <- rs[r]
     }
+    if(is.data.frame(out$dgu_prob_summary)==TRUE) {
+      out$dgu_prob_summary$loo_id <- rs[r]
+    }
     
     # collect results
     loo_out[[rs[r]]] <- out

@@ -45,7 +45,7 @@ parameters {
   
   // overdispersion
   real <lower = 0> phi;
-  real<lower = 0> tau;
+  // real<lower = 0> tau;
   
   // zero-inflation probability
   vector <lower = 0, upper = 1> [N_gene] kappa;
@@ -73,12 +73,12 @@ model {
   target += cauchy_lpdf(alpha_pop_sigma | 0.0, 1.0);
   
   // zero-inflation
-  // target += beta_lpdf(kappa | 0.1, 1.0);
-  target += beta_lpdf(kappa | 0.2, 1.0);
+  target += beta_lpdf(kappa | 0.1, 1.0);
   
   //pareto 2 for overdispersion
-  target += gamma_lpdf(tau | 3.0, 0.1);
-  target += exponential_lpdf(phi | tau);
+  // target += gamma_lpdf(tau | 3.0, 0.1);
+  // target += exponential_lpdf(phi | tau);
+  target += exponential_lpdf(phi | 0.01);
   target += std_normal_lpdf(alpha_gene_z);
   
   // likelihood
@@ -103,7 +103,7 @@ generated quantities {
   vector [N_gene] log_lik [N_sample];
   
   // probability
-  vector [N_gene] prob_gene = inv_logit(alpha_gene_mu);
+  vector [N_gene] theta_condition = inv_logit(alpha_gene_mu);
 
   //TODO: speedup, run in C++ not big factor on performance
   for(j in 1:N_gene) {

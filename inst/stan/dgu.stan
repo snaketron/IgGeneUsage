@@ -53,7 +53,6 @@ parameters {
   
   // overdispersion
   real <lower = 0> phi;
-  real<lower = 0> tau;
   
   // zero-inflation probability
   vector <lower = 0, upper = 1> [N_gene] kappa;
@@ -91,12 +90,10 @@ model {
   target += cauchy_lpdf(beta_gene_sigma | 0.0, 1.0);
   
   // zero-inflation
-  // target += beta_lpdf(kappa | 0.1, 1.0);
-  target += beta_lpdf(kappa | 0.2, 1.0);
+  target += beta_lpdf(kappa | 0.1, 1.0);
   
-  //pareto 2 for overdispersion
-  target += gamma_lpdf(tau | 3.0, 0.1);
-  target += exponential_lpdf(phi | tau);
+  // dispersion
+  target += exponential_lpdf(phi | 0.01);
   
   // dummy
   for(i in 1:N_sample) {
@@ -124,20 +121,21 @@ generated quantities {
   // PPC: proportion usage
   real Yhat_rep [N_gene, N_sample];
 
-  // PPC: proportion usage at a gene level in condition
+  // PPC: relative Ig gene usage at a gene level of conditions
   vector [N_gene] Yhat_condition [N_group];
 
   // LOG-LIK
   vector [N_gene] log_lik [N_sample];
   
   // DGU
-  real mu [N_gene, N_group];
-  real nmu [N_gene, N_group];
-  // vector [N_gene] dgu [N_group*(N_group-1)/2];
   matrix [N_gene, N_group*(N_group-1)/2] dgu;
+  matrix [N_gene, N_group*(N_group-1)/2] dgu_prob; 
+ 
+  // probability GU gene in condition
+  vector [N_gene] theta_condition [N_group];
   
-  // probability
-  vector [N_gene] prob_gene [N_group];
+  // probability GU gene in rep 
+  vector [N_gene] theta_rep [N_sample];
   
   int c = 1;
 
@@ -157,16 +155,19 @@ generated quantities {
   }
   for(g in 1:N_group) {
     Yhat_condition[g] = inv_logit(alpha_gene_mu+beta_gene_mu[g]);
-    prob_gene[g] = inv_logit(alpha_gene_mu+beta_gene_mu[g]);
-    mu[,g] = to_array_1d(alpha_gene_mu + beta_gene_mu[g]);
+    theta_condition[g] = inv_logit(alpha_gene_mu+beta_gene_mu[g]);
   }
-  for(g in 1:N_gene) {
-    nmu[g,] = to_array_1d(to_row_vector(mu[g,])-mean(mu[g,]));
+  
+  
+  for(i in 1:N_sample) {
+    theta_rep[i] = inv_logit(alpha_gene_mu + beta[i]);
   }
+  
   
   for(i in 1:(N_group-1)) {
     for(j in (i+1):N_group) {
-      dgu[,c] = to_vector(nmu[,i])-to_vector(nmu[,j]);
+      dgu[,c] = beta_gene_mu[i]-beta_gene_mu[j];
+      dgu_prob[,c]=to_vector(theta_condition[i])-to_vector(theta_condition[j]);
       c = c + 1;
     }
   }

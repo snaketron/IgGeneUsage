@@ -66,6 +66,7 @@ DGU <- function(ud,
     message("Computing summaries ... \n")
     gu_summary <- get_gu_summary_anova(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
     dgu_summary <- get_dgu_summary(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
+    dgu_prob_summary <- get_dgu_prob_summary(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
   }
   
   # ppc
@@ -76,6 +77,7 @@ DGU <- function(ud,
   
   # result pack
   return (list(dgu_summary = dgu_summary,
+               dgu_prob_summary = dgu_prob_summary,
                gu_summary = gu_summary,
                glm = glm,
                ppc = ppc,
