@@ -17,6 +17,14 @@ functions {
       return (beta_binomial_rng(trials, a, b));
     }
   }
+  
+  real z_rng(real a, real b, real zi) {
+    if (bernoulli_rng(zi) == 1) {
+      return (0);
+    } else {
+      return(inv_logit(a+b));
+    }
+  }
 }
 
 data {
@@ -152,17 +160,17 @@ generated quantities {
         Yhat_rep[j, i] = Yhat[j,i]/Nr[i];
       }
     }
+    
+    // if kappa=0 ->0, else -> inverse_logit(a+b)
+    for(g in 1:N_group) {
+      Yhat_condition[g][j] = z_rng(alpha_gene_mu[j], beta_gene_mu[g][j], kappa[j]);
+      theta_condition[g][j] = z_rng(alpha_gene_mu[j], beta_gene_mu[g][j], kappa[j]);
+    }
+    // if kappa=0 ->0, else -> inverse_logit(a+b)
+    for(s in 1:N_sample) {
+      theta_rep[s][j] = z_rng(alpha_gene_mu[j], beta[s][j], kappa[j]); 
+    }
   }
-  for(g in 1:N_group) {
-    Yhat_condition[g] = inv_logit(alpha_gene_mu+beta_gene_mu[g]);
-    theta_condition[g] = inv_logit(alpha_gene_mu+beta_gene_mu[g]);
-  }
-  
-  
-  for(i in 1:N_sample) {
-    theta_rep[i] = inv_logit(alpha_gene_mu + beta[i]);
-  }
-  
   
   for(i in 1:(N_group-1)) {
     for(j in (i+1):N_group) {

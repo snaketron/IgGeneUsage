@@ -17,6 +17,14 @@ functions {
       return (beta_binomial_rng(trials, a, b));
     }
   }
+  
+  real z_rng(real a, real b, real zi) {
+    if (bernoulli_rng(zi) == 1) {
+      return (0);
+    } else {
+      return(inv_logit(a+b));
+    }
+  }
 }
 
 data {
@@ -103,7 +111,7 @@ generated quantities {
   vector [N_gene] log_lik [N_sample];
   
   // probability
-  vector [N_gene] theta_condition = inv_logit(alpha_gene_mu);
+  vector [N_gene] theta_condition;
 
   //TODO: speedup, run in C++ not big factor on performance
   for(j in 1:N_gene) {
@@ -118,6 +126,9 @@ generated quantities {
         Yhat_rep[j, i] = Yhat[j,i]/Nr[i];
       }
     }
-    Yhat_condition[j] = inv_logit(alpha_gene_mu[j]);
+    
+    // if kappa=0 ->0, else -> inverse_logit(a)
+    Yhat_condition[j] = z_rng(alpha_gene_mu[j], 0, kappa[j]);
+    theta_condition[j] = z_rng(alpha_gene_mu[j], 0, kappa[j]);
   }
 }
