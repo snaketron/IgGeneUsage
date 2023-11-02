@@ -76,7 +76,7 @@ transformed parameters {
 
 model {
   // priors
-  target += normal_lpdf(alpha_pop_mu | 0.0, 5.0);
+  target += normal_lpdf(alpha_pop_mu | 0.0, 10.0);
   
   target += cauchy_lpdf(alpha_pop_sigma | 0.0, 1.0);
   
