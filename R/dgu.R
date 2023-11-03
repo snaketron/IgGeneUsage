@@ -32,8 +32,6 @@ DGU <- function(ud,
   if(ud$N_group == 1) {
     pars <- get_pars(model = "GU")
     model <- stanmodels$gu
-    # model <- rstan::stan_model(
-    #   file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/gu.stan")
     glm <- rstan::sampling(object = model,
                            data = ud,
                            chains = mcmc_chains,
@@ -47,12 +45,11 @@ DGU <- function(ud,
     message("Computing summaries ... \n")
     gu_summary <- get_gu_summary_univar(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
     dgu_summary <- NA
+    dgu_prob_summary <- NA
   } 
   else {
     pars <- get_pars(model = "DGU")
     model <- stanmodels$dgu
-    # model <- rstan::stan_model(
-    #   file = "/home/sktron/Desktop/work/R/IgGeneUsage/inst/stan/dgu.stan")
     glm <- rstan::sampling(object = model,
                            data = ud,
                            chains = mcmc_chains,
