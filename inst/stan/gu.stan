@@ -42,14 +42,15 @@ transformed data {
 }
 
 parameters {
+  vector [N_gene] alpha_gene_mu;
   // pop intercept mean
-  real alpha_pop_mu;
+  // real alpha_pop_mu;
   
   // scales
-  real <lower = 0> alpha_pop_sigma;
+  // real <lower = 0> alpha_pop_sigma;
   
   // aux variables
-  vector [N_gene] alpha_gene_z;
+  // vector [N_gene] alpha_gene_z;
   
   // overdispersion
   real <lower = 0> phi;
@@ -60,12 +61,11 @@ parameters {
 }
 
 transformed parameters {
-  vector [N_gene] alpha_gene_mu;
   vector <lower = 0> [N_gene] a [N_sample];
   vector <lower = 0> [N_gene] b [N_sample];
   
   // non-centered params (at repertoire level)
-  alpha_gene_mu = alpha_pop_mu + alpha_pop_sigma * alpha_gene_z;
+  // alpha_gene_mu = alpha_pop_mu + alpha_pop_sigma * alpha_gene_z;
   // non-centered params (at gene level)
   for(i in 1:N_sample) {
     a[i] = inv_logit(alpha_gene_mu) * phi;
@@ -76,9 +76,9 @@ transformed parameters {
 
 model {
   // priors
-  target += normal_lpdf(alpha_pop_mu | 0.0, 10.0);
+  target += normal_lpdf(alpha_gene_mu | 0.0, 10.0);
   
-  target += cauchy_lpdf(alpha_pop_sigma | 0.0, 1.0);
+  // target += cauchy_lpdf(alpha_pop_sigma | 0.0, 1.0);
   
   // zero-inflation
   target += beta_lpdf(kappa | 0.1, 1.0);
@@ -87,7 +87,7 @@ model {
   // target += gamma_lpdf(tau | 3.0, 0.1);
   // target += exponential_lpdf(phi | tau);
   target += exponential_lpdf(phi | 0.01);
-  target += std_normal_lpdf(alpha_gene_z);
+  // target += std_normal_lpdf(alpha_gene_z);
   
   // likelihood
   for(i in 1:N_sample) {

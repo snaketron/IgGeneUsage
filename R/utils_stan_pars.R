@@ -2,8 +2,8 @@
 # model = DGU or GU_univar or GU_anova
 get_pars <- function(model) {
   if(model == "GU") {
-    return(c("alpha_pop_mu", 
-             "alpha_pop_sigma",
+    return(c(#"alpha_pop_mu", 
+             #"alpha_pop_sigma",
              "phi",
              "kappa",
              "alpha_gene_mu",
@@ -16,8 +16,8 @@ get_pars <- function(model) {
   
   if(model == "DGU") {
     return(c("beta",
-             "alpha_pop_mu",
-             "alpha_pop_sigma", 
+             #"alpha_pop_mu",
+             #"alpha_pop_sigma", 
              "beta_pop_sigma", 
              "beta_gene_sigma",
              "phi",
