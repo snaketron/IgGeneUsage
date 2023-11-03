@@ -132,7 +132,7 @@ generated quantities {
     }
     
     // if kappa=0 ->0, else -> inverse_logit(a)
-    Yhat_condition[j] = z_rng(alpha_gene_mu[j], 0, kappa[j]);
-    theta_condition[j] = z_rng(alpha_gene_mu[j], 0, kappa[j]);
+    Yhat_condition[j] = z_rng(alpha_gene_mu[j], beta_gene_mu[j], kappa[j]);
+    theta_condition[j] = z_rng(alpha_gene_mu[j], beta_gene_mu[j], kappa[j]);
   }
 }
