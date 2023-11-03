@@ -42,32 +42,28 @@ transformed data {
 }
 
 parameters {
-  vector [N_gene] alpha_gene_mu;
-  
   // overdispersion
   real <lower = 0> phi;
   
   // zero-inflation probability
   vector <lower = 0, upper = 1> [N_gene] kappa;
   
-  real <lower = 0> beta_gene_sigma;
-  real <lower = 0> beta_pop_sigma;
-  vector [N_gene] beta_z [N_sample];
-  vector [N_gene] beta_gene_z;
+  real <lower = 0> alpha_gene_sigma;
+  
+  vector [N_gene] alpha_z [N_sample];
+  
+  vector [N_gene] alpha_gene_mu;
 }
 
 transformed parameters {
-  vector [N_gene] beta [N_sample];
-  vector [N_gene] beta_gene_mu;
+  vector [N_gene] alpha [N_sample];
   vector <lower = 0> [N_gene] a [N_sample];
   vector <lower = 0> [N_gene] b [N_sample];
   
-  // non-centered params (at repertoire level)
-  beta_gene_mu = 0 + beta_pop_sigma * beta_gene_z;
   for(i in 1:N_sample) {
     // non-centered params (at gene level)
-    beta[i] = beta_gene_mu+beta_gene_sigma*beta_z[i];
-    a[i] = inv_logit(alpha_gene_mu + beta[i]) * phi;
+    alpha[i] = alpha_gene_mu + alpha_gene_sigma * alpha_z[i];
+    a[i] = inv_logit(alpha[i]) * phi;
     b[i] = phi - a[i];
   }
 }
@@ -75,8 +71,8 @@ transformed parameters {
 model {
   // priors
   target += normal_lpdf(alpha_gene_mu | 0.0, 10.0);
-  target += cauchy_lpdf(beta_pop_sigma | 0.0, 1.0);
-  target += cauchy_lpdf(beta_gene_sigma | 0.0, 1.0);
+  
+  target += cauchy_lpdf(alpha_gene_sigma | 0.0, 1.0);
   
   // zero-inflation
   target += beta_lpdf(kappa | 0.1, 1.0);
@@ -85,10 +81,9 @@ model {
   
   // dummy
   for(i in 1:N_sample) {
-    target += std_normal_lpdf(beta_z[i]);
+    target += std_normal_lpdf(alpha_z[i]);
   }
-  target += std_normal_lpdf(beta_gene_z);
-  
+
   // likelihood
   for(i in 1:N_sample) {
     for(j in 1:N_gene) {
@@ -132,7 +127,7 @@ generated quantities {
     }
     
     // if kappa=0 ->0, else -> inverse_logit(a)
-    Yhat_condition[j] = z_rng(alpha_gene_mu[j], beta_gene_mu[j], kappa[j]);
-    theta_condition[j] = z_rng(alpha_gene_mu[j], beta_gene_mu[j], kappa[j]);
+    Yhat_condition[j] = z_rng(alpha_gene_mu[j], 0, kappa[j]);
+    theta_condition[j] = z_rng(alpha_gene_mu[j], 0, kappa[j]);
   }
 }
