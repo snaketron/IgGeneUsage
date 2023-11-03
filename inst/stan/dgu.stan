@@ -45,18 +45,12 @@ transformed data {
 
 
 parameters {
-  // pop intercept mean
-  // real alpha_pop_mu;
-  
   // scales
-  // real <lower = 0> alpha_pop_sigma;
   real <lower = 0> beta_gene_sigma [N_group];
   real <lower = 0> beta_pop_sigma [N_group];
   
   // aux variables
-  // vector [N_gene] alpha_z [N_sample];
   vector [N_gene] beta_z [N_sample];
-  // vector [N_gene] alpha_gene_z;
   vector [N_gene] beta_gene_z [N_group];
   
   // overdispersion
@@ -77,7 +71,6 @@ transformed parameters {
   vector <lower = 0> [N_gene] b [N_sample];
   
   // non-centered params (at repertoire level)
-  // alpha_gene_mu = alpha_pop_mu + alpha_pop_sigma * alpha_gene_z;
   for(j in 1:N_group) {
     beta_gene_mu[j] = 0 + beta_pop_sigma[j] * beta_gene_z[j];
   }
@@ -94,8 +87,6 @@ transformed parameters {
 model {
   // priors
   target += normal_lpdf(alpha_gene_mu | 0.0, 10.0);
-  // target += normal_lpdf(alpha_pop_mu | 0.0, 10.0);
-  // target += cauchy_lpdf(alpha_pop_sigma | 0.0, 1.0);
   target += cauchy_lpdf(beta_pop_sigma | 0.0, 1.0);
   target += cauchy_lpdf(beta_gene_sigma | 0.0, 1.0);
   
@@ -107,10 +98,8 @@ model {
   
   // dummy
   for(i in 1:N_sample) {
-    // target += std_normal_lpdf(alpha_z[i]);
     target += std_normal_lpdf(beta_z[i]);
   }
-  // target += std_normal_lpdf(alpha_gene_z);
   for(j in 1:N_group) {
     target += std_normal_lpdf(beta_gene_z[j]);
   }
@@ -161,16 +150,13 @@ generated quantities {
       else {
         Yhat_rep[j, i] = Yhat[j,i]/Nr[i];
       }
+      theta_rep[i][j] = Yhat_rep[j, i];
     }
     
     // if kappa=0 ->0, else -> inverse_logit(a+b)
     for(g in 1:N_group) {
       Yhat_condition[g][j] = z_rng(alpha_gene_mu[j], beta_gene_mu[g][j], kappa[j]);
       theta_condition[g][j] = z_rng(alpha_gene_mu[j], beta_gene_mu[g][j], kappa[j]);
-    }
-    // if kappa=0 ->0, else -> inverse_logit(a+b)
-    for(s in 1:N_sample) {
-      theta_rep[s][j] = z_rng(alpha_gene_mu[j], beta[s][j], kappa[j]); 
     }
   }
   

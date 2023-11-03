@@ -4,6 +4,7 @@ get_pars <- function(model) {
   if(model == "GU") {
     return(c(#"alpha_pop_mu", 
              #"alpha_pop_sigma",
+             "a", "b",
              "phi",
              "kappa",
              "alpha_gene_mu",
