@@ -59,6 +59,7 @@ parameters {
   // zero-inflation probability
   vector <lower = 0, upper = 1> [N_gene] kappa;
   
+  // intercepts
   vector [N_gene] alpha_gene_mu;
 }
 
@@ -86,7 +87,11 @@ transformed parameters {
 
 model {
   // priors
-  target += normal_lpdf(alpha_gene_mu | 0.0, 10.0);
+  
+  // intercept
+  target += normal_lpdf(alpha_gene_mu | -5.0, 5.0);
+  
+  // scales
   target += cauchy_lpdf(beta_pop_sigma | 0.0, 1.0);
   target += cauchy_lpdf(beta_gene_sigma | 0.0, 1.0);
   
@@ -96,7 +101,7 @@ model {
   // dispersion
   target += exponential_lpdf(phi | 0.01);
   
-  // dummy
+  // aux var
   for(i in 1:N_sample) {
     target += std_normal_lpdf(beta_z[i]);
   }
