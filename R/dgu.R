@@ -30,7 +30,6 @@ DGU <- function(ud,
                        max_treedepth = max_treedepth)
   
   if(ud$N_group == 1) {
-    pars <- get_pars(model = "GU")
     model <- stanmodels$gu
     glm <- rstan::sampling(object = model,
                            data = ud,
@@ -39,8 +38,7 @@ DGU <- function(ud,
                            iter = mcmc_steps,
                            warmup = mcmc_warmup,
                            algorithm = "NUTS",
-                           control = control_list,
-                           pars = pars)
+                           control = control_list)
     
     message("Computing summaries ... \n")
     gu_summary <- get_gu_summary_univar(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
@@ -57,8 +55,7 @@ DGU <- function(ud,
                            iter = mcmc_steps,
                            warmup = mcmc_warmup,
                            algorithm = "NUTS",
-                           control = control_list,
-                           pars = pars)
+                           control = control_list)
     
     message("Computing summaries ... \n")
     gu_summary <- get_gu_summary_anova(glm = glm, hdi_lvl = hdi_lvl, ud = ud)

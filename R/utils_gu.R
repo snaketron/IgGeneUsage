@@ -3,7 +3,7 @@ get_gu_summary_anova <- function(glm, hdi_lvl, ud) {
   
   gu_summary <- rstan::summary(object = glm, 
                                digits = 4,
-                               pars = "theta_condition",
+                               pars = "Yhat_condition_prop",
                                prob = c(0.5, (1-hdi_lvl)/2,
                                         1-(1-hdi_lvl)/2))
   
@@ -16,7 +16,9 @@ get_gu_summary_anova <- function(glm, hdi_lvl, ud) {
   gu_summary[, c("Rhat", "Neff")] <- NULL
   
   par <- rownames(gu_summary)
-  par <- gsub(pattern = "theta_condition|\\[|\\]", replacement = '', x = par)
+  
+  par <- gsub(pattern = "Yhat_condition_prop|\\[|\\]", 
+              replacement = '', x = par)
   par <- do.call(rbind, strsplit(x = par, split = ','))
   
   gu_summary$gene_id <- as.numeric(par[,2])
@@ -40,7 +42,7 @@ get_gu_summary_univar <- function(glm, hdi_lvl, ud) {
   
   gu_summary <- rstan::summary(object = glm, 
                                digits = 4,
-                               pars = "theta_condition",
+                               pars = "Yhat_condition_prop",
                                prob = c(0.5, (1-hdi_lvl)/2,
                                         1-(1-hdi_lvl)/2))
   
@@ -53,7 +55,8 @@ get_gu_summary_univar <- function(glm, hdi_lvl, ud) {
   gu_summary[, c("Rhat", "Neff")] <- NULL
   
   par <- rownames(gu_summary)
-  par <- gsub(pattern = "theta_condition|\\[|\\]", replacement = '', x = par)
+  par <- gsub(pattern = "Yhat_condition_prop|\\[|\\]", 
+              replacement = '', x = par)
   par <- do.call(rbind, strsplit(x = par, split = ','))
   
   gu_summary$gene_id <- as.numeric(par)

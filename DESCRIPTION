@@ -1,7 +1,7 @@
 Package: IgGeneUsage
 Type: Package
 Title: Differential gene usage in immune repertoires
-Version: 1.17.9
+Version: 1.17.10
 Authors@R: 
     person(given = "Simo",  
            family = "Kitanovski",

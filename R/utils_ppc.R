@@ -5,7 +5,7 @@ get_ppc_rep <- function(glm,
                         ud, 
                         hdi_lvl) {
   
-  pars <- c("Yhat", "Yhat_rep")
+  pars <- c("Yhat_rep", "Yhat_rep_prop")
   
   # summaries
   yhat <- summary(object = glm, pars = pars,
@@ -72,7 +72,7 @@ get_ppc_condition <- function(glm,
   
   # summaries
   yhat <- summary(object = glm, 
-                  pars = c("Yhat_condition"),
+                  pars = c("Yhat_condition_prop"),
                   prob = c(0.5, (1-hdi_lvl)/2, 1-(1-hdi_lvl)/2))
   yhat <- yhat$summary
   yhat <- base::data.frame(yhat)

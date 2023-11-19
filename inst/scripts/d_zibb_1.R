@@ -1,4 +1,3 @@
-set.seed(seed = 12345)
 require(rstan)
 
 # Stan generative model
@@ -34,7 +33,11 @@ generated quantities {
       a_sim[g,s] = normal_rng(as[g], sigma_a);
       a = inv_logit(a_sim[g,s]) * phi;
       b = phi - a;
-      ysim[g,s] = zibb_rng(N, a, b, zs[g]);
+      if(bernoulli_rng(0.05) == 1) {
+        ysim[g,s] = zibb_rng(N, a, b, 1);
+      } else {
+      ysim[g,s] = zibb_rng(N, a, b, 0);
+      }
     }
   }
 }
@@ -44,26 +47,28 @@ generated quantities {
 m <- rstan::stan_model(model_code = sim_stan)
 
 # generate data based on following fixed parameters
-N_rep <- 5
-N_gene <- 15
+set.seed(123456)
+N_rep <- 10
+N_gene <- 30
 Y_max <- 10^3
-as <- rnorm(n = N_gene, mean = -2, sd = 2)
-zs <- c(runif(n = N_gene-3, min = 0, max = 0),
-        runif(n = 3, min = 0, max = 0.05))
+as <- rnorm(n = N_gene, mean = -5, sd = 2)
+zs <- runif(n = N_gene, min = 0, max = 0)
 d <- list(N_rep = N_rep, 
           N_gene = N_gene, 
           N = Y_max,
           as = as,
           zs = zs,
-          sigma_a = 0.1,
-          phi = 50)
+          sigma_a = 1,
+          phi = 100)
+# zs[order(as, decreasing = T)[1:5]] <- runif(n = 5, min = 0, max = 0.3)
 
 # simulate
 sim <- rstan::sampling(object = m,
                        data = d, 
                        iter = 1, 
                        chains = 1, 
-                       algorithm="Fixed_param")
+                       algorithm="Fixed_param",
+                       seed = 123456)
 
 # extract simulation and convert into data frame which can 
 # be used as input of IgGeneUsage

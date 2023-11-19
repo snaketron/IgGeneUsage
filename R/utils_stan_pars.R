@@ -4,39 +4,29 @@ get_pars <- function(model) {
   if(model == "GU") {
     return(c("phi",
              "kappa",
-             "alpha",
              "alpha_gene_mu",
              "alpha_gene_sigma",
-             # "beta_gene_mu",
-             #"beta_pop_sigma", 
-             # "beta_gene_sigma",
-             "log_lik",
-             "Yhat",
+             "theta",
              "Yhat_rep",
-             "Yhat_condition",
-             "theta_condition",
-             "theta_rep"))
-             #"beta_alpha",
-             #"beta_nu",
-             #"beta_tau"))
+             "Yhat_rep_prop",
+             "Yhat_condition_prop",
+             "log_lik"))
   }
   
   if(model == "DGU") {
-    return(c("beta",
-             "beta_pop_sigma", 
-             "beta_gene_sigma",
-             "phi",
+    return(c("phi",
              "kappa",
-             "alpha_gene_mu", 
+             "alpha_gene_mu",
              "beta_gene_mu",
-             "log_lik",
-             "Yhat",
+             "beta_gene_sigma",
+             "beta_pop_sigma",
+             "theta",
              "Yhat_rep",
-             "Yhat_condition",
+             "Yhat_rep_prop",
+             "Yhat_condition_prop",
+             "log_lik",
              "dgu",
-             "dgu_prob",
-             "theta_condition",
-             "theta_rep"))
+             "dgu_prob"))
   }
   stop("wrong stan pars")
 }

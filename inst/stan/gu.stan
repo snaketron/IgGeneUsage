@@ -1,25 +1,25 @@
 functions {
-  real zibb_lpmf(int y, int trials, real a, real b, real zi) {
+  real zibb_lpmf(int y, int n, real theta, real phi, real kappa) {
     if (y == 0) {
-      return log_sum_exp(bernoulli_lpmf(1 | zi),
-      bernoulli_lpmf(0 | zi) +
-      beta_binomial_lpmf(0 | trials, a, b));
+      return log_sum_exp(bernoulli_lpmf(1 | kappa),
+                         bernoulli_lpmf(0 | kappa) +
+                         beta_binomial_lpmf(0 | n, theta * phi, (1 - theta) * phi));
     } else {
-      return bernoulli_lpmf(0 | zi) +
-      beta_binomial_lpmf(y | trials, a, b);
+      return bernoulli_lpmf(0 | kappa) +
+             beta_binomial_lpmf(y | n, theta * phi, (1 - theta) * phi);
     }
   }
   
-  int zibb_rng(int y, int trials, real a, real b, real zi) {
-    if (bernoulli_rng(zi) == 1) {
+  int zibb_rng(int y, int n, real theta, real phi, real kappa) {
+    if (bernoulli_rng(kappa) == 1) {
       return (0);
     } else {
-      return (beta_binomial_rng(trials, a, b));
+      return (beta_binomial_rng(n, theta * phi, (1 - theta) * phi));
     }
   }
   
-  real z_rng(real a, real b, real zi) {
-    if (bernoulli_rng(zi) == 1) {
+  real z_rng(real a, real b, real kappa) {
+    if (bernoulli_rng(kappa) == 1) {
       return (0);
     } else {
       return(inv_logit(a+b));
@@ -42,50 +42,32 @@ transformed data {
 }
 
 parameters {
-  // overdispersion
-  real <lower = 0> phi;
+  // dispersion + zero-inflation
+  vector <lower = 0> [N_sample] phi;
+  vector <lower = 0, upper = 1> [N_sample] kappa;
   
-  // zero-inflation probability
-  vector <lower = 0, upper = 1> [N_gene] kappa;
-  
-  // scales
-  real <lower = 0> alpha_gene_sigma;
-  
-  // aux variables
-  vector [N_gene] alpha_z [N_sample];
-  
-  // intercept
+  // gene
   vector [N_gene] alpha_gene_mu;
+  real <lower = 0> alpha_gene_sigma;
+  vector [N_gene] alpha_z [N_sample];
 }
 
 transformed parameters {
   vector [N_gene] alpha [N_sample];
-  vector <lower = 0> [N_gene] a [N_sample];
-  vector <lower = 0> [N_gene] b [N_sample];
+  vector <lower = 0, upper=1> [N_gene] theta [N_sample];
   
   for(i in 1:N_sample) {
-    // non-centered params (at gene level)
     alpha[i] = alpha_gene_mu + alpha_gene_sigma * alpha_z[i];
-    a[i] = inv_logit(alpha[i]) * phi;
-    b[i] = phi - a[i];
+    theta[i] = inv_logit(alpha[i]);
   }
 }
 
 model {
   // priors
-  
-  // intercept
   target += normal_lpdf(alpha_gene_mu | -5.0, 5.0);
-  
-  // scales
   target += cauchy_lpdf(alpha_gene_sigma | 0.0, 1.0);
-  
-  // zero-inflation
   target += beta_lpdf(kappa | 0.1, 1.0);
-  
   target += exponential_lpdf(phi | 0.01);
-  
-  // aux var
   for(i in 1:N_sample) {
     target += std_normal_lpdf(alpha_z[i]);
   }
@@ -93,47 +75,38 @@ model {
   // likelihood
   for(i in 1:N_sample) {
     for(j in 1:N_gene) {
-      target += zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], kappa[j]);
+      target += zibb_lpmf(Y[j, i] | N[i], theta[i][j], phi[i], kappa[i]);
     }
   }
 }
 
 generated quantities {
-  // PPC: count usage
-  int Yhat [N_gene, N_sample];
+  // PPC: count usage (repertoire-level)
+  int Yhat_rep [N_gene, N_sample];
   
-  // PPC: proportion usage
-  real Yhat_rep [N_gene, N_sample];
+  // PPC: proportion usage (repertoire-level)
+  real Yhat_rep_prop [N_gene, N_sample];
   
   // PPC: proportion usage at a gene level in condition
-  vector [N_gene] Yhat_condition;
+  vector [N_gene] Yhat_condition_prop;
   
   // LOG-LIK
   vector [N_gene] log_lik [N_sample];
   
-  // probability
-  vector [N_gene] theta_condition;
-  
-  // probability GU gene in rep 
-  vector [N_gene] theta_rep [N_sample];
   
   //TODO: speedup, run in C++ not big factor on performance
   for(j in 1:N_gene) {
     for(i in 1:N_sample) {
-      log_lik[i][j] = zibb_lpmf(Y[j, i] | N[i], a[i][j], b[i][j], kappa[j]);
-      Yhat[j, i] = zibb_rng(Y[j, i], N[i], a[i][j], b[i][j], kappa[j]);
+      Yhat_rep[j, i] = zibb_rng(Y[j, i], N[i], theta[i][j], phi[i], kappa[i]);
+      log_lik[i][j] = zibb_lpmf(Y[j, i] | N[i], theta[i][j], phi[i], kappa[i]);
       
       if(Nr[i] == 0.0) {
-        Yhat_rep[j, i] = 0;
+        Yhat_rep_prop[j, i] = 0;
       }
       else {
-        Yhat_rep[j, i] = Yhat[j,i]/Nr[i];
+        Yhat_rep_prop[j, i] = Yhat_rep[j,i]/Nr[i];
       }
-      theta_rep[i][j] = Yhat_rep[j,i];
     }
-    
-    // if kappa=0 ->0, else -> inverse_logit(a)
-    Yhat_condition[j] = z_rng(alpha_gene_mu[j], 0, kappa[j]);
-    theta_condition[j] = z_rng(alpha_gene_mu[j], 0, kappa[j]);
+    Yhat_condition_prop[j] = z_rng(alpha_gene_mu[j], 0, 0);
   }
 }
