@@ -43,8 +43,8 @@ transformed data {
 
 parameters {
   // dispersion + zero-inflation
-  vector <lower = 0> [N_sample] phi;
-  vector <lower = 0, upper = 1> [N_sample] kappa;
+  real <lower = 0> phi;
+  real <lower = 0, upper = 1> kappa;
   
   // gene
   vector [N_gene] alpha_gene_mu;
@@ -75,7 +75,7 @@ model {
   // likelihood
   for(i in 1:N_sample) {
     for(j in 1:N_gene) {
-      target += zibb_lpmf(Y[j, i] | N[i], theta[i][j], phi[i], kappa[i]);
+      target += zibb_lpmf(Y[j, i] | N[i], theta[i][j], phi, kappa);
     }
   }
 }
@@ -97,8 +97,8 @@ generated quantities {
   //TODO: speedup, run in C++ not big factor on performance
   for(j in 1:N_gene) {
     for(i in 1:N_sample) {
-      Yhat_rep[j, i] = zibb_rng(Y[j, i], N[i], theta[i][j], phi[i], kappa[i]);
-      log_lik[i][j] = zibb_lpmf(Y[j, i] | N[i], theta[i][j], phi[i], kappa[i]);
+      Yhat_rep[j, i] = zibb_rng(Y[j, i], N[i], theta[i][j], phi, kappa);
+      log_lik[i][j] = zibb_lpmf(Y[j, i] | N[i], theta[i][j], phi, kappa);
       
       if(Nr[i] == 0.0) {
         Yhat_rep_prop[j, i] = 0;
