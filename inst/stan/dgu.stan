@@ -31,18 +31,18 @@ functions {
 }
 
 data {
-  int<lower=0> N_sample;      // number of repertoires
-  int<lower=0> N_gene;        // gene
-  int N [N_sample];           // number of total tries (repertoire size)
-  int Y [N_gene, N_sample];   // number of heads for each coin
-  int group_id [N_sample];    // number of groups
+  int<lower=0> N_sample;           // number of repertoires
+  int<lower=0> N_gene;             // gene
+  array[N_sample] int N;           // number of total tries (repertoire size)
+  array[N_gene, N_sample] int Y;   // number of heads for each coin
+  array[N_sample] int group_id;    // number of groups
 }
 
 
 transformed data {
   // convert int N -> real N fo convenient division
   // in generated quantities block
-  real Nr [N_sample];
+  array[N_sample] real Nr;
   Nr = N;
 }
 
@@ -54,18 +54,18 @@ parameters {
   // gene
   vector [N_gene] alpha_gene_mu;
   vector <lower=0> [max(group_id)] beta_gene_sigma;
-  vector [N_gene] beta_z [N_sample];
+  array[N_sample] vector [N_gene] beta_z;
   
   // pop
   vector <lower=0> [max(group_id)] beta_pop_sigma;
-  vector [N_gene] beta_gene_mu_z [max(group_id)];
+  array[max(group_id)] vector [N_gene] beta_gene_mu_z;
 }
 
 
 transformed parameters {
-  vector <lower=0, upper=1> [N_gene] theta [N_sample];
-  vector [N_gene] beta [N_sample];
-  vector [N_gene] beta_gene_mu [max(group_id)];
+  array[N_sample] vector <lower=0, upper=1> [N_gene] theta;
+  array[N_sample] vector [N_gene] beta;
+  array[max(group_id)] vector [N_gene] beta_gene_mu;
   
   
   for(i in 1:max(group_id)) {
@@ -101,16 +101,16 @@ model {
 
 generated quantities {
   // PPC: count usage (repertoire-level)
-  int Yhat_rep [N_gene, N_sample];
+  array[N_gene, N_sample] int Yhat_rep;
   
   // PPC: proportion usage (repertoire-level)
-  real Yhat_rep_prop [N_gene, N_sample];
+  array[N_gene, N_sample] real Yhat_rep_prop;
   
   // PPC: proportion usage at a gene level in condition
-  vector [N_gene] Yhat_condition_prop [max(group_id)];
+  array[max(group_id)] vector [N_gene] Yhat_condition_prop;
   
   // LOG-LIK
-  vector [N_gene] log_lik [N_sample];
+  array[N_sample] vector [N_gene] log_lik;
   
   // DGU matrix
   matrix [N_gene, max(group_id)*(max(group_id)-1)/2] dgu;

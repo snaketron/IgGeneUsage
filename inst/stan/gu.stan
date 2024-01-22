@@ -30,14 +30,14 @@ functions {
 data {
   int <lower = 0> N_sample; // number of samples (repertoires)
   int <lower = 0> N_gene; // number of genes
-  int Y [N_gene, N_sample]; // number of successes (cells) in samples x gene
-  int N [N_sample]; // number of total tries (repertoire size)
+  array[N_gene, N_sample] int Y; // number of successes (cells) in samples x gene
+  array[N_sample] int N; // number of total tries (repertoire size)
 }
 
 transformed data {
   // convert int N -> real N fo convenient division
   // in generated quantities block
-  real Nr [N_sample];
+  array[N_sample] real Nr;
   Nr = N;
 }
 
@@ -49,12 +49,12 @@ parameters {
   // gene
   vector [N_gene] alpha_gene_mu;
   real <lower = 0> alpha_gene_sigma;
-  vector [N_gene] alpha_z [N_sample];
+  array[N_sample] vector [N_gene] alpha_z;
 }
 
 transformed parameters {
-  vector [N_gene] alpha [N_sample];
-  vector <lower = 0, upper=1> [N_gene] theta [N_sample];
+  array[N_sample] vector [N_gene] alpha;
+  array[N_sample] vector <lower = 0, upper=1> [N_gene] theta;
   
   for(i in 1:N_sample) {
     alpha[i] = alpha_gene_mu + alpha_gene_sigma * alpha_z[i];
@@ -82,16 +82,16 @@ model {
 
 generated quantities {
   // PPC: count usage (repertoire-level)
-  int Yhat_rep [N_gene, N_sample];
+  array[N_gene, N_sample] int Yhat_rep;
   
   // PPC: proportion usage (repertoire-level)
-  real Yhat_rep_prop [N_gene, N_sample];
+  array[N_gene, N_sample] real Yhat_rep_prop;
   
   // PPC: proportion usage at a gene level in condition
   vector [N_gene] Yhat_condition_prop;
   
   // LOG-LIK
-  vector [N_gene] log_lik [N_sample];
+  array[N_sample] vector [N_gene] log_lik;
   
   
   //TODO: speedup, run in C++ not big factor on performance
