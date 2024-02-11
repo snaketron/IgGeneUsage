@@ -1,30 +1,36 @@
 # Description
 # Parse input data for GU analysis
 get_usage <- function(u) {
+  u$individual_org_name <- u$individual_id
   if("replicate" %in% colnames(u)) {
     u$sample_id <- paste0(u$individual_id, '|', u$condition, '|', u$replicate)
     u$sample_id <- as.numeric(as.factor(u$sample_id))
+    u$individual_id <- paste0(u$individual_id, '|', u$condition)
     
-    m <- u[duplicated(u$sample_id)==FALSE, 
-           c("sample_id", "individual_id", "condition", "replicate")]
-    
+    m <- u[duplicated(u$sample_id)==FALSE, c("sample_id",
+                                             "individual_id", 
+                                             "individual_org_name",
+                                             "condition", 
+                                             "replicate")]
     has_replicates <- TRUE
     
     # if replicate column is provided BUT only one replicate is available
     # per individual -> do analysis without replicates
     k <- u[duplicated(u[,c("individual_id","condition","replicate")])==FALSE,
-            c("individual_id","condition")]
-    if(all(table(apply(X = k, MARGIN = 1, FUN = paste0, collapse = '|'))==1)) {
+            c("individual_id")]
+    if(all(table(k)==1)) {
       has_replicates <- FALSE
     }
   }
   else {
     u$sample_id <- paste0(u$individual_id, '|', u$condition)
     u$sample_id <- as.numeric(as.factor(u$sample_id))
+    u$individual_id <- paste0(u$individual_id, '|', u$condition)
     
-    m <- u[duplicated(u$sample_id)==FALSE, 
-           c("sample_id", "individual_id", "condition")]
-    
+    m <- u[duplicated(u$sample_id)==FALSE, c("sample_id", 
+                                             "individual_id",
+                                             "individual_org_name",
+                                             "condition")]
     has_replicates <- FALSE
   }
   
@@ -54,8 +60,11 @@ get_usage <- function(u) {
   
   # individual data
   individual_names <- character(length = length(sample_ids))
+  individual_org_names <- character(length = length(sample_ids))
   for(i in 1:length(sample_ids)) {
     individual_names[i] <- m$individual_id[m$sample_id == sample_ids[i]][1]
+    individual_org_names[i] <- m$individual_org_name[
+      m$sample_id == sample_ids[i]][1]
   }
   individual_ids <- as.numeric(as.factor(individual_names))
   
@@ -77,6 +86,7 @@ get_usage <- function(u) {
               N_condition = max(condition_ids),
               individual_id = individual_ids,
               individual_names = individual_names,
+              individual_org_names = individual_org_names,
               N_individual = max(individual_ids),
               proc_ud = u,
               has_replicates = has_replicates,
