@@ -44,14 +44,16 @@ a computational tool for DGU analysis.
 
 # Input
 The main input of `r Biocpkg("IgGeneUsage")` is a data.frame that has the 
-following 4 columns:
+following columns:
 
-  1. sample_id: name of the repertoire (e.g. Patient-1)
+  1. individual_id: name of the repertoire (e.g. Patient-1)
   2. condition: name of the condition to which each repertoire 
   belongs (healthy, tumor_A, tumor_B, ...)
   3. gene_name: gene name (e.g. IGHV1-10 or family TRVB1)
-  4. gene_usage_count: numeric (count) of usage related in sample x gene x 
+  4. gene_usage_count: numeric (count) of usage related in individual x gene x 
      condition specified in columns 1-3
+  5. [optional] replicates: character/numeric if multiple biological replicates
+  are available for each individual
 
 The sum of all gene usage counts (column 4) for a given repertoire is equal to
 the repertoire size (number of cells in the repertoire).
@@ -183,9 +185,9 @@ M <- DGU(ud = d_zibb_2, # input data
 ## Output format
 The following objects are provided as part of the output of DGU:
 
-  * `dgu_summary` (main results of `r Biocpkg("IgGeneUsage")`): quantitative 
+  * `dgu` (main results of `r Biocpkg("IgGeneUsage")`): quantitative 
      DGU summary 
-  * `gu_summary`: quantitative summary of the gene usage (GU) of each gene in 
+  * `gu`: quantitative summary of the gene usage (GU) of each gene in 
      the different conditions
   * `glm`: rstan ('stanfit') object of the fitted model $\rightarrow$ used for
      model checks (see section 'Model checking')
@@ -241,7 +243,7 @@ $\rightarrow$ accurate prediction.
 
 ```{r, fig.height = 3.25, fig.width = 7}
 ggplot(data = M$ppc$ppc_rep)+
-  facet_wrap(facets = ~sample_id, ncol = 5)+
+  facet_wrap(facets = ~individual_id, ncol = 5)+
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
   geom_errorbar(aes(x = observed_count, y = ppc_mean_count, 
                     ymin = ppc_L_count, ymax = ppc_H_count), col = "darkgray")+
@@ -274,7 +276,7 @@ ggplot(data = M$ppc$ppc_condition)+
 
 
 ## Results
-Each row of `glm_summary` summarizes the degree of DGU observed for specific 
+Each row of `glm` summarizes the degree of DGU observed for specific 
 Igs. Two metrics are reported: 
 
   * `es` (also referred to as $\gamma$): effect size on DGU, where `contrast` 
@@ -286,7 +288,7 @@ For `es` we also have the mean, median standard error (se), standard
 deviation (sd), L (low bound of 95% HDI), H (high bound of 95% HDI)
 
 ```{r}
-kable(x = head(M$dgu_summary), row.names = FALSE, digits = 3)
+kable(x = head(M$dgu), row.names = FALSE, digits = 3)
 ```
 
 ### DGU: differential gene usage
@@ -301,7 +303,7 @@ degree of differential usage are easy to detect with this figure.
 
 ```{r, fig.height = 4, fig.width = 5}
 # format data
-stats <- M$dgu_summary
+stats <- M$dgu
 stats <- stats[order(abs(stats$es_mean), decreasing = FALSE), ]
 stats$gene_fac <- factor(x = stats$gene_name, levels = unique(stats$gene_name))
 
@@ -379,7 +381,7 @@ report its mean GU (`prob_mean`) and the 95% (for instance) HDI (`prob_L`
 and `prob_H`).
 
 ```{r, fig.width=5, fig.height=4}
-ggplot(data = M$gu_summary)+
+ggplot(data = M$gu)+
   geom_errorbar(aes(x = gene_name, y = prob_mean, ymin = prob_L,
                     ymax = prob_H, col = condition),
                 width = 0.1, position = position_dodge(width = 0.4))+
@@ -417,8 +419,8 @@ L <- LOO(ud = d_zibb_2, # input data
 Next, we collected the results (GU and DGU) from each LOO iteration:
 
 ```{r}
-L_gu <- do.call(rbind, lapply(X = L, FUN = function(x){return(x$gu_summary)}))
-L_dgu <- do.call(rbind, lapply(X = L, FUN = function(x){return(x$dgu_summary)}))
+L_gu <- do.call(rbind, lapply(X = L, FUN = function(x){return(x$gu)}))
+L_dgu <- do.call(rbind, lapply(X = L, FUN = function(x){return(x$dgu)}))
 ```
 
 
