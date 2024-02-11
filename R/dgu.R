@@ -1,10 +1,4 @@
 
-# Description:
-# GU = gene usage
-# ud: 4 columns
-#   * sample_id: char column
-#   * gene_name: char column
-#   * gene_usage_count: num column
 DGU <- function(ud,
                mcmc_warmup = 500,
                mcmc_steps = 1500,
@@ -23,44 +17,39 @@ DGU <- function(ud,
                   hdi_lvl = hdi_lvl)
   
   udr <- ud
-  ud <- get_gu_usage(u = udr)
+  ud <- get_usage(u = udr)
   
   # setup control list
   control_list <- list(adapt_delta = adapt_delta,
                        max_treedepth = max_treedepth)
   
-  if(ud$N_group == 1) {
-    model <- stanmodels$gu
-    glm <- rstan::sampling(object = model,
-                           data = ud,
-                           chains = mcmc_chains,
-                           cores = mcmc_cores,
-                           iter = mcmc_steps,
-                           warmup = mcmc_warmup,
-                           algorithm = "NUTS",
-                           control = control_list)
-    
+  # get model
+  m <- get_model(has_conditions = ud$has_conditions, 
+                 has_replicates = ud$has_replicates)
+  
+  # fit model
+  glm <- rstan::sampling(object = m$model,
+                         data = ud,
+                         chains = mcmc_chains,
+                         cores = mcmc_cores,
+                         iter = mcmc_steps,
+                         warmup = mcmc_warmup,
+                         algorithm = "NUTS",
+                         control = control_list,
+                         pars = m$pars,
+                         refresh = 50)
+  
+  if(m$model_type=="GU") {
     message("Computing summaries ... \n")
-    gu_summary <- get_gu_summary_univar(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
-    dgu_summary <- NA
-    dgu_prob_summary <- NA
-  } 
-  else {
-    pars <- get_pars(model = "DGU")
-    model <- stanmodels$dgu
-    glm <- rstan::sampling(object = model,
-                           data = ud,
-                           chains = mcmc_chains,
-                           cores = mcmc_cores,
-                           iter = mcmc_steps,
-                           warmup = mcmc_warmup,
-                           algorithm = "NUTS",
-                           control = control_list)
-    
+    gu <- get_gu_summary_gu(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
+    dgu <- NA
+    dgu_prob <- NA
+  }
+  if(m$model_type=="DGU") {
     message("Computing summaries ... \n")
-    gu_summary <- get_gu_summary_anova(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
-    dgu_summary <- get_dgu_summary(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
-    dgu_prob_summary <- get_dgu_prob_summary(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
+    gu <- get_gu_summary_dgu(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
+    dgu <- get_dgu_summary(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
+    dgu_prob <- get_dgu_prob_summary(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
   }
   
   # ppc
@@ -70,9 +59,9 @@ DGU <- function(ud,
     ppc_condition = get_ppc_condition(glm = glm, ud = ud, hdi_lvl = hdi_lvl))
   
   # result pack
-  return (list(dgu_summary = dgu_summary,
-               dgu_prob_summary = dgu_prob_summary,
-               gu_summary = gu_summary,
+  return (list(dgu = dgu,
+               dgu_prob = dgu_prob,
+               gu = gu,
                glm = glm,
                ppc = ppc,
                ud = ud))

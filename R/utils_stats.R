@@ -4,9 +4,7 @@ get_ttest <- function(ud,
                       paired) {
   
   get_ttest_run <- function(x, Ys, Xs, Ns, paired) {
-    return(try(stats::t.test((Ys[x, ]/Ns)~X, 
-                             paired = paired), 
-               silent = TRUE))
+    return(try(t.test((Ys[x, ]/Ns)~X, paired = paired), silent = TRUE))
   }
   
   get_ttest_summary <- function(x) {
@@ -35,7 +33,7 @@ get_ttest <- function(ud,
   tout.summary$gene_name <- ud$gene_names
   
   # multiple correction
-  tout.summary$t_test_fdr_pvalue <- stats::p.adjust(
+  tout.summary$t_test_fdr_pvalue <- p.adjust(
     p = tout.summary$t_test_pvalue, method = "fdr")
   
   return (tout.summary)
@@ -47,7 +45,7 @@ get_manu <- function(ud,
                      paired) {
   
   get_manu_run <- function(x, Ys, Xs, Ns, paired) {
-    return(try(stats::wilcox.test((
+    return(try(wilcox.test((
       Ys[x, ]/Ns)~Xs, paired = paired), silent = TRUE))
   }
   
@@ -73,7 +71,7 @@ get_manu <- function(ud,
   mout_summary$gene_name <- ud$gene_names
   
   # multiple correction
-  mout_summary$u_test_fdr_pvalue <- stats::p.adjust(
+  mout_summary$u_test_fdr_pvalue <- p.adjust(
     p = mout_summary$u_test_pvalue, method = "fdr")
   
   return (mout_summary)

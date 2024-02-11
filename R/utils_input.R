@@ -10,12 +10,12 @@ check_dgu_input <- function(ud,
                             mcmc_warmup,
                             hdi_lvl) {
   
-  if(base::missing(ud) || base::is.null(ud) ||
-     base::missing(mcmc_chains) || base::is.null(mcmc_chains) ||
-     base::missing(mcmc_steps) || base::is.null(mcmc_steps) ||
-     base::missing(mcmc_warmup) || base::is.null(mcmc_warmup) ||
-     base::missing(mcmc_cores) || base::is.null(mcmc_cores) ||
-     base::missing(hdi_lvl) || base::is.null(hdi_lvl)) {
+  if(missing(ud) || is.null(ud) ||
+     missing(mcmc_chains) || is.null(mcmc_chains) ||
+     missing(mcmc_steps) || is.null(mcmc_steps) ||
+     missing(mcmc_warmup) || is.null(mcmc_warmup) ||
+     missing(mcmc_cores) || is.null(mcmc_cores) ||
+     missing(hdi_lvl) || is.null(hdi_lvl)) {
     stop("arguments must be specified")
   }
   
@@ -33,30 +33,30 @@ check_dgu_input <- function(ud,
 check_mcmc_steps <- function(mcmc_steps,
                              mcmc_warmup) {
   
-  if(base::length(mcmc_steps) != 1 | 
-     base::length(mcmc_warmup) != 1) {
+  if(length(mcmc_steps) != 1 | 
+     length(mcmc_warmup) != 1) {
     stop("mcmc_steps >= 500 & mcmc_warmup >= 100.")
   }
   
-  if(!base::is.numeric(mcmc_steps) | 
-     !base::is.numeric(mcmc_warmup)) {
-    stop("mcmc_steps >= 500 & mcmc_warmup >= 100.")
-  }
-  
-  
-  if(base::is.finite(x = mcmc_steps)==FALSE | 
-     base::is.finite(x = mcmc_warmup)==FALSE) {
+  if(!is.numeric(mcmc_steps) | 
+     !is.numeric(mcmc_warmup)) {
     stop("mcmc_steps >= 500 & mcmc_warmup >= 100.")
   }
   
   
-  if(base::as.integer(x = mcmc_steps) < 500 | 
-     base::as.integer(x = mcmc_warmup) < 100) {
+  if(is.finite(x = mcmc_steps)==FALSE | 
+     is.finite(x = mcmc_warmup)==FALSE) {
     stop("mcmc_steps >= 500 & mcmc_warmup >= 100.")
   }
   
   
-  if(base::as.integer(x = mcmc_steps) <= base::as.integer(x = mcmc_warmup)) {
+  if(as.integer(x = mcmc_steps) < 500 | 
+     as.integer(x = mcmc_warmup) < 100) {
+    stop("mcmc_steps >= 500 & mcmc_warmup >= 100.")
+  }
+  
+  
+  if(as.integer(x = mcmc_steps) <= as.integer(x = mcmc_warmup)) {
     stop("mcmc_steps > mcmc_warmup")
   }
 }
@@ -64,19 +64,19 @@ check_mcmc_steps <- function(mcmc_steps,
 # Description:
 # MCMC Chain number check
 check_mcmc_chains <- function(mcmc_chains) {
-  if(base::length(mcmc_chains) != 1) {
+  if(length(mcmc_chains) != 1) {
     stop("mcmc_chains must be a positive integer > 0")
   }
   
-  if(!base::is.numeric(mcmc_chains)) {
+  if(!is.numeric(mcmc_chains)) {
     stop("mcmc_chains must be a positive integer > 0")
   }
   
-  if(base::is.finite(x = mcmc_chains) == FALSE) {
+  if(is.finite(x = mcmc_chains) == FALSE) {
     stop("mcmc_chains must be a positive integer > 0")
   }
   
-  if(base::as.integer(x = mcmc_chains) <= 0) {
+  if(as.integer(x = mcmc_chains) <= 0) {
     stop("mcmc_chains must be a positive integer > 0")
   }
 }
@@ -84,19 +84,19 @@ check_mcmc_chains <- function(mcmc_chains) {
 # Description:
 # MCMC Cores number check
 check_mcmc_cores <- function(mcmc_cores) {
-  if(base::length(mcmc_cores) != 1) {
+  if(length(mcmc_cores) != 1) {
     stop("mcmc_cores must be a positive integer > 0")
   }
   
-  if(base::is.numeric(mcmc_cores) == FALSE) {
+  if(is.numeric(mcmc_cores) == FALSE) {
     stop("mcmc_cores must be a positive integer > 0")
   }
   
-  if(base::is.finite(x = mcmc_cores) == FALSE) {
+  if(is.finite(x = mcmc_cores) == FALSE) {
     stop("mcmc_cores must be a positive integer > 0")
   }
   
-  if(base::as.integer(x = mcmc_cores) <= 0) {
+  if(as.integer(x = mcmc_cores) <= 0) {
     stop("mcmc_cores must be a positive integer > 0")
   }
 }
@@ -104,11 +104,11 @@ check_mcmc_cores <- function(mcmc_cores) {
 # Description:
 # HDI input check
 check_hdi <- function(hdi_lvl) {
-  if(base::length(hdi_lvl) != 1) {
+  if(length(hdi_lvl) != 1) {
     stop('hdi_lvl must be a number in range (0, 1)')
   }
   
-  if(base::is.numeric(hdi_lvl) == FALSE) {
+  if(is.numeric(hdi_lvl) == FALSE) {
     stop('hdi_lvl must be a number in range (0, 1)')
   }
   
@@ -121,40 +121,50 @@ check_hdi <- function(hdi_lvl) {
 # checks ud data.frame
 check_ud <- function(ud) {
   
-  if(base::is.data.frame(ud) == FALSE) {
+  if(is.data.frame(ud) == FALSE) {
     stop("ud must be data.frame")
   }
   
-  if(base::ncol(ud) != 4) {
-    stop("ud must contain the following columns: 'sample_id',
-         'condition', 'gene_name' and 'gene_usage_count'")
+  cols <- c("individual_id", "condition", "gene_name", "gene_usage_count")
+  cols_r <- c("individual_id", "condition", "gene_name", "gene_usage_count", 
+              "replicate")
+  if(all(colnames(ud) %in% cols | colnames(ud) %in% cols_r) == FALSE) {
+    stop("ud must contain the following columns: 'individual_id',
+         'condition', 'gene_name' and 'gene_usage_count' and optionally 
+         'replicate'")
   }
   
-  cols <- c("sample_id", "condition", "gene_name", "gene_usage_count")
-  if(base::all(base::colnames(ud) %in% cols) == FALSE) {
-    stop("ud must contain the following columns: 'sample_id',
-         'condition', 'gene_name' and 'gene_usage_count'")
-  }
-  
-  if(base::nrow(ud) <= 1) {
+  if(nrow(ud) <= 1) {
     stop("ud must contain at least 2 data points")
   }
   
-  if(base::typeof(ud$sample_id) != "character") {
-    stop("column sample_id must be of character type.")
+  if(typeof(ud$individual_id) != "character") {
+    stop("column individual_id must be character")
   }
   
-  if(base::typeof(ud$condition) != "character") {
-    stop("column condition must be of character type.")
+  if(typeof(ud$condition) != "character") {
+    stop("column condition must be character")
   }
   
-  if(base::typeof(ud$gene_name) != "character") {
-    stop("column gene_name must be of character type.")
+  if(typeof(ud$gene_name) != "character") {
+    stop("column gene_name must be character")
   }
   
-  if(base::typeof(ud$gene_usage_count) != "numeric" &
-     base::typeof(ud$gene_usage_count) != "double" &
-     base::typeof(ud$gene_usage_count) != "integer") {
-    stop("column gene_usage_count must be of numeric type.")
+  if(typeof(ud$gene_usage_count) != "numeric" &
+     typeof(ud$gene_usage_count) != "double" &
+     typeof(ud$gene_usage_count) != "integer") {
+    stop("column gene_usage_count must be numeric")
+  }
+  
+  if("replicate" %in% colnames(ud)) {
+    if(typeof(ud$replicate) != "character" & typeof(ud$replicate) != "numeric"){
+      stop("column replicate must be character or numeric")
+    }
+    
+    k <- ud[duplicated(ud[,c("individual_id","condition","replicate")])==FALSE,
+            c("individual_id","condition")]
+    if(all(table(apply(X = k, MARGIN = 1, FUN = paste0, collapse = '|'))==1)){
+      warning("one replicate available, no-replicates model used")
+    }
   }
 }

@@ -1,11 +1,11 @@
 
-get_gu_summary_anova <- function(glm, hdi_lvl, ud) {
+get_gu_summary_dgu <- function(glm, hdi_lvl, ud) {
   
-  gu_summary <- rstan::summary(object = glm, 
-                               digits = 4,
-                               pars = "Yhat_condition_prop",
-                               prob = c(0.5, (1-hdi_lvl)/2,
-                                        1-(1-hdi_lvl)/2))
+  gu_summary <- summary(object = glm, 
+                        digits = 4,
+                        pars = "Yhat_condition_prop",
+                        prob = c(0.5, (1-hdi_lvl)/2,
+                                 1-(1-hdi_lvl)/2))
   
   gu_summary <- gu_summary$summary
   gu_summary <- data.frame(gu_summary)
@@ -25,9 +25,9 @@ get_gu_summary_anova <- function(glm, hdi_lvl, ud) {
   gu_summary$gene_name <- ud$gene_names[gu_summary$gene_id]
   gu_summary$condition_id <- as.numeric(par[,1])
   gu_summary$condition <- NA
-  for(i in 1:ud$N_group) {
+  for(i in 1:ud$N_condition) {
     gu_summary$condition[which(gu_summary$condition_id == i)]<-
-      ud$group_names[which(ud$group_id == i)[1]]
+      ud$condition_names[which(ud$condition_id == i)[1]]
   }
   
   # remove unused vars
@@ -38,13 +38,13 @@ get_gu_summary_anova <- function(glm, hdi_lvl, ud) {
 }
 
 
-get_gu_summary_univar <- function(glm, hdi_lvl, ud) {
+get_gu_summary_gu <- function(glm, hdi_lvl, ud) {
   
-  gu_summary <- rstan::summary(object = glm, 
-                               digits = 4,
-                               pars = "Yhat_condition_prop",
-                               prob = c(0.5, (1-hdi_lvl)/2,
-                                        1-(1-hdi_lvl)/2))
+  gu_summary <- summary(object = glm, 
+                        digits = 4,
+                        pars = "Yhat_condition_prop",
+                        prob = c(0.5, (1-hdi_lvl)/2,
+                                 1-(1-hdi_lvl)/2))
   
   gu_summary <- gu_summary$summary
   gu_summary <- data.frame(gu_summary)
@@ -61,7 +61,7 @@ get_gu_summary_univar <- function(glm, hdi_lvl, ud) {
   
   gu_summary$gene_id <- as.numeric(par)
   gu_summary$gene_name <- ud$gene_names[gu_summary$gene_id]
-  gu_summary$condition <- ud$group_names[1]
+  gu_summary$condition <- ud$condition_names[1]
   
   # remove unused vars
   gu_summary$gene_id <- NULL

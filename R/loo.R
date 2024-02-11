@@ -17,15 +17,15 @@ LOO <- function(ud,
   
   # check inputs
   check_dgu_input(ud = ud,
-                  mcmc_chains = base::as.integer(x = mcmc_chains),
-                  mcmc_cores = base::as.integer(x = mcmc_cores),
-                  mcmc_steps = base::as.integer(x = mcmc_steps),
-                  mcmc_warmup = base::as.integer(x = mcmc_warmup),
+                  mcmc_chains = as.integer(x = mcmc_chains),
+                  mcmc_cores = as.integer(x = mcmc_cores),
+                  mcmc_steps = as.integer(x = mcmc_steps),
+                  mcmc_warmup = as.integer(x = mcmc_warmup),
                   hdi_lvl = hdi_lvl)
   
   # process data
-  ud <- get_gu_usage(u = ud)
-  ud <- ud$proc_ud[, c("sample_id","condition","gene_name","gene_usage_count")]
+  udp <- get_usage(u = ud)
+  ud <- udp$proc_ud
   
   # setup control list
   control_list <- list(adapt_delta = adapt_delta,
@@ -42,12 +42,18 @@ LOO <- function(ud,
   
   loo_out <- vector(mode = "list", length = length(rs))
   names(loo_out) <- rs
-  for(r in base::seq_len(length.out = length(rs))) {
-    base::message("LOO step: ", r, "\n", sep = '')
+  for(r in seq_len(length.out = length(rs))) {
+    message("LOO step: ", r, "\n", sep = '')
     
     # here subset data
     temp_ud <- ud[ud$loo_id != rs[r], ]
-    temp_ud$loo_id <- NULL
+    if(udp$has_replicates) {
+      temp_ud <- temp_ud[, c("individual_id", "condition", "gene_name", 
+                             "gene_usage_count", "replicate")]
+    } else {
+      temp_ud <- temp_ud[, c("individual_id", "condition", "gene_name", 
+                             "gene_usage_count")]
+    }
     
     # run DGU
     out <- DGU(ud = temp_ud,
@@ -59,14 +65,14 @@ LOO <- function(ud,
                adapt_delta = adapt_delta,
                max_treedepth = max_treedepth)
     
-    if(is.data.frame(out$gu_summary)==TRUE) {
-      out$gu_summary$loo_id <- rs[r]
+    if(is.data.frame(out$gu)==TRUE) {
+      out$gu$loo_id <- rs[r]
     }
-    if(is.data.frame(out$dgu_summary)==TRUE) {
-      out$dgu_summary$loo_id <- rs[r]
+    if(is.data.frame(out$dgu)==TRUE) {
+      out$dgu$loo_id <- rs[r]
     }
-    if(is.data.frame(out$dgu_prob_summary)==TRUE) {
-      out$dgu_prob_summary$loo_id <- rs[r]
+    if(is.data.frame(out$dgu_prob)==TRUE) {
+      out$dgu_prob$loo_id <- rs[r]
     }
     
     # collect results

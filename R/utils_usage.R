@@ -1,52 +1,151 @@
-
 # Description
 # Parse input data for GU analysis
-get_gu_usage <- function(u) {
-  k <- paste0(u$sample_id, '|', u$condition)
-  u$sample_id <- k
+get_usage <- function(u) {
+  if("replicate" %in% colnames(u)) {
+    u$sample_id <- paste0(u$individual_id, '|', u$condition, '|', u$replicate)
+    u$sample_id <- as.numeric(as.factor(u$sample_id))
+    
+    m <- u[duplicated(u$sample_id)==FALSE, 
+           c("sample_id", "individual_id", "condition", "replicate")]
+    
+    has_replicates <- TRUE
+    
+    # if replicate column is provided BUT only one replicate is available
+    # per individual -> do analysis without replicates
+    k <- u[duplicated(u[,c("individual_id","condition","replicate")])==FALSE,
+            c("individual_id","condition")]
+    if(all(table(apply(X = k, MARGIN = 1, FUN = paste0, collapse = '|'))==1)) {
+      has_replicates <- FALSE
+    }
+  }
+  else {
+    u$sample_id <- paste0(u$individual_id, '|', u$condition)
+    u$sample_id <- as.numeric(as.factor(u$sample_id))
+    
+    m <- u[duplicated(u$sample_id)==FALSE, 
+           c("sample_id", "individual_id", "condition")]
+    
+    has_replicates <- FALSE
+  }
   
-  # makes sure that we add usage = 0 for missing genes of certain samples 
-  u <- tidyr::complete(u, sample_id, gene_name,
-                       fill = list(gene_usage_count = 0))
-  u$condition <- do.call(rbind, strsplit(
-    x = u$sample_id, split = "\\|"))[,2]
+  u <- complete(u[,c("sample_id", "gene_name", "gene_usage_count")], 
+                sample_id, gene_name, fill = list(gene_usage_count=0))
   
-  # format data
-  n <- aggregate(gene_usage_count~sample_id+condition, FUN = sum, data = u)
+  n <- aggregate(gene_usage_count~sample_id, data = u, FUN = sum)
   n$total_usage_count <- n$gene_usage_count
   n$gene_usage_count <- NULL
   
-  u <- merge(x = u, y = n, by = c("sample_id", "condition"), all.x = TRUE)
+  u <- merge(x = u, y = m, by = "sample_id")
+  u <- merge(x = u, y = n, by = "sample_id")
   u$gene_usage_prop <- u$gene_usage_count/u$total_usage_count
   
   # get Y matrix
-  Y <- reshape2::acast(data = u, 
-                       formula = gene_name~sample_id,
-                       drop = FALSE, 
-                       value.var = "gene_usage_count",
-                       fill = 0, 
-                       fun.aggregate = sum)
+  Y <- acast(data = u, 
+             formula = gene_name~sample_id,
+             drop = FALSE, 
+             value.var = "gene_usage_count",
+             fill = 0, 
+             fun.aggregate = sum)
   sample_ids <- colnames(Y)
   gene_names <- rownames(Y)
   
   N <- apply(X = Y, MARGIN = 2, FUN = sum)
   N <- as.numeric(N)
   
-  group_names <- character(length = length(sample_ids))
-  for(i in seq_len(length(sample_ids))) {
-    group_names[i] <- u$condition[u$sample == sample_ids[i]][1]
+  # individual data
+  individual_names <- character(length = length(sample_ids))
+  for(i in 1:length(sample_ids)) {
+    individual_names[i] <- m$individual_id[m$sample_id == sample_ids[i]][1]
   }
-  group_id <- as.numeric(as.factor(group_names))
+  individual_ids <- as.numeric(as.factor(individual_names))
   
-  return (list(Y = Y, 
-               N = as.numeric(N), 
-               N_sample = ncol(Y), 
-               N_gene = nrow(Y),
-               gene_names = gene_names,
-               sample_names = sample_ids, 
-               group_id = group_id,
-               group_names = group_names,
-               N_group = max(group_id),
-               proc_ud = u))
+  condition_names <- character(length = max(individual_ids))
+  for(i in 1:max(individual_ids)) {
+    q <- individual_names[individual_ids==i][1]
+    condition_names[i] <- m$condition[m$individual_id == q][1]
+  }
+  condition_ids <- as.numeric(as.factor(condition_names))
+  
+  return(list(Y = Y, 
+              N = as.numeric(N), 
+              N_sample = ncol(Y), 
+              N_gene = nrow(Y),
+              gene_names = gene_names,
+              sample_names = sample_ids, 
+              condition_id = condition_ids,
+              condition_names = condition_names,
+              N_condition = max(condition_ids),
+              individual_id = individual_ids,
+              individual_names = individual_names,
+              N_individual = max(individual_ids),
+              proc_ud = u,
+              has_replicates = has_replicates,
+              has_conditions = max(condition_ids)>1))
 }
 
+get_model <- function(has_replicates, has_conditions, debug = FALSE) {
+  model_type <- ifelse(test = has_conditions, yes = "DGU", no = "GU")
+  if(model_type == "GU") {
+    if(has_replicates) {
+      if(debug) {
+        model <- rstan::stan_model(file = "inst/stan/gu_rep.stan")
+      } else {
+        model <- stanmodels$gu_rep
+      }
+      pars <- c("phi", "kappa", 
+                "sigma_individual", "sigma_replicate",
+                "beta_sample", "beta_individual", "beta_condition",
+                "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                "log_lik")
+      model_name <- "GU_rep"
+    } 
+    else {
+      if(debug) {
+        model <- rstan::stan_model(file = "inst/stan/gu.stan")
+      } else {
+        model <- stanmodels$gu
+      }
+      pars <- c("phi", "kappa", 
+                "sigma_individual",
+                "beta_individual", "beta_condition",
+                "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                "log_lik")
+      model_name <- "GU"
+    }
+  } 
+  else {
+    if(has_replicates) {
+      if(debug) {
+        model <- rstan::stan_model(file = "inst/stan/dgu_rep.stan")
+      } else {
+        model <- stanmodels$dgu_rep
+      }
+      pars <- c("phi", "kappa", "alpha", 
+                "sigma_condition", "sigma_individual", "sigma_replicate",
+                "beta_sample", "beta_individual", "beta_condition", 
+                "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                "log_lik", "dgu", "dgu_prob")
+      model_name <- "DGU_rep"
+    } 
+    else {
+      if(debug) {
+        model <- rstan::stan_model(file = "inst/stan/dgu.stan")
+      } else{
+        model <- stanmodels$dgu
+      }
+      pars <- c("phi", "kappa", "alpha", 
+                "sigma_condition", "sigma_individual",
+                "beta_individual", "beta_condition", 
+                "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                "log_lik", "dgu", "dgu_prob")
+      model_name <- "DGU"
+    }
+  }
+  
+  return(list(model = model, 
+              model_name = model_name,
+              model_type = model_type,
+              pars = pars,
+              has_replicates = has_replicates,
+              has_conditions = has_conditions))
+}
