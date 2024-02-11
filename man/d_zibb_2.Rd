@@ -22,7 +22,7 @@ data("d_zibb_2", package = "IgGeneUsage")
 \format{
 A data frame with 4 columns:  
 \itemize{
-  \item "sample_id"
+  \item "individual_id"
   \item "condition"
   \item "gene_name"
   \item "gene_name_count"

@@ -45,11 +45,14 @@ LOO(ud,
 \arguments{
 \item{ud}{Data.frame with 4 columns:
 \itemize{
-\item 'sample_id' = character, repertoire name (e.g. R1)
+\item 'individual_id' = character, name of the donor (e.g. Pt1)
 \item 'condition' = character, name of biological conditions (e.g. tumor)
 \item 'gene_name' = character, Ig gene name (e.g. IGHV1-69)
 \item 'gene_usage_count' = number, frequency (=usage) of rearrangements from 
-       sample_id x condition x gene_name
+       individual_id x condition x gene_name
+
+\item [optional] 'repertoire' = character or number, if more than one 
+      repertoire (biological replicates) is available per individual 
 }
 ud can also be be a SummarizedExperiment object. See dataset
 'data(Ig_SE)' for more information.
@@ -68,7 +71,7 @@ see help for DGU or vignette 'User Manual: IgGeneUsage'.
 }
 
 \value{
-\item{loo_summary}{DGU statistics for each Ig gene for specific LOO step:
+\item{loo}{DGU statistics for each Ig gene for specific LOO step:
 \itemize{
 \item es = effect size statistics: mean, median, standard error (se), 
 standard deviation (sd), L/H (low/high boundary of HDI)
@@ -100,7 +103,7 @@ L <- LOO(ud = Ig,
          adapt_delta = 0.99,
          max_treedepth = 10)
          
-head(L$loo_summary)
+head(L$loo)
 }
 
 

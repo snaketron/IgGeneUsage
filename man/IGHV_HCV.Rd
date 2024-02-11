@@ -11,7 +11,7 @@ individuals and 7 healthy donors.
 \usage{data("IGHV_HCV")}
 
 \format{
-  A data frame with 4 columns:  "sample_id", "condition", "gene_name" and
+  A data frame with 4 columns:  "individual_id", "condition", "gene_name" and
   "gene_usage_count". The format of the data is suitible to be used as input in
   IgGeneUsage
 }

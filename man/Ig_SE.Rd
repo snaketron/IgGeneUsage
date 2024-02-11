@@ -29,7 +29,9 @@ vaccine-induced immune responses. Proc Natl Acad Sci USA. 2014 111:4928-33.
 # inspect the data
 data(Ig_SE)
 
-# repertoire information: must have the two columns: 'condition', 'sample_id'
+# repertoire information: must have the two columns: 'condition' and 
+'individual_id'
+
 SummarizedExperiment::colData(Ig_SE)
 
 # assay counts (gene frequency usage)

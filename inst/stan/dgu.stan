@@ -31,68 +31,68 @@ functions {
 }
 
 data {
-  int<lower=0> N_sample;           // number of repertoires
-  int<lower=0> N_gene;             // gene
-  array[N_sample] int N;           // number of total tries (repertoire size)
-  array[N_gene, N_sample] int Y;   // number of heads for each coin
-  array[N_sample] int group_id;    // number of groups
+  // in this model: N_sample = N_individual (no replicates)
+  int<lower=0> N_sample;                   // number of repertoires 
+  int<lower=0> N_gene;                     // gene
+  int<lower=0> N_individual;               // number of individuals
+  int<lower=0> N_condition;                // number of conditions
+  array[N_individual] int N;                   // number of tries (repertoire size)
+  array[N_gene, N_individual] int Y;           // number of heads for each coin
+  array[N_individual] int condition_id;    // id of conditions
+  array[N_individual] int individual_id;       // id of replicate
 }
-
 
 transformed data {
   // convert int N -> real N fo convenient division
   // in generated quantities block
-  array[N_sample] real Nr;
+  real Nr [N_individual];
   Nr = N;
 }
-
 
 parameters {
   real <lower=0> phi;
   real <lower=0, upper=1> kappa;
   
-  // gene
-  vector [N_gene] alpha_gene_mu;
-  vector <lower=0> [max(group_id)] beta_gene_sigma;
-  array[N_sample] vector [N_gene] beta_z;
+  vector [N_gene] alpha;
   
-  // pop
-  vector <lower=0> [max(group_id)] beta_pop_sigma;
-  array[max(group_id)] vector [N_gene] beta_gene_mu_z;
+  vector <lower=0> [N_condition] sigma_condition;
+  vector <lower=0> [N_condition] sigma_individual;
+  
+  array[N_individual] vector [N_gene] z_beta_individual;
+  array[N_condition] vector [N_gene] z_beta_condition;
 }
 
-
 transformed parameters {
-  array[N_sample] vector <lower=0, upper=1> [N_gene] theta;
-  array[N_sample] vector [N_gene] beta;
-  array[max(group_id)] vector [N_gene] beta_gene_mu;
+  array[N_individual] vector <lower=0, upper=1> [N_gene] theta;
+  array[N_individual] vector [N_gene] beta_individual;
+  array[N_condition] vector [N_gene] beta_condition;
   
-  
-  for(i in 1:max(group_id)) {
-    beta_gene_mu[i] = 0 + beta_pop_sigma[i] * beta_gene_mu_z[i];
+  for(i in 1:N_condition) {
+    beta_condition[i] = 0 + sigma_condition[i] * z_beta_condition[i];
   }
   
-  for(i in 1:N_sample) {
-    beta[i]  = beta_gene_mu[group_id[i]] + beta_gene_sigma[group_id[i]] * beta_z[i];
-    theta[i] = inv_logit(alpha_gene_mu + beta[i]);
+  for(i in 1:N_individual) {
+    beta_individual[i]  = beta_condition[condition_id[i]] + sigma_individual[condition_id[i]] * z_beta_individual[i];
+    theta[i] = inv_logit(alpha + beta_individual[i]);
   }
 }
 
 model {
-  target += beta_lpdf(kappa | 0.1, 1.0);
+  target += beta_lpdf(kappa | 1.0, 5.0);
   target += exponential_lpdf(phi | 0.01);
-  target += normal_lpdf(alpha_gene_mu | -5, 5);
+  target += normal_lpdf(alpha | -5.0, 3.0);
   
-  for(i in 1:max(group_id)) {
-    target += std_normal_lpdf(beta_gene_mu_z[i]);
+  for(i in 1:N_condition) {
+    target += std_normal_lpdf(z_beta_condition[i]);
   }
-  for(i in 1:N_sample) {
-    target += std_normal_lpdf(beta_z[i]);
+  for(i in 1:N_individual) {
+    target += std_normal_lpdf(z_beta_individual[i]);
   }
-  target += cauchy_lpdf(beta_gene_sigma | 0, 1);
-  target += cauchy_lpdf(beta_pop_sigma | 0, 1);
   
-  for(i in 1:N_sample) {
+  target += cauchy_lpdf(sigma_individual | 0.0, 1.0);
+  target += cauchy_lpdf(sigma_condition | 0.0, 1.0);
+  
+  for(i in 1:N_individual) {
     for(j in 1:N_gene) {
       target += zibb_lpmf(Y[j,i] | N[i], theta[i][j], phi, kappa);
     }
@@ -101,25 +101,25 @@ model {
 
 generated quantities {
   // PPC: count usage (repertoire-level)
-  array[N_gene, N_sample] int Yhat_rep;
+  int Yhat_rep [N_gene, N_individual];
   
   // PPC: proportion usage (repertoire-level)
-  array[N_gene, N_sample] real Yhat_rep_prop;
+  real Yhat_rep_prop [N_gene, N_individual];
   
   // PPC: proportion usage at a gene level in condition
-  array[max(group_id)] vector [N_gene] Yhat_condition_prop;
+  vector [N_gene] Yhat_condition_prop [N_condition];
   
   // LOG-LIK
-  array[N_sample] vector [N_gene] log_lik;
+  vector [N_gene] log_lik [N_individual];
   
   // DGU matrix
-  matrix [N_gene, max(group_id)*(max(group_id)-1)/2] dgu;
-  matrix [N_gene, max(group_id)*(max(group_id)-1)/2] dgu_prob;
+  matrix [N_gene, N_condition*(N_condition-1)/2] dgu;
+  matrix [N_gene, N_condition*(N_condition-1)/2] dgu_prob;
   int c = 1;
   
   //TODO: speedup, run in C++ not big factor on performance
   for(j in 1:N_gene) {
-    for(i in 1:N_sample) {
+    for(i in 1:N_individual) {
       Yhat_rep[j, i] = zibb_rng(Y[j, i], N[i], theta[i][j], phi, kappa);
       log_lik[i][j] = zibb_lpmf(Y[j, i] | N[i], theta[i][j], phi, kappa);
       
@@ -130,16 +130,15 @@ generated quantities {
         Yhat_rep_prop[j, i] = Yhat_rep[j,i]/Nr[i];
       }
     }
-    
-    for(g in 1:max(group_id)) {
-      Yhat_condition_prop[g][j] = z_rng(alpha_gene_mu[j], beta_gene_mu[g][j], 0);
+    for(g in 1:N_condition) {
+      Yhat_condition_prop[g][j] = z_rng(alpha[j], beta_condition[g][j], 0);
     }
   }
   
   // DGU analysis
-  for(i in 1:(max(group_id)-1)) {
-    for(j in (i+1):max(group_id)) {
-      dgu[,c] = beta_gene_mu[i]-beta_gene_mu[j];
+  for(i in 1:(N_condition-1)) {
+    for(j in (i+1):N_condition) {
+      dgu[,c] = beta_condition[i]-beta_condition[j];
       dgu_prob[,c]=to_vector(Yhat_condition_prop[i])-to_vector(Yhat_condition_prop[j]);
       c = c + 1;
     }

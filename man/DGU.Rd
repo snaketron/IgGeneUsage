@@ -24,11 +24,13 @@ DGU(ud,
 \arguments{
 \item{ud}{Data.frame with 4 columns: 
 \itemize{
-\item 'sample_id' = character, repertoire name (e.g. R1)
+\item 'individual_id' = character, name of the donor (e.g. Pt1)
 \item 'condition' = character, name of biological conditions (e.g. tumor)
 \item 'gene_name' = character, Ig gene name (e.g. IGHV1-69)
 \item 'gene_usage_count' = number, frequency (=usage) of rearrangements from 
-       sample_id x condition x gene_name
+       individual_id x condition x gene_name
+\item [optional] 'repertoire' = character or number, if more than one 
+      repertoire (biological replicates) is available per individual 
 }
 ud can also be be a SummarizedExperiment object. See examplary data 
 'data(Ig_SE)' for more information.
@@ -50,12 +52,12 @@ vignette 'User Manual: IgGeneUsage').
 }
 
 \value{
-\item{dgu_summary}{DGU statistics for each gene: 1) es = effect size on 
+\item{dgu}{DGU statistics for each gene: 1) es = effect size on 
 DGU (mean, median standard error (se), standard deviation (sd), L (low boundary 
 of HDI), H (high boundary of HDI); 2) contrast = direction of the effect; 3) 
 pmax = probability of DGU. This summary is only available if the input data
 contains at least two conditions}
-\item{gu_summary}{gene usage (GU) summary of each gene in each condition}
+\item{gu}{gene usage (GU) summary of each gene in each condition}
 \item{glm}{stanfit object}
 \item{ppc}{two types of posterior predictive checks: 1) repertoire-
 specific, 2) condition-specific}
@@ -84,10 +86,7 @@ M <- DGU(ud = d_zibb_2,
          max_treedepth = 10)
 
 # look at DGU results
-head(M$glm_summary)
-
-# look at DGU results (by frequentist methods)
-head(M$test_summary)
+head(M$glm)
 
 # look at posterior predictive checks (PPC)
 head(M$ppc)

@@ -88,14 +88,14 @@ ysim <- rstan::extract(object = sim, par = "ysim")$ysim
 ysim <- ysim[1, ,]
 
 ysim_df <- reshape2::melt(ysim)
-colnames(ysim_df) <- c("gene_name", "sample_id", "gene_usage_count")
-ysim_df$condition <- ifelse(test = ysim_df$sample_id<=N_rep, 
+colnames(ysim_df) <- c("gene_name", "individual_id", "gene_usage_count")
+ysim_df$condition <- ifelse(test = ysim_df$individual_id<=N_rep, 
                             yes = "C1",
                             no = "C2")
-ysim_df <- ysim_df[, c("sample_id", "condition", "gene_name", "gene_usage_count")]
-ysim_df$sample_id <- paste0("S", as.character(ysim_df$sample_id))
-ysim_df$gene_name <- paste0("G", as.character(ysim_df$gene_name))
+ysim_df <- ysim_df[, c("individual_id", "condition", "gene_name", "gene_usage_count")]
+ysim_df$individual_id <- paste0("pt_", as.character(ysim_df$individual_id))
+ysim_df$gene_name <- paste0("gene_", as.character(ysim_df$gene_name))
 d_zibb_2 <- ysim_df
 
 # save
-save(d_zibb_2, file = "data/d_zibb_2.RData")
+save(d_zibb_2, file = "data/d_zibb_2.RData", compress = T)
