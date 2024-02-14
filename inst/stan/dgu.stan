@@ -77,7 +77,7 @@ transformed parameters {
 model {
   target += beta_lpdf(kappa | 1.0, 5.0);
   target += exponential_lpdf(phi | 0.01);
-  target += normal_lpdf(alpha | -5.0, 3.0);
+  target += normal_lpdf(alpha | -3.0, 3.0);
   
   for(i in 1:N_condition) {
     target += std_normal_lpdf(z_beta_condition[i]);
