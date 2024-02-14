@@ -11,14 +11,11 @@ functions {
   }
   
   int zibb_rng(int y, int n, real mu, real phi, real kappa) {
-    if(y==0) {
-      if (bernoulli_rng(kappa) == 1) {
-        return (0);
-      } else {
-        return (beta_binomial_rng(n, mu * phi, (1 - mu) * phi));
-      }
+    if (bernoulli_rng(kappa) == 1) {
+      return (0);
+    } else {
+      return (beta_binomial_rng(n, mu * phi, (1 - mu) * phi));
     }
-    return (beta_binomial_rng(n, mu * phi, (1 - mu) * phi));
   }
   
   real z_rng(real a, real b, real zi) {
