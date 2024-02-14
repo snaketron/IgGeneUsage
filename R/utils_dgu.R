@@ -22,7 +22,10 @@ get_contrast_map <- function(ud) {
 }
 
 
-get_dgu_summary <- function(glm, hdi_lvl, ud) {
+get_dgu <- function(glm, hdi_lvl, ud, model_type) {
+  if(model_type == "GU") {
+    return(NA)
+  }
   contrast_map <- get_contrast_map(ud)
   
   dgu_summary <- summary(object = glm, 
@@ -69,7 +72,10 @@ get_dgu_summary <- function(glm, hdi_lvl, ud) {
 }
 
 
-get_dgu_prob_summary <- function(glm, hdi_lvl, ud) {
+get_dgu_prob <- function(glm, hdi_lvl, ud, model_type) {
+  if(model_type == "GU") {
+    return(NA)
+  }
   contrast_map <- get_contrast_map(ud)
   
   dgu_summary <- summary(object = glm, 

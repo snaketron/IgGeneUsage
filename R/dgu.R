@@ -39,18 +39,15 @@ DGU <- function(ud,
                          pars = m$pars,
                          refresh = 50)
   
-  if(m$model_type=="GU") {
-    message("Computing summaries ... \n")
-    gu <- get_gu_summary_gu(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
-    dgu <- NA
-    dgu_prob <- NA
-  }
-  if(m$model_type=="DGU") {
-    message("Computing summaries ... \n")
-    gu <- get_gu_summary_dgu(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
-    dgu <- get_dgu_summary(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
-    dgu_prob <- get_dgu_prob_summary(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
-  }
+  message("Computing summaries ... \n")
+  gu <- get_condition_prop(glm = glm, hdi_lvl = hdi_lvl, ud = ud, 
+                           model_type = m$model_type)
+  dgu <- get_dgu(glm = glm, hdi_lvl = hdi_lvl, ud = ud, 
+                 model_type = m$model_type)
+  dgu_prob <- get_dgu_prob(glm = glm, hdi_lvl = hdi_lvl, ud = ud, 
+                           model_type = m$model_type)
+  theta <- get_sample_prop_gu(glm = glm, hdi_lvl = hdi_lvl, ud = ud)
+
   
   # ppc
   message("Computing posterior predictions ... \n")
@@ -62,7 +59,8 @@ DGU <- function(ud,
   return (list(dgu = dgu,
                dgu_prob = dgu_prob,
                gu = gu,
-               glm = glm,
+               theta = theta,
                ppc = ppc,
-               ud = ud))
+               ud = ud,
+               fit = glm))
 }

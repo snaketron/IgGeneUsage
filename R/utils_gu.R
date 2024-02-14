@@ -1,5 +1,15 @@
 
-get_gu_summary_dgu <- function(glm, hdi_lvl, ud) {
+get_condition_prop <- function(glm, hdi_lvl, ud, model_type) {
+  if(model_type == "DGU") {
+    return(get_condition_prop_dgu(glm = glm, hdi_lvl = hdi_lvl, ud = ud))
+  }
+  if(model_type == "GU") {
+    return(get_condition_prop_gu(glm = glm, hdi_lvl = hdi_lvl, ud = ud))
+  }
+}
+
+
+get_condition_prop_dgu <- function(glm, hdi_lvl, ud) {
   
   gu_summary <- summary(object = glm, 
                         digits = 4,
@@ -38,7 +48,7 @@ get_gu_summary_dgu <- function(glm, hdi_lvl, ud) {
 }
 
 
-get_gu_summary_gu <- function(glm, hdi_lvl, ud) {
+get_condition_prop_gu <- function(glm, hdi_lvl, ud) {
   
   gu_summary <- summary(object = glm, 
                         digits = 4,
@@ -67,5 +77,41 @@ get_gu_summary_gu <- function(glm, hdi_lvl, ud) {
   gu_summary$gene_id <- NULL
   rownames(gu_summary) <- NULL
   return(gu_summary)
+}
+
+
+get_sample_prop_gu <- function(glm, hdi_lvl, ud) {
+  
+  gu <- summary(object = glm, digits = 4, pars = "theta",
+                prob = c(0.5, (1-hdi_lvl)/2, 1-(1-hdi_lvl)/2))
+  gu <- data.frame(gu$summary)
+  colnames(gu) <- c("theta_mean", "theta_mean_se",
+                    "theta_sd", "theta_median",
+                    "theta_L", "theta_H",
+                    "Neff", "Rhat")
+  gu[, c("Rhat", "Neff")] <- NULL
+  
+  par <- rownames(gu)
+  par <- gsub(pattern = "theta|\\[|\\]", replacement = '', x = par)
+  par <- do.call(rbind, strsplit(x = par, split = ','))
+  
+  gu$gene_id <- as.numeric(par[,2])
+  gu$sample_id <- as.numeric(par[,1])
+  
+  gu$gene_name <- ud$gene_names[gu$gene_id]
+  gu$sample_name <- ud$sample_names[gu$sample_id]
+  
+  m <- ud$proc_ud[, c("sample_id", "individual_id", "individual_org_name",
+                      "gene_name", "condition", "gene_usage_prop")]
+  
+  gu <- merge(x = gu, y = m, 
+              by.x = c("sample_id", "gene_name"), 
+              by.y = c("sample_id", "gene_name"))
+  
+  # remove unused vars
+  gu$gene_id <- NULL
+  gu$sample_id <- NULL
+  rownames(gu) <- NULL
+  return(gu)
 }
 

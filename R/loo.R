@@ -1,11 +1,6 @@
 
 # Description:
 # LOO = leave-one-out
-# ud: 4 columns
-#   * sample_id: char column
-#   * condition: char column
-#   * gene_name: char column
-#   * gene_usage_count: num column
 LOO <- function(ud,
                 mcmc_warmup = 500,
                 mcmc_steps = 1500,
@@ -28,8 +23,7 @@ LOO <- function(ud,
   ud <- udp$proc_ud
   
   # setup control list
-  control_list <- list(adapt_delta = adapt_delta,
-                       max_treedepth = max_treedepth)
+  control_list <- list(adapt_delta = adapt_delta, max_treedepth = max_treedepth)
   
   # unique repertoire names
   ud$loo_id <- ud$sample_id
@@ -74,6 +68,9 @@ LOO <- function(ud,
     if(is.data.frame(out$dgu_prob)==TRUE) {
       out$dgu_prob$loo_id <- rs[r]
     }
+    if(is.data.frame(out$theta)==TRUE) {
+      out$theta$loo_id <- rs[r]
+    }
     
     # collect results
     loo_out[[rs[r]]] <- out
@@ -81,5 +78,4 @@ LOO <- function(ud,
   
   return (loo_out)
 }
-
 

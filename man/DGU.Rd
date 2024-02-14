@@ -58,7 +58,7 @@ of HDI), H (high boundary of HDI); 2) contrast = direction of the effect; 3)
 pmax = probability of DGU. This summary is only available if the input data
 contains at least two conditions}
 \item{gu}{gene usage (GU) summary of each gene in each condition}
-\item{glm}{stanfit object}
+\item{fit}{stanfit object}
 \item{ppc}{two types of posterior predictive checks: 1) repertoire-
 specific, 2) condition-specific}
 \item{ud}{processed gene usage data used for the model}
@@ -86,7 +86,7 @@ M <- DGU(ud = d_zibb_2,
          max_treedepth = 10)
 
 # look at DGU results
-head(M$glm)
+head(M$fit)
 
 # look at posterior predictive checks (PPC)
 head(M$ppc)

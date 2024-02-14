@@ -28,6 +28,7 @@ require(ggforce)
 require(gridExtra)
 require(ggrepel)
 require(reshape2)
+require(MASS)
 ```
 
 
@@ -221,15 +222,15 @@ summary(M)
   * none found
   
 ```{r}
-rstan::check_hmc_diagnostics(M$glm)
+rstan::check_hmc_diagnostics(M$fit)
 ```
 
   * rhat < 1.03 and n_eff > 0
   
 
 ```{r, fig.height = 3, fig.width = 6}
-gridExtra::grid.arrange(rstan::stan_rhat(object = M$glm),
-                        rstan::stan_ess(object = M$glm),
+gridExtra::grid.arrange(rstan::stan_rhat(object = M$fit),
+                        rstan::stan_ess(object = M$fit),
                         nrow = 1)
 ```
 
@@ -271,7 +272,8 @@ ggplot(data = M$ppc$ppc_condition)+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   xlab(label = "Observed usage [%]")+
-  ylab(label = "PPC usage [%]")
+  ylab(label = "PPC usage [%]")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
 ```
 
 
@@ -288,7 +290,7 @@ For `es` we also have the mean, median standard error (se), standard
 deviation (sd), L (low bound of 95% HDI), H (high bound of 95% HDI)
 
 ```{r}
-kable(x = head(M$dgu), row.names = FALSE, digits = 3)
+kable(x = head(M$dgu), row.names = FALSE, digits = 2)
 ```
 
 ### DGU: differential gene usage
@@ -352,6 +354,7 @@ ggplot()+
                 position = position_dodge(width = 0.35), width = 0.15)+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))+
   ylab(label = "PPC usage [%]")+
   xlab(label = '')
 ```
@@ -371,7 +374,8 @@ ggplot()+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   ylab(label = "PPC usage [count]")+
-  xlab(label = '')
+  xlab(label = '')+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
 ```
 
 ## GU: gene usage summary
@@ -389,7 +393,8 @@ ggplot(data = M$gu)+
              position = position_dodge(width = 0.4))+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
-  ylab(label = "GU [probability]")
+  ylab(label = "GU [probability]")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
 ```
 
 # Leave-one-out (LOO) analysis
@@ -439,7 +444,8 @@ ggplot(data = L_dgu)+
              position = position_dodge(width = 0.5))+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
-  ylab(expression(gamma))
+  ylab(expression(gamma))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
 ```
 
 ## LOO-DGU: variability of $\pi$
@@ -451,13 +457,14 @@ ggplot(data = L_dgu)+
              position = position_dodge(width = 0.5))+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
-  ylab(expression(pi))
+  ylab(expression(pi))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
 ```
 
 
 ## LOO-GU: variability of the gene usage
 
-```{r, fig.width=6.5, fig.height=4}
+```{r, fig.width=6, fig.height=4}
 ggplot(data = L_gu)+
   geom_hline(yintercept = 0, linetype = "dashed", col = "gray")+
   geom_errorbar(aes(x = gene_name, y = prob_mean, ymin = prob_L,
@@ -469,8 +476,28 @@ ggplot(data = L_gu)+
              position = position_dodge(width = 0.5))+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
-  ylab("GU [probability]")
+  ylab("GU [probability]")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
 ```
+
+# Multidimensional scaling (MDS) analaysis based 
+
+```{r, fig.width=5, fig.height=4}
+# x <- M$theta
+x <- acast(individual_id~gene_name, 
+           data = M$theta, value.var = "theta_mean")
+
+nmds <- isoMDS(dist(x), k=2)
+
+x <- data.frame(x = nmds$points[,1], y = nmds$points[,2], id = row.names(x))
+
+ggplot(data = x)+
+  geom_point(aes(x = x, y = y), shape = 21, size = 2)+
+  geom_text_repel(aes(x = x, y = y, label = id), 
+                  size = 3.5, min.segment.length = 0)+
+  theme_bw()
+```
+
 
 # Session
 

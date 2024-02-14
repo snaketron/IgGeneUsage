@@ -106,7 +106,7 @@ get_model <- function(has_replicates, has_conditions, debug = FALSE) {
                 "sigma_individual", "sigma_replicate",
                 "beta_sample", "beta_individual", "beta_condition",
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
-                "log_lik")
+                "log_lik", "theta")
       model_name <- "GU_rep"
     } 
     else {
@@ -119,7 +119,7 @@ get_model <- function(has_replicates, has_conditions, debug = FALSE) {
                 "sigma_individual",
                 "beta_individual", "beta_condition",
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
-                "log_lik")
+                "log_lik", "theta")
       model_name <- "GU"
     }
   } 
@@ -134,7 +134,7 @@ get_model <- function(has_replicates, has_conditions, debug = FALSE) {
                 "sigma_condition", "sigma_individual", "sigma_replicate",
                 "beta_sample", "beta_individual", "beta_condition", 
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
-                "log_lik", "dgu", "dgu_prob")
+                "log_lik", "dgu", "dgu_prob", "theta")
       model_name <- "DGU_rep"
     } 
     else {
@@ -147,7 +147,7 @@ get_model <- function(has_replicates, has_conditions, debug = FALSE) {
                 "sigma_condition", "sigma_individual",
                 "beta_individual", "beta_condition", 
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
-                "log_lik", "dgu", "dgu_prob")
+                "log_lik", "dgu", "dgu_prob", "theta")
       model_name <- "DGU"
     }
   }
