@@ -85,8 +85,12 @@ M <- DGU(ud = d_zibb_2,
          adapt_delta = 0.8,
          max_treedepth = 10)
 
+# look at M elements
+names(M)
+
 # look at DGU results
-head(M$fit)
+head(M$dgu)
+
 
 # look at posterior predictive checks (PPC)
 head(M$ppc)

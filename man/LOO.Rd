@@ -101,8 +101,12 @@ L <- LOO(ud = Ig,
          hdi_lvl = 0.95,
          adapt_delta = 0.99,
          max_treedepth = 10)
-         
-head(L$loo)
+
+# how many LOOs?  
+names(L)
+
+# elements in first LOO, see vignette about how to extract results
+names(L[[1]])
 }
 
 
