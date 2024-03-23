@@ -28,92 +28,51 @@ require(ggforce)
 require(gridExtra)
 require(ggrepel)
 require(reshape2)
-require(MASS)
 ```
 
 
 
 # Introduction
-Decoding the properties of immune repertoires is key in understanding the 
-response of adaptive immunity to challenges such as viral infection. One 
-important property is biases in immunoglobulin (Ig) gene usage between 
-biological conditions (e.g. healthy vs tumor). Yet, most analyses for 
-differential gene usage (DGU) are performed qualitatively, or with 
-inadequate statistical methods. Here we introduce `r Biocpkg("IgGeneUsage")`,
-a computational tool for DGU analysis.
+Decoding the properties of immune receptor repertoires (IRRs) is key to 
+understanding how our adaptive immune system responds to challenges, such 
+as viral infection or cancer. One important quantitative property of IRRs 
+is their immunoglobulin (Ig) gene usage, i.e. how often are the differnt 
+Igs that make up the immune receptors used in a given IRR. Furthermore, we
+may ask: is there differential gene usage (DGU) between IRRs from different
+biological conditions (e.g. healthy vs tumor). 
+
+Both of these questions can be answered quantitatively by are answered by 
+`r Biocpkg("IgGeneUsage")`.
 
 
 # Input
 The main input of `r Biocpkg("IgGeneUsage")` is a data.frame that has the 
 following columns:
 
-  1. individual_id: name of the repertoire (e.g. Patient-1)
-  2. condition: name of the condition to which each repertoire 
+  1. **individual_id**: name of the repertoire (e.g. Patient-1)
+  2. **condition**: name of the condition to which each repertoire 
   belongs (healthy, tumor_A, tumor_B, ...)
-  3. gene_name: gene name (e.g. IGHV1-10 or family TRVB1)
-  4. gene_usage_count: numeric (count) of usage related in individual x gene x 
-     condition specified in columns 1-3
-  5. [optional] replicates: character/numeric if multiple biological replicates
-  are available for each individual
-
-The sum of all gene usage counts (column 4) for a given repertoire is equal to
-the repertoire size (number of cells in the repertoire).
-
+  3. **gene_name**: gene name (e.g. IGHV1-10 or family TRVB1)
+  4. **gene_usage_count**: numeric (count) of usage related in individual x 
+     gene x condition specified in columns 1-3
+  5. [optional] **repertoire**: character/numeric identifier that tags the
+     different biological replicates if they are available for a specific
+     individual
 
 # Model
-`r Biocpkg("IgGeneUsage")` transforms the provided input in the following 
-way. Given $R$ repertoires, each having $G$ genes, `r Biocpkg("IgGeneUsage")` 
+`r Biocpkg("IgGeneUsage")` transforms the input data in the following 
+way. 
+
+First, given $R$ repertoires, each having $G$ genes, `r Biocpkg("IgGeneUsage")` 
 generates a gene usage matrix $Y^{R \times G}$. Row sums in $Y$ define the 
 total usage in each repertoire ($N$). 
 
-For the analysis of DGU between biological conditions, we designed the 
-following Bayesian model ($M$) for zero-inflated beta-binomial regression. 
-This model can fit over-dispersed gene usage data. The immune repertoire data 
-is also not exhaustive, i.e. some Ig genes that are systematically rearranged 
-at low probability might not be sampled, and certain Ig genes are not encoded 
-(or dysfunctional) in some individuals. The zero-inflated component of our 
-model accounts for this.
-
-\begin{align}
-p(Y_{ijk} \mid M) = \begin{cases} 
-\kappa_{j} + (1 - \kappa) \operatorname{BB}\left(0 \mid N_{ijk}, \theta_{ijk}, 
-\phi \right), & \text{if $Y_{ijk}$ = 0} \\
-(1 - \kappa_{j}) \operatorname{BB}\left(Y_{ijk} \mid N_{ijk}, \theta_{ijk}, 
-\phi \right), & \text{if $Y_{ijk}$ > 0}
-\end{cases}\\
-\theta_{ij}=\operatorname{logit^{-1}}\left(\alpha_{j}+\beta_{ijk}\right)\\
-\beta_{ijk}\sim\operatorname{Normal}\left(\gamma_{jk},\sigma_{k}\right)\\
-\gamma_{jk}\sim\operatorname{Normal}\left(0,\tau_{k}\right)\\
-\alpha_{j}\sim\operatorname{Normal}\left(\mu_{\alpha},\sigma_{\alpha}\right)\\
-\mu_{\alpha} \sim \operatorname{Normal}\left(0, 5\right)\\
-\sigma_{k}, \tau_{k}, \sigma_{\alpha} \sim 
-\operatorname{Cauchy^{+}}\left(0, 1\right) \\
-\phi \sim \operatorname{Exponential}\left(\tau\right) \\
-\tau \sim \operatorname{Gamma}\left(3, 0.1\right) \\
-\kappa_{j} \sim \operatorname{Beta}\left({0.1, 1.0\right)
-\end{align}
-
-Model $M$ legend:
-
-  * $i$ and $j$: index of different repertoires and genes, respectively 
-  * $\kappa$: zero-inflation probability
-  * $\theta$: probability of gene usage
-  * $\phi$: dispersion
-  * $\alpha$: intercept/baseline gene usage
-  * $\beta$: slope/within-repertoire DGU coefficient
-  * $\gamma$, $\gamma_{\sigma}$: slope/gene-specific DGU coefficient; 
-  standard deviation
-  * $\hat{\gamma}$, $\hat{\gamma}_{\sigma}$: mean and standard deviation of 
-  the population of gene-specific DGU coefficients
-  * $\hat{\alpha}$, $\hat{\alpha}_{\sigma}$: mean and standard deviation of 
-  the population of gene-specific baseline usages
-  * $\operatorname{BB}$: beta-binomial probability mass function (pmf)
-  * $\operatorname{Normal}$: normal probability density function (pdf)
-  * $\operatorname{Cauchy^{+}}$: half-Cauchy pdf
-  * $\operatorname{Exponential}$: exponential pdf
-  * $\operatorname{Gamma}$: gamma pdf
-  * $\operatorname{Beta}$: beta pdf
-  * $\operatorname{logit^{-1}}$: inverse logistic function
+Second, for the analysis of DGU between biological conditions, we use a 
+Bayesian model ($M$) for zero-inflated beta-binomial regression. Empirically,
+we know that Ig gene usage data can be noisy also not exhaustive, i.e. some 
+Ig genes that are systematically rearranged at low probability might not be 
+sampled, and certain Ig genes are not encoded (or dysfunctional) in some 
+individuals. $M$ can fit over-dispersed and zero-inflated Ig gene usage data.
 
 In the output of `r Biocpkg("IgGeneUsage")`, we report the mean effect 
 size (es or $\gamma$) and its 95% highest density interval (HDI). Genes with 
@@ -480,22 +439,13 @@ ggplot(data = L_gu)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
 ```
 
-# Multidimensional scaling (MDS) analaysis based 
+# Hierarchical clustering analaysis 
 
-```{r, fig.width=5, fig.height=4}
+```{r, fig.width=6, fig.height=4}
 # x <- M$theta
-x <- acast(individual_id~gene_name, 
-           data = M$theta, value.var = "theta_mean")
+x <- acast(individual_id~gene_name, data = M$theta, value.var = "theta_mean")
 
-nmds <- isoMDS(dist(x), k=2)
-
-x <- data.frame(x = nmds$points[,1], y = nmds$points[,2], id = row.names(x))
-
-ggplot(data = x)+
-  geom_point(aes(x = x, y = y), shape = 21, size = 2)+
-  geom_text_repel(aes(x = x, y = y, label = id), 
-                  size = 3.5, min.segment.length = 0)+
-  theme_bw()
+plot(hclust(dist(x, method = "euclidean"), method = "average"))
 ```
 
 

@@ -50,9 +50,8 @@ LOO(ud,
 \item 'gene_name' = character, Ig gene name (e.g. IGHV1-69)
 \item 'gene_usage_count' = number, frequency (=usage) of rearrangements from 
        individual_id x condition x gene_name
-
-\item [optional] 'repertoire' = character or number, if more than one 
-      repertoire (biological replicates) is available per individual 
+\item [optional] 'replicate' = character or number. Replicate id, if more than 
+      one repertoire (biological replicates) is available per individual 
 }
 ud can also be be a SummarizedExperiment object. See dataset
 'data(Ig_SE)' for more information.

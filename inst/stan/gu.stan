@@ -33,16 +33,16 @@ data {
   int<lower=0> N_gene;                     // gene
   int<lower=0> N_individual;               // number of individuals
   int<lower=0> N_condition;                // number of conditions
-  array[N_individual] int N;               // number of tries (repertoire size)
-  array[N_gene, N_individual] int Y;       // number of heads for each coin
-  array[N_individual] int condition_id;    // id of conditions
-  array[N_individual] int individual_id;   // id of replicate
+  array [N_individual] int N;               // number of tries (repertoire size)
+  array [N_gene, N_individual] int Y;       // number of heads for each coin
+  array [N_individual] int condition_id;    // id of conditions
+  array [N_individual] int individual_id;   // id of replicate
 }
 
 transformed data {
   // convert int N -> real N fo convenient division
   // in generated quantities block
-  real Nr [N_individual];
+  array [N_individual] real Nr;
   Nr = N;
 }
 
@@ -50,14 +50,14 @@ parameters {
   real <lower=0> phi;
   real <lower=0, upper=1> kappa;
   real <lower=0> sigma_individual;
-  array[N_individual] vector [N_gene] z_beta_individual;
+  array [N_individual] vector [N_gene] z_beta_individual;
   vector [N_gene] beta_condition;
 }
 
 transformed parameters {
-  array[N_individual] vector <lower=0, upper=1> [N_gene] theta;
-  array[N_individual] vector [N_gene] beta_sample;
-  array[N_individual] vector [N_gene] beta_individual;
+  array [N_individual] vector <lower=0, upper=1> [N_gene] theta;
+  array [N_individual] vector [N_gene] beta_sample;
+  array [N_individual] vector [N_gene] beta_individual;
   
   for(i in 1:N_individual) {
     beta_individual[i] = beta_condition + sigma_individual * z_beta_individual[i];
@@ -85,16 +85,16 @@ model {
 
 generated quantities {
   // PPC: count usage (repertoire-level)
-  int Yhat_rep [N_gene, N_individual];
+  array [N_gene, N_individual] int Yhat_rep;
   
   // PPC: proportion usage (repertoire-level)
-  real Yhat_rep_prop [N_gene, N_individual];
+  array [N_gene, N_individual] real Yhat_rep_prop;
   
   // PPC: proportion usage at a gene level in condition
   vector [N_gene] Yhat_condition_prop;
   
   // LOG-LIK
-  vector [N_gene] log_lik [N_individual];
+  array [N_individual] vector [N_gene] log_lik;
 
   //TODO: speedup, run in C++ not big factor on performance
   for(j in 1:N_gene) {

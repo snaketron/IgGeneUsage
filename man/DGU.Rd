@@ -22,15 +22,15 @@ DGU(ud,
 }
 
 \arguments{
-\item{ud}{Data.frame with 4 columns: 
+\item{ud}{Data.frame with 4 or 5 columns: 
 \itemize{
 \item 'individual_id' = character, name of the donor (e.g. Pt1)
 \item 'condition' = character, name of biological conditions (e.g. tumor)
 \item 'gene_name' = character, Ig gene name (e.g. IGHV1-69)
 \item 'gene_usage_count' = number, frequency (=usage) of rearrangements from 
        individual_id x condition x gene_name
-\item [optional] 'repertoire' = character or number, if more than one 
-      repertoire (biological replicates) is available per individual 
+\item [optional] 'replicate' = character or number. Replicate id, if more than 
+      one repertoire (biological replicates) is available per individual 
 }
 ud can also be be a SummarizedExperiment object. See examplary data 
 'data(Ig_SE)' for more information.
