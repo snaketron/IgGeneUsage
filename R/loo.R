@@ -81,4 +81,3 @@ LOO <- function(ud,
   
   return (loo_out)
 }
-

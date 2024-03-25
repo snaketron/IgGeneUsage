@@ -57,7 +57,7 @@ get_ppc_rep <- function(glm,
   }
   
   if(ud$has_replicates) {
-    t <- ud$proc_ud[, c("sample_id", "individual_id", "replicate", 
+    t <- ud$proc_ud[, c("sample_id", "individual_id", "replicate_id", 
                         "condition", "gene_name")]
   } 
   else {

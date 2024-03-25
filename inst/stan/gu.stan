@@ -36,7 +36,7 @@ data {
   array [N_individual] int N;               // number of tries (repertoire size)
   array [N_gene, N_individual] int Y;       // number of heads for each coin
   array [N_individual] int condition_id;    // id of conditions
-  array [N_individual] int individual_id;   // id of replicate
+  //array [N_individual] int individual_id; // id of replicate
 }
 
 transformed data {

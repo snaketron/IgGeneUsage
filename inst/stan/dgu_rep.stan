@@ -39,8 +39,7 @@ data {
 }
 
 transformed data {
-  // convert int N -> real N fo convenient division
-  // in generated quantities block
+  // convert int to real N for easier division in generated quantities block
   array [N_sample] real Nr;
   Nr = N;
 }
@@ -53,13 +52,12 @@ parameters {
   
   vector <lower=0> [N_condition] sigma_condition;
   vector <lower=0> [N_condition] sigma_individual;
-  real <lower=0> sigma_replicate;
+  real <lower=0> sigma_beta_rep;
   
   array [N_sample] vector [N_gene] z_beta_sample;
   array [N_individual] vector [N_gene] z_beta_individual;
   array [N_condition] vector [N_gene] z_beta_condition;
 }
-
 
 transformed parameters {
   array [N_sample] vector <lower=0, upper=1> [N_gene] theta;
@@ -76,7 +74,7 @@ transformed parameters {
   }
   
   for(i in 1:N_sample) {
-    beta_sample[i]  = beta_individual[individual_id[i]] + sigma_replicate * z_beta_sample[i];
+    beta_sample[i]  = beta_individual[individual_id[i]] + sigma_beta_rep * z_beta_sample[i];
     theta[i] = inv_logit(alpha + beta_sample[i]);
   }
 }
@@ -96,7 +94,7 @@ model {
     target += std_normal_lpdf(z_beta_sample[i]);
   }
   
-  target += cauchy_lpdf(sigma_replicate | 0.0, 1.0);
+  target += cauchy_lpdf(sigma_beta_rep | 0.0, 1.0);
   target += cauchy_lpdf(sigma_individual | 0.0, 1.0);
   target += cauchy_lpdf(sigma_condition | 0.0, 1.0);
   

@@ -88,7 +88,7 @@ with $\pi = 1$ for genes with strong differential usage, and $\pi = 0$ for
 genes with negligible differential gene usage. Both metrics are computed based
 on the posterior distribution of $\gamma$, and are thus related. 
 
-# Case Study A: analyzing data with two biological conditions
+# Case Study A: analyzing IRRs
 `r Biocpkg("IgGeneUsage")` has a couple of built-in Ig gene usage datasets. 
 Some were obtained from studies and others were simulated.
 
@@ -455,7 +455,7 @@ plot(hclust(dist(x, method = "euclidean"), method = "average"))
 ```
 
 
-# Case Study B: analyzing data with biological replicates
+# Case Study B: analyzing IRRs containing biological replicates
 
 ```{r}
 data("d_zibb_4", package = "IgGeneUsage")
@@ -547,6 +547,9 @@ g2 <- ggplot(data = stats)+
 (g1/g2)
 ```
 
+
+# Case Study C: analyzing paired-IRRs
+Stub, to be continued ...
 
 # Session
 

@@ -28,6 +28,7 @@ DGU <- function(ud,
   # get model
   m <- get_model(has_conditions = ud$has_conditions, 
                  has_replicates = ud$has_replicates,
+                 has_balanced_replicates = ud$has_balanced_replicates,
                  paired = paired)
   
   # fit model

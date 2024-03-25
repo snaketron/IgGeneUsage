@@ -1,8 +1,14 @@
+
 # Description
 # Parse input data for GU analysis
 get_usage <- function(u) {
   u$individual_org_name <- u$individual_id
   if("replicate" %in% colnames(u)) {
+    
+    has_replicates <- TRUE
+    
+    u$replicate_org_name <- u$replicate
+    u$replicate_id <- u$replicate
     u$sample_id <- paste0(u$individual_id, '|', u$condition, '|', u$replicate)
     u$sample_id <- as.numeric(as.factor(u$sample_id))
     u$individual_id <- paste0(u$individual_id, '|', u$condition)
@@ -11,18 +17,21 @@ get_usage <- function(u) {
                                              "individual_id", 
                                              "individual_org_name",
                                              "condition", 
-                                             "replicate")]
-    has_replicates <- TRUE
+                                             "replicate_org_name",
+                                             "replicate_id")]
     
     # if replicate column is provided BUT only one replicate is available
     # per individual -> do analysis without replicates
-    k <- u[duplicated(u[,c("individual_id","condition","replicate")])==FALSE,
+    k <- u[duplicated(u[,c("individual_id","condition","replicate_id")])==FALSE,
             c("individual_id")]
     if(all(table(k)==1)) {
       has_replicates <- FALSE
     }
   }
   else {
+    
+    has_replicates <- FALSE
+    
     u$sample_id <- paste0(u$individual_id, '|', u$condition)
     u$sample_id <- as.numeric(as.factor(u$sample_id))
     u$individual_id <- paste0(u$individual_id, '|', u$condition)
@@ -31,7 +40,6 @@ get_usage <- function(u) {
                                              "individual_id",
                                              "individual_org_name",
                                              "condition")]
-    has_replicates <- FALSE
   }
   
   u <- complete(u[,c("sample_id", "gene_name", "gene_usage_count")], 
@@ -61,12 +69,26 @@ get_usage <- function(u) {
   # individual data
   individual_names <- character(length = length(sample_ids))
   individual_org_names <- character(length = length(sample_ids))
+  
+  # replicates data
+  replicate_names <- character(length = length(sample_ids))
+  replicate_org_names <- character(length = length(sample_ids))
+  
   for(i in 1:length(sample_ids)) {
     individual_names[i] <- m$individual_id[m$sample_id == sample_ids[i]][1]
     individual_org_names[i] <- m$individual_org_name[
       m$sample_id == sample_ids[i]][1]
+    
+    if(has_replicates) {
+      replicate_names[i] <- m$replicate_id[m$sample_id == sample_ids[i]][1]
+      replicate_org_names[i] <- m$replicate_org_name[
+        m$sample_id == sample_ids[i]][1]
+    }
   }
   individual_ids <- as.numeric(as.factor(individual_names))
+  replicate_ids <- as.numeric(as.factor(replicate_names))
+  tr <- table(replicate_ids)
+  has_balanced_replicates <- ifelse(test = all(tr==tr[1]), yes=TRUE, no=FALSE)
   
   condition_names <- character(length = max(individual_ids))
   for(i in 1:max(individual_ids)) {
@@ -88,9 +110,14 @@ get_usage <- function(u) {
               individual_names = individual_names,
               individual_org_names = individual_org_names,
               N_individual = max(individual_ids),
+              replicate_id = replicate_ids,
+              replicate_names = replicate_names,
+              replicate_org_names = replicate_org_names,
+              N_replicate = max(replicate_ids),
               proc_ud = u,
               has_replicates = has_replicates,
-              has_conditions = max(condition_ids)>1))
+              has_conditions = max(condition_ids)>1,
+              has_balanced_replicates = has_balanced_replicates))
 }
 
 
@@ -109,30 +136,31 @@ check_ud_content <- function(ud, paired) {
 
 
 
-
-get_model <- function(has_replicates, has_conditions, paired, debug = FALSE) {
+# Description:
+# get the appropriate model
+get_model <- function(has_replicates, 
+                      has_conditions, 
+                      has_balanced_replicates, 
+                      paired) {
+  
   model_type <- ifelse(test = has_conditions, yes = "DGU", no = "GU")
+  
+  if(paired == TRUE & has_balanced_replicates == FALSE) {
+    stop("For paired analysis with replicates, you need balanced replicates!")
+  }
   
   if(model_type == "GU") {
     if(has_replicates) {
-      if(debug) {
-        model <- rstan::stan_model(file = "inst/stan/gu_rep.stan")
-      } else {
-        model <- stanmodels$gu_rep
-      }
+      model <- stanmodels$gu_rep
       pars <- c("phi", "kappa", 
-                "sigma_individual", "sigma_replicate",
+                "sigma_individual", "sigma_beta_rep",
                 "beta_sample", "beta_individual", "beta_condition",
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
                 "log_lik", "theta")
       model_name <- "GU_rep"
     } 
     else {
-      if(debug) {
-        model <- rstan::stan_model(file = "inst/stan/gu.stan")
-      } else {
-        model <- stanmodels$gu
-      }
+      model <- stanmodels$gu
       pars <- c("phi", "kappa", 
                 "sigma_individual",
                 "beta_individual", "beta_condition",
@@ -143,27 +171,28 @@ get_model <- function(has_replicates, has_conditions, paired, debug = FALSE) {
   } 
   else {
     if(has_replicates) {
-      if(debug) {
-        model <- rstan::stan_model(file = "inst/stan/dgu_rep.stan")
-      } else {
-        model <- stanmodels$dgu_rep
-      }
+      model <- stanmodels$dgu_rep
       pars <- c("phi", "kappa", "alpha", 
-                "sigma_condition", "sigma_individual", "sigma_replicate",
+                "sigma_condition", "sigma_individual", "sigma_beta_rep",
                 "beta_sample", "beta_individual", "beta_condition", 
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
                 "log_lik", "dgu", "dgu_prob", "theta")
       model_name <- "DGU_rep"
       if(paired) {
-        model_name <- "DGU_rep_paired"
+        model <- stanmodels$dgu_paired_rep
+        pars <- c("phi", "kappa", "alpha", 
+                  "sigma_condition", "sigma_individual", "sigma_alpha",
+                  "sigma_alpha_rep", "sigma_beta_rep",
+                  "alpha_sample", "beta_sample", 
+                  "alpha_individual", "beta_individual", 
+                  "beta_condition", 
+                  "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                  "log_lik", "dgu", "dgu_prob", "theta")
+        model_name <- "DGU_paired_rep"
       }
     } 
     else {
-      if(debug) {
-        model <- rstan::stan_model(file = "inst/stan/dgu.stan")
-      } else{
-        model <- stanmodels$dgu
-      }
+      model <- stanmodels$dgu
       pars <- c("phi", "kappa", "alpha", 
                 "sigma_condition", "sigma_individual",
                 "beta_individual", "beta_condition", 
@@ -171,6 +200,95 @@ get_model <- function(has_replicates, has_conditions, paired, debug = FALSE) {
                 "log_lik", "dgu", "dgu_prob", "theta")
       model_name <- "DGU"
       if(paired) {
+        model <- stanmodels$dgu_paired
+        pars <- c("phi", "kappa", "alpha", 
+                  "sigma_condition", "sigma_individual", "sigma_alpha",
+                  "alpha_individual", "beta_individual", "beta_condition",
+                  "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                  "log_lik", "dgu", "dgu_prob", "theta")
+        model_name <- "DGU_paired"
+      }
+    }
+  }
+  
+  return(list(model = model, 
+              model_name = model_name,
+              model_type = model_type,
+              pars = pars,
+              has_replicates = has_replicates,
+              has_conditions = has_conditions,
+              paired = paired))
+}
+
+
+
+# Description:
+# get the appropriate model
+get_model_debug <- function(has_replicates, has_conditions, 
+                            has_balanced_replicates, paired) {
+  model_type <- ifelse(test = has_conditions, yes = "DGU", no = "GU")
+  
+  if(paired == TRUE & has_balanced_replicates == FALSE) {
+    stop("For paired analysis with replicates, you need balanced replicates!")
+  }
+  
+  if(model_type == "GU") {
+    if(has_replicates) {
+      model <- rstan::stan_model(file = "inst/stan/gu_rep.stan")
+      pars <- c("phi", "kappa", 
+                "sigma_individual", "sigma_beta_rep",
+                "beta_sample", "beta_individual", "beta_condition",
+                "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                "log_lik", "theta")
+      model_name <- "GU_rep"
+    } 
+    else {
+      model <- rstan::stan_model(file = "inst/stan/gu.stan")
+      pars <- c("phi", "kappa", 
+                "sigma_individual",
+                "beta_individual", "beta_condition",
+                "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                "log_lik", "theta")
+      model_name <- "GU"
+    }
+  } 
+  else {
+    if(has_replicates) {
+      model <- rstan::stan_model(file = "inst/stan/dgu_rep.stan")
+      pars <- c("phi", "kappa", "alpha", 
+                "sigma_condition", "sigma_individual", "sigma_beta_rep",
+                "beta_sample", "beta_individual", "beta_condition", 
+                "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                "log_lik", "dgu", "dgu_prob", "theta")
+      model_name <- "DGU_rep"
+      if(paired) {
+        model <- rstan::stan_model(file = "inst/stan/dgu_paired_rep.stan")
+        pars <- c("phi", "kappa", "alpha", 
+                  "sigma_condition", "sigma_individual", "sigma_alpha",
+                  "sigma_alpha_rep", "sigma_beta_rep",
+                  "alpha_sample", "beta_sample", 
+                  "alpha_individual", "beta_individual", 
+                  "beta_condition", 
+                  "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                  "log_lik", "dgu", "dgu_prob", "theta")
+        model_name <- "DGU_paired_rep"
+      }
+    } 
+    else {
+      model <- rstan::stan_model(file = "inst/stan/dgu.stan")
+      pars <- c("phi", "kappa", "alpha", 
+                "sigma_condition", "sigma_individual",
+                "beta_individual", "beta_condition", 
+                "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                "log_lik", "dgu", "dgu_prob", "theta")
+      model_name <- "DGU"
+      if(paired) {
+        model <- rstan::stan_model(file = "inst/stan/dgu_paired.stan")
+        pars <- c("phi", "kappa", "alpha", 
+                  "sigma_condition", "sigma_individual", "sigma_alpha",
+                  "alpha_individual", "beta_individual", "beta_condition",
+                  "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                  "log_lik", "dgu", "dgu_prob", "theta")
         model_name <- "DGU_paired"
       }
     }
