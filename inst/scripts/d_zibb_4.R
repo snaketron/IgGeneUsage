@@ -21,7 +21,6 @@ data {
   array [N_sample] int N;                  // repertoire size
   array [N_individual] int condition_id;   // id of conditions
   array [N_sample] int individual_id;      // id of replicate
-  vector [N_gene] alpha;
   real <lower=0> phi;
   real <lower=0, upper=1> kappa;
   array [N_condition] vector [N_gene] beta_condition;
@@ -31,12 +30,16 @@ data {
 }
 
 generated quantities {
+  vector [N_gene] alpha;
   array [N_sample] vector <lower=0, upper=1> [N_gene] theta;
   array [N_sample] vector [N_gene] beta_sample;
   array [N_individual] vector [N_gene] beta_individual;
-  
   // generate usage
   array [N_gene, N_sample] int Y;
+  
+  for(i in 1:N_gene) {
+    alpha[i] = normal_rng(-3, 3);
+  }
   
   for(i in 1:N_individual) {
     for(j in 1:N_gene) {
@@ -88,8 +91,6 @@ N <- rep(x = 1000, times = N_sample)
 
 individual_id <- rep(x = 1:N_individual, each = N_replicates)
 
-alpha <- rnorm(n = N_gene, mean = -5, sd = 3)
-
 phi <- 200
 
 kappa <- 0.02
@@ -118,7 +119,6 @@ l <- list(N_sample = N_sample,
           N = N,
           condition_id = condition_id,
           individual_id = individual_id,
-          alpha = alpha,
           phi = phi,
           kappa = kappa,
           beta_condition = beta_condition,
@@ -168,7 +168,11 @@ d_zibb_4 <- ysim_df
 save(d_zibb_4, file = "data/d_zibb_4.RData", compress = T)
 
 
+# save(sim, file = "mytests/sim_d_zibb_4.RData", compress = T)
 # ggplot(data = d_zibb_4)+
 #   geom_sina(aes(x = gene_name, y = gene_usage_count, col = condition))+
 #   theme_bw(base_size = 10)+
 #   theme(legend.position = "none")
+
+s <- data.frame(summary(sim)$summary)
+s$par <- rownames(s)
