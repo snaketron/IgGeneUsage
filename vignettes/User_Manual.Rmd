@@ -543,7 +543,7 @@ g2 <- ggplot(data = stats)+
 ```
 
 
-```{r, fig.weight = 5, fig.height = 6}
+```{r, fig.height = 6, fig.width = 7}
 (g1/g2)
 ```
 
