@@ -93,8 +93,26 @@ get_usage <- function(u) {
               has_conditions = max(condition_ids)>1))
 }
 
-get_model <- function(has_replicates, has_conditions, debug = FALSE) {
+
+
+# Description:
+# checks for structural problems in the data, and mismatch with given inputs
+check_ud_content <- function(ud, paired) {
+  has_conditions <- ud$has_conditions
+  has_replicates <- ud$has_replicates
+  ud <- M$ud$proc_ud
+  
+  table(ud$sample_id)
+  diag(table(ud$sample_id, ud$individual_id))
+  identical(diag(table(ud$sample_id, ud$individual_id)))
+}
+
+
+
+
+get_model <- function(has_replicates, has_conditions, paired, debug = FALSE) {
   model_type <- ifelse(test = has_conditions, yes = "DGU", no = "GU")
+  
   if(model_type == "GU") {
     if(has_replicates) {
       if(debug) {
@@ -136,6 +154,9 @@ get_model <- function(has_replicates, has_conditions, debug = FALSE) {
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
                 "log_lik", "dgu", "dgu_prob", "theta")
       model_name <- "DGU_rep"
+      if(paired) {
+        model_name <- "DGU_rep_paired"
+      }
     } 
     else {
       if(debug) {
@@ -149,6 +170,9 @@ get_model <- function(has_replicates, has_conditions, debug = FALSE) {
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
                 "log_lik", "dgu", "dgu_prob", "theta")
       model_name <- "DGU"
+      if(paired) {
+        model_name <- "DGU_paired"
+      }
     }
   }
   
@@ -157,5 +181,6 @@ get_model <- function(has_replicates, has_conditions, debug = FALSE) {
               model_type = model_type,
               pars = pars,
               has_replicates = has_replicates,
-              has_conditions = has_conditions))
+              has_conditions = has_conditions,
+              paired = paired))
 }

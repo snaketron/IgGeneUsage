@@ -8,14 +8,16 @@ check_dgu_input <- function(ud,
                             mcmc_cores,
                             mcmc_steps,
                             mcmc_warmup,
-                            hdi_lvl) {
+                            hdi_lvl,
+                            paired) {
   
   if(missing(ud) || is.null(ud) ||
      missing(mcmc_chains) || is.null(mcmc_chains) ||
      missing(mcmc_steps) || is.null(mcmc_steps) ||
      missing(mcmc_warmup) || is.null(mcmc_warmup) ||
      missing(mcmc_cores) || is.null(mcmc_cores) ||
-     missing(hdi_lvl) || is.null(hdi_lvl)) {
+     missing(hdi_lvl) || is.null(hdi_lvl) ||
+     missing(paired) || is.null(paired)) {
     stop("arguments must be specified")
   }
   
@@ -25,6 +27,7 @@ check_dgu_input <- function(ud,
   check_mcmc_chains(mcmc_chains = mcmc_chains)
   check_mcmc_cores(mcmc_cores = mcmc_cores)
   check_hdi(hdi_lvl = hdi_lvl)
+  check_paired(paired = paired)
 }
 
 
@@ -166,5 +169,19 @@ check_ud <- function(ud) {
     if(all(table(apply(X = k, MARGIN = 1, FUN = paste0, collapse = '|'))==1)){
       warning("one replicate available, no-replicates model used")
     }
+  }
+}
+
+
+
+# Description:
+# paired input check
+check_paired <- function(paired) {
+  if(length(paired) != 1) {
+    stop('paired must be a logical (TRUE or FALSE)')
+  }
+  
+  if(is.logical(paired) == FALSE) {
+    stop('paired must be a logical (TRUE or FALSE)')
   }
 }

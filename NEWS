@@ -1,5 +1,6 @@
 Changes in version 1.17
-+ model explanded for designs with biological replicates 
++ model expanded for designs with biological replicates 
++ model expanded for paired sample designs (also with replicates)
 
 Changes in version 1.15
 + model for gene usage (GU) analysis
