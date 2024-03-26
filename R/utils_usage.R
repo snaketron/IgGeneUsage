@@ -11,7 +11,7 @@ get_usage <- function(u) {
     u$replicate_id <- u$replicate
     u$sample_id <- paste0(u$individual_id, '|', u$condition, '|', u$replicate)
     u$sample_id <- as.numeric(as.factor(u$sample_id))
-    u$individual_id <- paste0(u$individual_id, '|', u$condition)
+    # u$individual_id <- paste0(u$individual_id, '|', u$condition)
     
     m <- u[duplicated(u$sample_id)==FALSE, c("sample_id",
                                              "individual_id", 
@@ -34,7 +34,7 @@ get_usage <- function(u) {
     
     u$sample_id <- paste0(u$individual_id, '|', u$condition)
     u$sample_id <- as.numeric(as.factor(u$sample_id))
-    u$individual_id <- paste0(u$individual_id, '|', u$condition)
+    # u$individual_id <- paste0(u$individual_id, '|', u$condition)
     
     m <- u[duplicated(u$sample_id)==FALSE, c("sample_id", 
                                              "individual_id",
@@ -90,12 +90,22 @@ get_usage <- function(u) {
   tr <- table(replicate_ids)
   has_balanced_replicates <- ifelse(test = all(tr==tr[1]), yes=TRUE, no=FALSE)
   
-  condition_names <- character(length = max(individual_ids))
-  for(i in 1:max(individual_ids)) {
-    q <- individual_names[individual_ids==i][1]
-    condition_names[i] <- m$condition[m$individual_id == q][1]
+  if(has_replicates) {
+    # condition at individual
+    condition_names <- character(length = max(individual_ids))
+    for(i in 1:max(individual_ids)) {
+      q <- individual_names[individual_ids==i][1]
+      condition_names[i] <- m$condition[m$individual_id == q][1]
+    }
+    condition_ids <- as.numeric(as.factor(condition_names))
+  } else {
+    # condition at sample
+    condition_names <- character(length = length(sample_ids))
+    for(i in 1:length(sample_ids)) {
+      condition_names[i] <- m$condition[m$sample_id == sample_ids[i]]
+    }
+    condition_ids <- as.numeric(as.factor(condition_names))
   }
-  condition_ids <- as.numeric(as.factor(condition_names))
   
   return(list(Y = Y, 
               N = as.numeric(N), 
@@ -168,8 +178,7 @@ get_model <- function(has_replicates,
                 "log_lik", "theta")
       model_name <- "GU"
     }
-  } 
-  else {
+  } else {
     if(has_replicates) {
       model <- stanmodels$dgu_rep
       pars <- c("phi", "kappa", "alpha", 

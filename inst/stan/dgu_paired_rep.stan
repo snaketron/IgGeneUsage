@@ -33,8 +33,8 @@ data {
   int<lower=0> N_individual;               // number of individuals
   int<lower=0> N_condition;                // number of conditions
   int<lower=0> N_replicate;                // number of replicates
-  array [N_individual] int N;              // number of tries
-  array [N_gene, N_individual] int Y;      // number of heads for each coin
+  array [N_sample] int N;              // number of tries
+  array [N_gene, N_sample] int Y;      // number of heads for each coin
   array [N_individual] int condition_id;   // id of conditions
   array [N_sample] int individual_id;      // id of individual
   array [N_sample] int replicate_id;       // id of replicate
@@ -42,7 +42,7 @@ data {
 
 transformed data {
   // convert int to real N for easier division in generated quantities block
-  array [N_individual] real Nr;
+  array [N_sample] real Nr;
   Nr = N;
 }
 
@@ -71,7 +71,7 @@ transformed parameters {
   array [N_individual] vector [N_gene] beta_individual;
   array [N_individual, N_replicate] vector [N_gene] alpha_sample;
   array [N_individual, N_replicate] vector [N_gene] beta_sample;
-  array [N_individual] vector <lower=0, upper=1> [N_gene] theta;
+  array [N_sample] vector <lower=0, upper=1> [N_gene] theta;
   
   for(i in 1:N_condition) {
     beta_condition[i] = 0 + sigma_condition[i] * z_beta_condition[i];
@@ -111,7 +111,7 @@ model {
   target += cauchy_lpdf(sigma_alpha_rep | 0.0, 1.0);
   target += cauchy_lpdf(sigma_beta_rep | 0.0, 1.0);
   
-  for(i in 1:N_individual) {
+  for(i in 1:N_sample) {
     for(j in 1:N_gene) {
       target += zibb_lpmf(Y[j,i] | N[i], theta[i][j], phi, kappa);
     }
@@ -120,16 +120,16 @@ model {
 
 generated quantities {
   // PPC: count usage (repertoire-level)
-  array [N_gene, N_individual] int Yhat_rep;
+  array [N_gene, N_sample] int Yhat_rep;
   
   // PPC: proportion usage (repertoire-level)
-  array [N_gene, N_individual] real Yhat_rep_prop;
+  array [N_gene, N_sample] real Yhat_rep_prop;
   
   // PPC: proportion usage at a gene level in condition
   array [N_condition] vector [N_gene] Yhat_condition_prop;
   
   // LOG-LIK
-  array [N_individual] vector [N_gene] log_lik;
+  array [N_sample] vector [N_gene] log_lik;
   
   // DGU matrix
   matrix [N_gene, N_condition*(N_condition-1)/2] dgu;
@@ -138,7 +138,7 @@ generated quantities {
   
   //TODO: speedup, run in C++ not big factor on performance
   for(j in 1:N_gene) {
-    for(i in 1:N_individual) {
+    for(i in 1:N_sample) {
       Yhat_rep[j, i] = zibb_rng(Y[j, i], N[i], theta[i][j], phi, kappa);
       log_lik[i][j] = zibb_lpmf(Y[j, i] | N[i], theta[i][j], phi, kappa);
       
