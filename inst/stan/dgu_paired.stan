@@ -72,7 +72,7 @@ transformed parameters {
   for(i in 1:N_individual) {
     alpha_individual[i] = alpha + sigma_alpha * z_alpha_individual[i];
     for(j in 1:N_condition) {
-      beta_individual[i,j]  = beta_condition[j] + sigma_individual[j] * z_beta_individual[i,j];
+      beta_individual[i,j] = beta_condition[j] + sigma_individual[j] * z_beta_individual[i,j];
     }
   }
   
