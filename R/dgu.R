@@ -6,8 +6,7 @@ DGU <- function(ud,
                 mcmc_cores = 1,
                 hdi_lvl = 0.95,
                 adapt_delta = 0.95,
-                max_treedepth = 12,
-                paired = FALSE) {
+                max_treedepth = 12) {
   
   # check inputs
   check_dgu_input(ud = ud,
@@ -15,8 +14,7 @@ DGU <- function(ud,
                   mcmc_cores = as.integer(x = mcmc_cores),
                   mcmc_steps = as.integer(x = mcmc_steps),
                   mcmc_warmup = as.integer(x = mcmc_warmup),
-                  hdi_lvl = hdi_lvl,
-                  paired = paired)
+                  hdi_lvl = hdi_lvl)
   
   udr <- ud
   ud <- get_usage(u = udr)
@@ -28,8 +26,7 @@ DGU <- function(ud,
   # get model
   m <- get_model(has_conditions = ud$has_conditions, 
                  has_replicates = ud$has_replicates,
-                 has_balanced_replicates = ud$has_balanced_replicates,
-                 paired = paired)
+                 has_balanced_replicates = ud$has_balanced_replicates)
   
   # fit model
   glm <- sampling(object = m$model,

@@ -38,8 +38,7 @@ LOO(ud,
     mcmc_cores, 
     hdi_lvl,
     adapt_delta, 
-    max_treedepth,
-    paired = FALSE)
+    max_treedepth)
 }
 
 
@@ -63,8 +62,6 @@ ud can also be be a SummarizedExperiment object. See dataset
 \item{hdi_lvl}{Highest density interval (HDI) (default = 0.95).}
 \item{adapt_delta}{MCMC setting (default = 0.95).}
 \item{max_treedepth}{MCMC setting (default = 12).}
-\item{paired}{should a paired samples differential Ig gene analaysis be 
-performed (default = FALSE)?}
 }
 
 \details{

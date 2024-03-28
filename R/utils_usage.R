@@ -23,7 +23,7 @@ get_usage <- function(u) {
     # if replicate column is provided BUT only one replicate is available
     # per individual -> do analysis without replicates
     k <- u[duplicated(u[,c("individual_id","condition","replicate_id")])==FALSE,
-            c("individual_id")]
+           c("individual_id")]
     if(all(table(k)==1)) {
       has_replicates <- FALSE
     }
@@ -131,33 +131,13 @@ get_usage <- function(u) {
 }
 
 
-
-# Description:
-# checks for structural problems in the data, and mismatch with given inputs
-check_ud_content <- function(ud, paired) {
-  has_conditions <- ud$has_conditions
-  has_replicates <- ud$has_replicates
-  ud <- M$ud$proc_ud
-  
-  table(ud$sample_id)
-  diag(table(ud$sample_id, ud$individual_id))
-  identical(diag(table(ud$sample_id, ud$individual_id)))
-}
-
-
-
 # Description:
 # get the appropriate model
 get_model <- function(has_replicates, 
                       has_conditions, 
-                      has_balanced_replicates, 
-                      paired) {
+                      has_balanced_replicates) {
   
   model_type <- ifelse(test = has_conditions, yes = "DGU", no = "GU")
-  
-  if(paired == TRUE & has_balanced_replicates == FALSE) {
-    stop("For paired analysis with replicates, you need balanced replicates!")
-  }
   
   if(model_type == "GU") {
     if(has_replicates) {
@@ -187,18 +167,6 @@ get_model <- function(has_replicates,
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
                 "log_lik", "dgu", "dgu_prob", "theta")
       model_name <- "DGU_rep"
-      if(paired) {
-        model <- stanmodels$dgu_paired_rep
-        pars <- c("phi", "kappa", "alpha", 
-                  "sigma_condition", "sigma_individual", "sigma_alpha",
-                  "sigma_alpha_rep", "sigma_beta_rep",
-                  "alpha_sample", "beta_sample", 
-                  "alpha_individual", "beta_individual", 
-                  "beta_condition", 
-                  "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
-                  "log_lik", "dgu", "dgu_prob", "theta")
-        model_name <- "DGU_paired_rep"
-      }
     } 
     else {
       model <- stanmodels$dgu
@@ -208,15 +176,6 @@ get_model <- function(has_replicates,
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
                 "log_lik", "dgu", "dgu_prob", "theta")
       model_name <- "DGU"
-      if(paired) {
-        model <- stanmodels$dgu_paired
-        pars <- c("phi", "kappa", "alpha", 
-                  "sigma_condition", "sigma_individual", "sigma_alpha",
-                  "alpha_individual", "beta_individual", "beta_condition",
-                  "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
-                  "log_lik", "dgu", "dgu_prob", "theta")
-        model_name <- "DGU_paired"
-      }
     }
   }
   
@@ -225,21 +184,17 @@ get_model <- function(has_replicates,
               model_type = model_type,
               pars = pars,
               has_replicates = has_replicates,
-              has_conditions = has_conditions,
-              paired = paired))
+              has_conditions = has_conditions))
 }
 
 
 
 # Description:
 # get the appropriate model
-get_model_debug <- function(has_replicates, has_conditions, 
-                            has_balanced_replicates, paired) {
+get_model_debug <- function(has_replicates, 
+                            has_conditions, 
+                            has_balanced_replicates) {
   model_type <- ifelse(test = has_conditions, yes = "DGU", no = "GU")
-  
-  if(paired == TRUE & has_balanced_replicates == FALSE) {
-    stop("For paired analysis with replicates, you need balanced replicates!")
-  }
   
   if(model_type == "GU") {
     if(has_replicates) {
@@ -270,18 +225,6 @@ get_model_debug <- function(has_replicates, has_conditions,
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
                 "log_lik", "dgu", "dgu_prob", "theta")
       model_name <- "DGU_rep"
-      if(paired) {
-        model <- rstan::stan_model(file = "inst/stan/dgu_paired_rep.stan")
-        pars <- c("phi", "kappa", "alpha", 
-                  "sigma_condition", "sigma_individual", "sigma_alpha",
-                  "sigma_alpha_rep", "sigma_beta_rep",
-                  "alpha_sample", "beta_sample", 
-                  "alpha_individual", "beta_individual", 
-                  "beta_condition", 
-                  "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
-                  "log_lik", "dgu", "dgu_prob", "theta")
-        model_name <- "DGU_paired_rep"
-      }
     } 
     else {
       model <- rstan::stan_model(file = "inst/stan/dgu.stan")
@@ -291,15 +234,6 @@ get_model_debug <- function(has_replicates, has_conditions,
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
                 "log_lik", "dgu", "dgu_prob", "theta")
       model_name <- "DGU"
-      if(paired) {
-        model <- rstan::stan_model(file = "inst/stan/dgu_paired.stan")
-        pars <- c("phi", "kappa", "alpha", 
-                  "sigma_condition", "sigma_individual", "sigma_alpha",
-                  "alpha_individual", "beta_individual", "beta_condition",
-                  "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
-                  "log_lik", "dgu", "dgu_prob", "theta")
-        model_name <- "DGU_paired"
-      }
     }
   }
   
@@ -308,6 +242,5 @@ get_model_debug <- function(has_replicates, has_conditions,
               model_type = model_type,
               pars = pars,
               has_replicates = has_replicates,
-              has_conditions = has_conditions,
-              paired = paired))
+              has_conditions = has_conditions))
 }
