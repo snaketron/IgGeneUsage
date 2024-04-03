@@ -50,8 +50,10 @@ parameters {
   vector [N_gene] alpha;
   real <lower=0> sigma_individual;
   vector <lower=0> [N_condition] sigma_condition;
+  real <lower=0> sigma_beta_rep;
   array [N_condition] vector [N_gene] z_beta_condition;
   array [N_individual] vector [N_gene] z_beta_individual;
+  array [N_sample] vector [N_gene] z_beta_sample;
   vector [N_individual] mu_individual;
 }
 
@@ -59,18 +61,19 @@ transformed parameters {
   array [N_sample] vector <lower=0, upper=1> [N_gene] theta;
   array [N_individual] vector [N_gene] beta_individual;
   array [N_condition] vector [N_gene] beta_condition;
+  array [N_sample] vector [N_gene] beta_sample;
   
   for(j in 1:N_condition) {
     beta_condition[j] = 0 + sigma_condition[j] * z_beta_condition[j];
   }
-  
   
   for(i in 1:N_individual) {
     beta_individual[i] = mu_individual[i] + sigma_individual * z_beta_individual[i];
   }
 
   for(i in 1:N_sample) {
-    theta[i] = inv_logit(alpha + beta_individual[individual_id[i]] + beta_condition[condition_id[i]]);
+    beta_sample[i]  = beta_individual[individual_id[i]] + sigma_beta_rep * z_beta_sample[i];
+    theta[i] = inv_logit(alpha + beta_sample[i] + beta_condition[condition_id[i]]);
   }
 }
 
@@ -87,8 +90,10 @@ model {
   }
   target += cauchy_lpdf(sigma_condition | 0.0, 1.0);
   target += cauchy_lpdf(sigma_individual | 0.0, 1.0);
+  target += cauchy_lpdf(sigma_beta_rep | 0.0, 1.0);
   
   for(i in 1:N_sample) {
+    target += std_normal_lpdf(z_beta_sample[i]);
     for(j in 1:N_gene) {
       target += zibb_lpmf(Y[j,i] | N[i], theta[i][j], phi, kappa);
     }
