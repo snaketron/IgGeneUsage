@@ -8,7 +8,8 @@ LOO <- function(ud,
                 mcmc_cores = 1,
                 hdi_lvl = 0.95,
                 adapt_delta = 0.95,
-                max_treedepth = 12) {
+                max_treedepth = 12,
+                paired = FALSE) {
   
   # check inputs
   check_dgu_input(ud = ud,
@@ -16,7 +17,8 @@ LOO <- function(ud,
                   mcmc_cores = as.integer(x = mcmc_cores),
                   mcmc_steps = as.integer(x = mcmc_steps),
                   mcmc_warmup = as.integer(x = mcmc_warmup),
-                  hdi_lvl = hdi_lvl)
+                  hdi_lvl = hdi_lvl,
+                  paired = paired)
   
   # process data
   udp <- get_usage(u = ud)
@@ -57,7 +59,8 @@ LOO <- function(ud,
                mcmc_cores = mcmc_cores,
                hdi_lvl = hdi_lvl,
                adapt_delta = adapt_delta,
-               max_treedepth = max_treedepth)
+               max_treedepth = max_treedepth,
+               paired = paired)
     
     if(is.data.frame(out$gu)==TRUE) {
       out$gu$loo_id <- rs[r]

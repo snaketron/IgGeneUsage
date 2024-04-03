@@ -11,7 +11,6 @@ get_usage <- function(u) {
     u$replicate_id <- u$replicate
     u$sample_id <- paste0(u$individual_id, '|', u$condition, '|', u$replicate)
     u$sample_id <- as.numeric(as.factor(u$sample_id))
-    # u$individual_id <- paste0(u$individual_id, '|', u$condition)
     
     m <- u[duplicated(u$sample_id)==FALSE, c("sample_id",
                                              "individual_id", 
@@ -130,14 +129,18 @@ get_usage <- function(u) {
               has_balanced_replicates = has_balanced_replicates))
 }
 
-
 # Description:
 # get the appropriate model
 get_model <- function(has_replicates, 
                       has_conditions, 
-                      has_balanced_replicates) {
+                      has_balanced_replicates, 
+                      paired) {
   
   model_type <- ifelse(test = has_conditions, yes = "DGU", no = "GU")
+  
+  if(paired == TRUE & has_balanced_replicates == FALSE) {
+    stop("For paired analysis with replicates, you need balanced replicates!")
+  }
   
   if(model_type == "GU") {
     if(has_replicates) {
@@ -167,6 +170,18 @@ get_model <- function(has_replicates,
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
                 "log_lik", "dgu", "dgu_prob", "theta")
       model_name <- "DGU_rep"
+      if(paired) {
+        model <- stanmodels$dgu_paired_rep
+        pars <- c("phi", "kappa", "alpha", 
+                  "sigma_condition", "sigma_individual", "sigma_alpha",
+                  "sigma_alpha_rep", "sigma_beta_rep",
+                  "alpha_sample", "beta_sample", 
+                  "alpha_individual", "beta_individual", 
+                  "beta_condition", 
+                  "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                  "log_lik", "dgu", "dgu_prob", "theta")
+        model_name <- "DGU_paired_rep"
+      }
     } 
     else {
       model <- stanmodels$dgu
@@ -176,6 +191,15 @@ get_model <- function(has_replicates,
                 "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
                 "log_lik", "dgu", "dgu_prob", "theta")
       model_name <- "DGU"
+      if(paired) {
+        model <- stanmodels$dgu_paired
+        pars <- c("phi", "kappa", "alpha", 
+                  "sigma_condition", "sigma_individual",
+                  "mu_individual", "beta_individual", "beta_condition",
+                  "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
+                  "log_lik", "dgu", "dgu_prob", "theta")
+        model_name <- "DGU_paired"
+      }
     }
   }
   
@@ -184,10 +208,9 @@ get_model <- function(has_replicates,
               model_type = model_type,
               pars = pars,
               has_replicates = has_replicates,
-              has_conditions = has_conditions))
+              has_conditions = has_conditions,
+              paired = paired))
 }
-
-
 
 # Description:
 # get the appropriate model

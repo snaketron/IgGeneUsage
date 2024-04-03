@@ -18,7 +18,8 @@ DGU(ud,
     mcmc_cores, 
     hdi_lvl,
     adapt_delta, 
-    max_treedepth)
+    max_treedepth,
+    paired = FALSE)
 }
 
 \arguments{
@@ -41,6 +42,8 @@ ud can also be be a SummarizedExperiment object. See examplary data
 \item{hdi_lvl}{Highest density interval (HDI) (default = 0.95).}
 \item{adapt_delta}{MCMC setting (default = 0.95).}
 \item{max_treedepth}{MCMC setting (default = 12).}
+\item{paired}{should a paired samples differential Ig gene analaysis be 
+performed (default = FALSE)?}
 }
 
 \details{
@@ -83,7 +86,8 @@ M <- DGU(ud = d_zibb_2,
          mcmc_cores = 1,
          hdi_lvl = 0.95,
          adapt_delta = 0.8,
-         max_treedepth = 10)
+         max_treedepth = 10,
+         paired = FALSE)
 
 # look at M elements
 names(M)

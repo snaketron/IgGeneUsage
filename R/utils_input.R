@@ -1,4 +1,3 @@
-
 # Description:
 # Provided the input arguments, this function checks their
 # validity. It stops the execution if a problem is encountered
@@ -8,6 +7,7 @@ check_dgu_input <- function(ud,
                             mcmc_cores,
                             mcmc_steps,
                             mcmc_warmup,
+                            paired,
                             hdi_lvl) {
   
   if(missing(ud) || is.null(ud) ||
@@ -15,6 +15,7 @@ check_dgu_input <- function(ud,
      missing(mcmc_steps) || is.null(mcmc_steps) ||
      missing(mcmc_warmup) || is.null(mcmc_warmup) ||
      missing(mcmc_cores) || is.null(mcmc_cores) ||
+     missing(paired) || is.null(paired) ||
      missing(hdi_lvl) || is.null(hdi_lvl)) {
     stop("arguments must be specified")
   }
@@ -24,9 +25,9 @@ check_dgu_input <- function(ud,
                    mcmc_warmup = mcmc_warmup)
   check_mcmc_chains(mcmc_chains = mcmc_chains)
   check_mcmc_cores(mcmc_cores = mcmc_cores)
+  check_paired(paired = paired)
   check_hdi(hdi_lvl = hdi_lvl)
 }
-
 
 # Description:
 # MCMC Iterations check
@@ -166,5 +167,17 @@ check_ud <- function(ud) {
     if(all(table(apply(X = k, MARGIN = 1, FUN = paste0, collapse = '|'))==1)){
       warning("one replicate available, no-replicates model used")
     }
+  }
+}
+
+# Description:
+# paired input check
+check_paired <- function(paired) {
+  if(length(paired) != 1) {
+    stop('paired must be a logical (TRUE or FALSE)')
+  }
+  
+  if(is.logical(paired) == FALSE) {
+    stop('paired must be a logical (TRUE or FALSE)')
   }
 }
