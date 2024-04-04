@@ -18,8 +18,7 @@ DGU <- function(ud,
                   hdi_lvl = hdi_lvl,
                   paired = paired)
   
-  udr <- ud
-  ud <- get_usage(u = udr)
+  ud <- get_usage(u = ud)
   
   # setup control list
   control_list <- list(adapt_delta = adapt_delta,

@@ -28,14 +28,14 @@ functions {
 }
 
 data {
-  int<lower=0> N_sample;                   // number of repertoires 
-  int<lower=0> N_gene;                     // gene
-  int<lower=0> N_individual;               // number of individuals
-  int<lower=0> N_condition;                // number of conditions
-  array [N_sample] int N;                  // number of tries
-  array [N_gene, N_sample] int Y;          // number of heads for each coin
-  array [N_sample] int condition_id;       // id of conditions
-  array [N_sample] int individual_id;      // id of replicate
+  int<lower=0> N_sample;                        // # samples 
+  int<lower=0> N_gene;                          // # genes
+  int<lower=0> N_individual;                    // # individuals
+  int<lower=0> N_condition;                     // # conditions
+  array [N_sample] int N;                       // rep size
+  array [N_gene, N_sample] int Y;               // gene usage
+  array [N_sample] int condition_id_of_sample;  // condition of sample
+  array [N_sample] int individual_id;           // individual id
 }
 
 transformed data {
@@ -70,7 +70,7 @@ transformed parameters {
   }
 
   for(i in 1:N_sample) {
-    theta[i] = inv_logit(alpha + beta_individual[individual_id[i]] + beta_condition[condition_id[i]]);
+    theta[i] = inv_logit(alpha + beta_individual[individual_id[i]] + beta_condition[condition_id_of_sample[i]]);
   }
 }
 

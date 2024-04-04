@@ -30,8 +30,6 @@ functions {
 data {
   int<lower=0> N_sample;                   // number of repertoires
   int<lower=0> N_gene;                     // gene
-  int<lower=0> N_individual;               // number of individuals
-  int<lower=0> N_condition;                // number of conditions
   array [N_sample] int N;                  // number of tries (repertoire size)
   array [N_gene, N_sample] int Y;          // number of heads for each coin
 }

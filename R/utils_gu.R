@@ -37,7 +37,7 @@ get_condition_prop_dgu <- function(glm, hdi_lvl, ud) {
   gu_summary$condition <- NA
   for(i in 1:ud$N_condition) {
     gu_summary$condition[which(gu_summary$condition_id == i)]<-
-      ud$condition_names[which(ud$condition_id == i)[1]]
+      ud$condition_name_of_sample[which(ud$condition_id_of_sample == i)[1]]
   }
   
   # remove unused vars
@@ -71,7 +71,7 @@ get_condition_prop_gu <- function(glm, hdi_lvl, ud) {
   
   gu_summary$gene_id <- as.numeric(par)
   gu_summary$gene_name <- ud$gene_names[gu_summary$gene_id]
-  gu_summary$condition <- ud$condition_names[1]
+  gu_summary$condition <- ud$condition_name_of_sample[1]
   
   # remove unused vars
   gu_summary$gene_id <- NULL

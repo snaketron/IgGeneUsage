@@ -2,6 +2,36 @@
 # Description
 # Parse input data for GU analysis
 get_usage <- function(u) {
+  
+  get_condition_of_sample <- function(sample_ids, 
+                                      m) {
+    # condition at sample
+    condition_names <- character(length = length(sample_ids))
+    for(i in 1:length(sample_ids)) {
+      condition_names[i] <- m$condition[m$sample_id == sample_ids[i]]
+    }
+    condition_ids <- as.numeric(as.factor(condition_names))
+    
+    return(list(condition_ids = condition_ids,
+                condition_names = condition_names))
+  }
+  
+  get_condition_of_individual <- function(individual_ids, 
+                                          individual_names, 
+                                          m) {
+    # condition at individual
+    condition_names <- character(length = max(individual_ids))
+    for(i in 1:max(individual_ids)) {
+      q <- individual_names[individual_ids==i][1]
+      condition_names[i] <- m$condition[m$individual_id == q][1]
+    }
+    condition_ids <- as.numeric(as.factor(condition_names))
+    
+    return(list(condition_ids = condition_ids,
+                condition_names = condition_names))
+  }
+  
+  
   u$individual_org_name <- u$individual_id
   if("replicate" %in% colnames(u)) {
     
@@ -89,22 +119,10 @@ get_usage <- function(u) {
   tr <- table(replicate_ids)
   has_balanced_replicates <- ifelse(test = all(tr==tr[1]), yes=TRUE, no=FALSE)
   
-  if(has_replicates) {
-    # condition at individual
-    condition_names <- character(length = max(individual_ids))
-    for(i in 1:max(individual_ids)) {
-      q <- individual_names[individual_ids==i][1]
-      condition_names[i] <- m$condition[m$individual_id == q][1]
-    }
-    condition_ids <- as.numeric(as.factor(condition_names))
-  } else {
-    # condition at sample
-    condition_names <- character(length = length(sample_ids))
-    for(i in 1:length(sample_ids)) {
-      condition_names[i] <- m$condition[m$sample_id == sample_ids[i]]
-    }
-    condition_ids <- as.numeric(as.factor(condition_names))
-  }
+  cos <- get_condition_of_sample(sample_ids = sample_ids, m = m) 
+  coi <- get_condition_of_individual(individual_ids = individual_ids,
+                                     individual_names = individual_names,
+                                     m = m)
   
   return(list(Y = Y, 
               N = as.numeric(N), 
@@ -112,9 +130,11 @@ get_usage <- function(u) {
               N_gene = nrow(Y),
               gene_names = gene_names,
               sample_names = sample_ids, 
-              condition_id = condition_ids,
-              condition_names = condition_names,
-              N_condition = max(condition_ids),
+              condition_id_of_sample = cos$condition_ids,
+              condition_name_of_sample = cos$condition_names,
+              condition_id_of_individual = coi$condition_ids,
+              condition_name_of_individual = coi$condition_names,
+              N_condition = max(cos$condition_ids),
               individual_id = individual_ids,
               individual_names = individual_names,
               individual_org_names = individual_org_names,
@@ -125,9 +145,11 @@ get_usage <- function(u) {
               N_replicate = max(replicate_ids),
               proc_ud = u,
               has_replicates = has_replicates,
-              has_conditions = max(condition_ids)>1,
+              has_conditions = max(cos$condition_ids)>1,
               has_balanced_replicates = has_balanced_replicates))
 }
+
+
 
 # Description:
 # get the appropriate model
@@ -173,10 +195,8 @@ get_model <- function(has_replicates,
       if(paired) {
         model <- stanmodels$dgu_paired_rep
         pars <- c("phi", "kappa", "alpha", 
-                  "sigma_condition", "sigma_individual", "sigma_alpha",
-                  "sigma_alpha_rep", "sigma_beta_rep",
-                  "alpha_sample", "beta_sample", 
-                  "alpha_individual", "beta_individual", 
+                  "sigma_condition", "sigma_individual", "sigma_beta_rep",
+                  "mu_individual", "beta_sample", "beta_individual", 
                   "beta_condition", 
                   "Yhat_rep", "Yhat_rep_prop", "Yhat_condition_prop", 
                   "log_lik", "dgu", "dgu_prob", "theta")
