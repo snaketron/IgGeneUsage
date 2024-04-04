@@ -24,6 +24,7 @@ DGU <- function(ud,
   control_list <- list(adapt_delta = adapt_delta,
                        max_treedepth = max_treedepth)
   
+  
   # get model
   m <- get_model(has_conditions = ud$has_conditions, 
                  has_replicates = ud$has_replicates,

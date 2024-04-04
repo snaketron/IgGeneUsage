@@ -1,53 +1,42 @@
-set.seed(seed = 12345)
 require(rstan)
 
 # Stan generative model
 sim_stan <- "
 functions {
-  int zibb_rng(int trials, real a, real b, real zi) {
-    if (bernoulli_rng(zi) == 1) {
+  int zibb_rng(int n, real mu, real phi, real kappa) {
+    if (bernoulli_rng(kappa) == 1) {
       return (0);
     } else {
-      return (beta_binomial_rng(trials, a, b));
+      return (beta_binomial_rng(n, mu * phi, (1 - mu) * phi));
     }
   }
 }
 
 data {
   int<lower=0> N_rep;
+  int<lower=0> N_individual;
   int<lower=0> N_gene;
-  int<lower=0> N [N_rep*2];
-  vector [N_gene] as;
-  vector [N_gene] bs;
-  vector [N_gene] zs;
-  real sigma_a;
-  real sigma_b;
+  int<lower=0> N;
+  real sigma;
+  real sigma_rep;
   real phi;
+  real kappa;
 }
 
 generated quantities {
-  real a_sim [N_gene, N_rep*2];
-  real b_sim [N_gene, N_rep*2];
-  int ysim [N_gene, N_rep*2];
+  array [N_gene, N_individual, N_rep] int Y;
+  real mu_rep;
+  real mu;
   real a;
-  real b;
   
-  for(s in 1:N_rep) {
-    for(g in 1:N_gene) {
-      a_sim[g,s] = normal_rng(as[g], sigma_a);
-      b_sim[g,s] = normal_rng(bs[g], sigma_b);
-      a = inv_logit(a_sim[g,s] + b_sim[g,s]*1) * phi;
-      b = phi - a;
-      ysim[g,s] = zibb_rng(N[s], a, b, zs[g]);
-    }
-  }
-  for(s in 1:N_rep) {
-    for(g in 1:N_gene) {
-      a_sim[g,N_rep+s] = normal_rng(as[g], sigma_a);
-      b_sim[g,N_rep+s] = normal_rng(bs[g], sigma_b);
-      a = inv_logit(a_sim[g,N_rep+s] + b_sim[g,N_rep+s]*-1) * phi;
-      b = phi - a;
-      ysim[g,N_rep+s] = zibb_rng(N[N_rep+s], a, b, zs[g]);
+  for(g in 1:N_gene) {
+    a = normal_rng(-3, 1);
+    for(s in 1:N_individual) {
+      mu = normal_rng(a, sigma);
+      for(r in 1:N_rep) {
+        mu_rep = normal_rng(mu, sigma_rep);
+        Y[g,s,r] = zibb_rng(N, 1/(1+exp(-(mu_rep))), phi, kappa);
+      }
     }
   }
 }
@@ -57,45 +46,45 @@ generated quantities {
 m <- rstan::stan_model(model_code = sim_stan)
 
 # generate data based on following fixed parameters
-N_rep <- 5
+set.seed(123456)
+N_individual <- 5
+N_rep <- 3
 N_gene <- 15
-Y_max <- 10^3
-as <- rnorm(n = N_gene, mean = -2, sd = 1.5)
-bs <- c(rnorm(n = N_gene-3, mean = 0, sd = 0.1),
-        rnorm(n = 3, mean = 0, sd = 1))
-zs <- c(runif(n = N_gene-3, min = 0, max = 0),
-        runif(n = 3, min = 0, max = 0.05))
-d <- list(N_rep = N_rep, 
+N <- 10^3
+sigma <- 0.5
+sigma_rep <- 0.2
+phi <- 200
+kappa <- 0.03
+
+l <- list(N_individual = N_individual, 
           N_gene = N_gene, 
-          N = rep(x = Y_max, times = N_rep*2),
-          as = as,
-          bs = bs,
-          zs = zs,
-          sigma_a = 0.1,
-          sigma_b = 0.1,
-          phi = 50)
+          N_rep = N_rep,
+          N = N,
+          sigma = sigma,
+          sigma_rep = sigma_rep,
+          phi = phi,
+          kappa = kappa)
 
 # simulate
 sim <- rstan::sampling(object = m,
-                       data = d, 
+                       data = l, 
                        iter = 1, 
                        chains = 1, 
-                       algorithm="Fixed_param")
+                       algorithm = "Fixed_param",
+                       seed = 123456)
 
-# extract simulation and convert into data frame which can 
-# be used as input of IgGeneUsage
-ysim <- rstan::extract(object = sim, par = "ysim")$ysim
-ysim <- ysim[1, ,]
+# extract simulation and convert to be used as input of IgGeneUsage
+ysim <- rstan::extract(object = sim, par = "Y")$Y
+ysim <- ysim[1,,,]
 
 ysim_df <- reshape2::melt(ysim)
-colnames(ysim_df) <- c("gene_name", "individual_id", "gene_usage_count")
-ysim_df$condition <- ifelse(test = ysim_df$individual_id<=N_rep, 
-                            yes = "C1",
-                            no = "C2")
-ysim_df <- ysim_df[, c("individual_id", "condition", "gene_name", "gene_usage_count")]
-ysim_df$individual_id <- paste0("pt_", as.character(ysim_df$individual_id))
-ysim_df$gene_name <- paste0("gene_", as.character(ysim_df$gene_name))
+colnames(ysim_df) <- c("gene_name", "individual_id", "replicate", "gene_usage_count")
+ysim_df$condition <- "C_1"
+ysim_df <- ysim_df[, c("individual_id", "condition", "gene_name", "replicate", "gene_usage_count")]
+ysim_df$individual_id <- paste0("I_", as.character(ysim_df$individual_id))
+ysim_df$gene_name <- paste0("G_", as.character(ysim_df$gene_name))
+ysim_df$replicate <- paste0("R_", as.character(ysim_df$replicate))
 d_zibb_2 <- ysim_df
 
 # save
-save(d_zibb_2, file = "data/d_zibb_2.RData", compress = T)
+save(d_zibb_2, file = "data/d_zibb_2.RData", compress = TRUE)

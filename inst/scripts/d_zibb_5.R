@@ -120,7 +120,7 @@ m <- data.frame(sample_id = 1:l$N_sample,
                 individual_id = l$individual_id,
                 condition_id = l$condition_id)
 
-ysim_df <- merge(x = ysim_df, y = m, by = "sample_id", all.x = T)
+ysim_df <- merge(x = ysim_df, y = m, by = "sample_id", all.x = TRUE)
 
 ysim_df$condition <- paste0("C_", ysim_df$condition_id)
 ysim_df$gene_name <- paste0("G_", ysim_df$gene_name)
@@ -134,4 +134,4 @@ ysim_df <- ysim_df[, c("individual_id", "condition", "gene_name",
 d_zibb_5 <- ysim_df
 
 # save
-save(d_zibb_5, file = "data/d_zibb_5.RData", compress = T)
+save(d_zibb_5, file = "data/d_zibb_5.RData", compress = TRUE)

@@ -7,8 +7,9 @@
 A small example dataset that has the following features:
 
   \itemize{
-    \item 2 conditions
-    \item 5 samples per condition
+    \item 1 conditions
+    \item 5 individuals (samples)
+    \item 3 biological replicates per individual
     \item 15 Ig genes
   }
 This dataset was simulated from zero-inflated beta-binomial (ZIBB) 
@@ -20,11 +21,12 @@ data("d_zibb_2", package = "IgGeneUsage")
 }
 
 \format{
-A data frame with 4 columns:  
+A data frame with columns:  
 \itemize{
   \item "individual_id"
   \item "condition"
   \item "gene_name"
+  \item "replicate"
   \item "gene_name_count"
 }
 This format is accepted by IgGeneUsage.

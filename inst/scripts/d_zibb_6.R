@@ -18,11 +18,10 @@ data {
   int<lower=0> N_individual;               // number of individuals
   int<lower=0> N_condition;                // number of conditions
   array [N_sample] int N;                  // repertoire size
-  array [N_sample] int condition_id;   // id of conditions
+  array [N_sample] int condition_id;       // id of conditions
   array [N_sample] int individual_id;      // id of replicate
   real <lower=0> phi;
   real <lower=0, upper=1> kappa;
-  array [N_condition] vector [N_gene] beta_condition;
   vector <lower=0> [N_condition] sigma_condition;
   real <lower=0> sigma_alpha;
 }
@@ -33,9 +32,16 @@ generated quantities {
   // generate usage
   array [N_sample] vector <lower=0, upper=1> [N_gene] theta;
   array [N_gene, N_sample, N_rep] int Y;
+  array [N_condition] vector [N_gene] beta_condition;
   
   for(i in 1:N_gene) {
     alpha[i] = normal_rng(-3, 0.5);
+  }
+  
+  for(i in 1:N_condition) {
+    for(j in 1:N_gene) {
+      beta_condition[i][j] = normal_rng(0, sigma_condition[i]);
+    }
   }
   
   for(i in 1:N_sample) {
@@ -57,9 +63,9 @@ model <- rstan::stan_model(model_code = sim_stan)
 
 
 # generate data based on the following parameters parameters
-set.seed(11132)
+set.seed(1113)
 N_gene <- 10
-N_individual <- 6
+N_individual <- 9
 N_condition <- 3
 N_sample <- N_individual*N_condition
 N_rep <- 4
@@ -73,19 +79,7 @@ individual_id <- rep(x = 1:N_individual, times = N_condition)
 phi <- 200
 kappa <- 0.02
 
-beta_condition <- array(data = 0, dim = c(N_condition, N_gene))
-for(c in 1:N_condition) {
-  for(g in 1:N_gene) {
-    u <- runif(n = 1, min = 0, max = 1)
-    if(u <= 0.8) {
-      beta_condition[c,g] <- rnorm(n = 1, mean = 0, sd = 0.1)
-    } else {
-      beta_condition[c,g] <- rnorm(n = 1, mean = 0, sd = 2)
-    }
-  }
-}
-
-sigma_condition <- rep(x = 0.5, times = N_condition)
+sigma_condition <- c(1, 0.5, 0.25)
 sigma_alpha <- 0.25
 
 
@@ -99,7 +93,6 @@ l <- list(N_rep = N_rep,
           individual_id = individual_id,
           phi = phi,
           kappa = kappa,
-          beta_condition = beta_condition,
           sigma_condition = sigma_condition,
           sigma_alpha = sigma_alpha)
 
@@ -122,7 +115,7 @@ m <- data.frame(sample_id = 1:l$N_sample,
                 individual_id = l$individual_id,
                 condition_id = l$condition_id)
 
-ysim_df <- merge(x = ysim_df, y = m, by = "sample_id", all.x = T)
+ysim_df <- merge(x = ysim_df, y = m, by = "sample_id", all.x = TRUE)
 
 ysim_df$condition <- paste0("C_", ysim_df$condition_id)
 ysim_df$gene_name <- paste0("G_", ysim_df$gene_name)
@@ -137,12 +130,5 @@ ysim_df <- ysim_df[, c("individual_id", "condition", "gene_name",
 d_zibb_6 <- ysim_df
 
 # save
-save(d_zibb_6, file = "data/d_zibb_6.RData", compress = T)
+save(d_zibb_6, file = "data/d_zibb_6.RData", compress = TRUE)
 
-
-# ggplot(data = d_zibb_6)+
-#   facet_grid(individual_id~gene_name, scales = "free_y")+
-#   geom_point(aes(x = condition, y = gene_usage_count, group = paste0(individual_id, replicate)), col = "darkgray")+
-#   geom_line(aes(x = condition, y = gene_usage_count, group = paste0(individual_id, replicate)), col = "darkgray")+
-#   theme_bw(base_size = 10)+
-#   theme(legend.position = "none")

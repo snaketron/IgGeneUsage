@@ -9,7 +9,7 @@ A small example dataset that has the following features:
   \itemize{
     \item 3 conditions
     \item 5 samples per condition
-    \item 15 Ig genes
+    \item 8 Ig genes
   }
 This dataset was simulated from zero-inflated beta-binomial (ZIBB) 
 distribution. Simulation code is available in inst/scripts/d_zibb_3.R
@@ -20,7 +20,7 @@ data("d_zibb_3", package = "IgGeneUsage")
 }
 
 \format{
-A data frame with 4 columns:  
+A data frame with columns:  
 \itemize{
   \item "individual_id"
   \item "condition"

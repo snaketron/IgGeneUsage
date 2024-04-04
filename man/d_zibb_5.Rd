@@ -20,7 +20,7 @@ data("d_zibb_5", package = "IgGeneUsage")
 }
 
 \format{
-A data frame with 4 columns:  
+A data frame with columns:  
 \itemize{
   \item "individual_id"
   \item "condition"
