@@ -31,6 +31,34 @@ get_usage <- function(u) {
                 condition_names = condition_names))
   }
   
+  check_paired <- function(u, 
+                           has_balanced_replicates, 
+                           has_replicates, 
+                           has_condition) {
+    if(has_condition==FALSE) {
+      return(FALSE)
+    }
+    if(has_balanced_replicates==FALSE) {
+      return(FALSE)
+    }
+    
+    if(has_replicates) {
+      q <- u[duplicated(u[,c("individual_id","condition","replicate")])==FALSE,]
+      q$f <- 1
+      q <- aggregate(f~individual_id+condition+replicate, data = q, 
+                     FUN = sum, simplify = FALSE, drop = FALSE)
+      q$f[is.null(q$f)|is.na(q$f)] <- 0
+      return(ifelse(test = any(q$f!=1), yes = FALSE, no = TRUE))
+    }
+    else {
+      q <- u[duplicated(u[,c("individual_id", "condition")])==FALSE,]
+      q$f <- 1
+      q <- aggregate(f~individual_id+condition, data = q, FUN = sum, 
+                     simplify = FALSE, drop = FALSE)
+      q$f[is.null(q$f)|is.na(q$f)] <- 0
+      return(ifelse(test = any(q$f!=1), yes = FALSE, no = TRUE))
+    }
+  }
   
   u$individual_org_name <- u$individual_id
   if("replicate" %in% colnames(u)) {
@@ -124,6 +152,14 @@ get_usage <- function(u) {
                                      individual_names = individual_names,
                                      m = m)
   
+  has_conditions <- max(cos$condition_ids)>1
+  
+  has_paired_data <- check_paired(
+    u = u, 
+    has_balanced_replicates = has_balanced_replicates, 
+    has_replicates = has_replicates, 
+    has_condition = has_condition)
+  
   return(list(Y = Y, 
               N = as.numeric(N), 
               N_sample = ncol(Y), 
@@ -145,23 +181,26 @@ get_usage <- function(u) {
               N_replicate = max(replicate_ids),
               proc_ud = u,
               has_replicates = has_replicates,
-              has_conditions = max(cos$condition_ids)>1,
-              has_balanced_replicates = has_balanced_replicates))
+              has_conditions = has_conditions,
+              has_balanced_replicates = has_balanced_replicates,
+              has_paired_data = has_paired_data))
 }
-
-
 
 # Description:
 # get the appropriate model
-get_model <- function(has_replicates, 
-                      has_conditions, 
-                      has_balanced_replicates, 
+get_model <- function(has_replicates,
+                      has_conditions,
+                      has_balanced_replicates,
+                      has_paired_data,
                       paired) {
   
   model_type <- ifelse(test = has_conditions, yes = "DGU", no = "GU")
   
   if(paired == TRUE & has_balanced_replicates == FALSE) {
-    stop("For paired analysis with replicates, you need balanced replicates!")
+    stop("For paired analysis with replicates, you need balanced replicates")
+  }
+  if(paired == TRUE & has_paired_data == FALSE) {
+    stop("paired data selected, but data is not paired")
   }
   
   if(model_type == "GU") {
@@ -229,6 +268,8 @@ get_model <- function(has_replicates,
               pars = pars,
               has_replicates = has_replicates,
               has_conditions = has_conditions,
+              has_balanced_replicates = has_balanced_replicates,
+              has_paired_data = has_paired_data,
               paired = paired))
 }
 
