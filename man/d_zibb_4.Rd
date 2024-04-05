@@ -7,7 +7,7 @@
 A small example dataset that has the following features:
 
   \itemize{
-    \item 3 conditions
+    \item 2 conditions
     \item 7 individuals per condition
     \item 4 replicates per individual
     \item 8 Ig genes

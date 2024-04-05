@@ -69,10 +69,10 @@ m <- rstan::stan_model(model_code = sim_stan)
 
 # generate data based on the following parameters parameters
 set.seed(1021)
-N_gene <- 10
+N_gene <- 8
 N_replicates <- 4
-N_condition <- 3
-N_individual_per_condition <- 7
+N_condition <- 2
+N_individual_per_condition <- 5
 N_individual <- N_individual_per_condition * N_condition
 N_sample <- N_individual * N_replicates
 condition_id <- rep(1:N_condition, each = N_individual_per_condition)

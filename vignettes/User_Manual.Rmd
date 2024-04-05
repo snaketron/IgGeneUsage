@@ -18,7 +18,6 @@ knitr::opts_chunk$set(comment = FALSE,
 ```
 
 
-
 ```{r}
 require(IgGeneUsage)
 require(rstan)
@@ -29,6 +28,7 @@ require(ggrepel)
 require(reshape2)
 require(patchwork)
 ```
+
 
 # Introduction
 Decoding the properties of immune receptor repertoires (IRRs) is key to 
@@ -92,10 +92,12 @@ Lets look into the simulated dataset `d_zibb_3`. This dataset was generated
 by a zero-inflated beta-binomial (ZIBB) model, and `r Biocpkg("IgGeneUsage")` 
 was designed to fit ZIBB-distributed data.
 
+
 ```{r}
 data("d_zibb_3", package = "IgGeneUsage")
 knitr::kable(head(d_zibb_3))
 ```
+
 
 We can also visualize `d_zibb_3` with `r CRANpkg("ggplot")`:
 
@@ -128,6 +130,7 @@ adjust the inputs accordingly. If the warnings persist, please submit an
 issue with a reproducible script at the Bioconductor support site or on 
 Github[^3].
 
+
 ```{r}
 M <- DGU(ud = d_zibb_3, # input data
          mcmc_warmup = 300, # how many MCMC warm-ups per chain (default: 500)
@@ -150,6 +153,7 @@ In the output of DGU, we provide the following objects:
   * `ud`: processed Ig gene usage data 
   * `fit`: rstan ('stanfit') object of the fitted model $\rightarrow$ used 
      for model checks (see section 'Model checking')
+
 
 ```{r}
 summary(M)
@@ -188,6 +192,7 @@ rstan::check_hmc_diagnostics(M$fit)
 ```{r, fig.height = 3, fig.width = 6}
 rstan::stan_rhat(object = M$fit)|rstan::stan_ess(object = M$fit)
 ```
+
 
 ## PPC: posterior predictive checks
 ### PPCs: repertoire-specific
@@ -247,6 +252,7 @@ deviation (sd), L (low bound of 95% HDI), H (high bound of 95% HDI)
 ```{r}
 kable(x = head(M$dgu), row.names = FALSE, digits = 2)
 ```
+
 
 ### DGU: differential gene usage
 We know that the values of `\gamma` and `\pi` are related to each other. 
@@ -333,6 +339,7 @@ ggplot()+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
 ```
 
+
 ## GU: gene usage summary
 `r Biocpkg("IgGeneUsage")` also reports the inferred gene usage (GU) 
 probability of individual genes in each condition. For a given gene we 
@@ -352,6 +359,7 @@ ggplot(data = M$gu)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
 ```
 
+
 # Leave-one-out (LOO) analysis
 To assert the robustness of the probability of DGU ($\pi$) and the effect 
 size ($\gamma$), `r Biocpkg("IgGeneUsage")` has a built-in procedure for 
@@ -364,6 +372,7 @@ $\gamma$. We assert quantitatively the robustness of $\pi$ and $\gamma$
 by evaluating their variability for a specific gene. 
 
 This analysis can be computationally demanding.
+
 
 ```{r}
 L <- LOO(ud = d_zibb_3, # input data
@@ -404,6 +413,7 @@ ggplot(data = L_dgu)+
   ylab(expression(gamma))
 ```
 
+
 ## LOO-DGU: variability of $\pi$
 
 ```{r, fig.width=6, fig.height=5}
@@ -437,7 +447,6 @@ ggplot(data = L_gu)+
 ```
 
 
-
 # Case Study B: analyzing IRRs containing biological replicates
 
 ```{r}
@@ -445,12 +454,13 @@ data("d_zibb_4", package = "IgGeneUsage")
 knitr::kable(head(d_zibb_4))
 ```
 
+
 We can also visualize `d_zibb_4` with `r CRANpkg("ggplot")`:
 
-```{r, fig.width=6, fig.height=3.25}
+```{r, fig.width=6.5, fig.height=3.25}
 ggplot(data = d_zibb_4)+
-  geom_point(aes(x = gene_name, y = gene_usage_count, col = condition),
-             position = position_dodge(width = .7), shape = 21)+
+  geom_point(aes(x = gene_name, y = gene_usage_count, col = condition, 
+                 shape = replicate), position = position_dodge(width = 0.8))+
   theme_bw(base_size = 11)+
   ylab(label = "Gene usage [count]")+
   xlab(label = '')+
@@ -458,13 +468,14 @@ ggplot(data = d_zibb_4)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
 ```
 
+
 ## Modeling
 
 ```{r}
 M <- DGU(ud = d_zibb_4, # input data
          mcmc_warmup = 500, # how many MCMC warm-ups per chain (default: 500)
          mcmc_steps = 1500, # how many MCMC steps per chain (default: 1,500)
-         mcmc_chains = 3, # how many MCMC chain to run (default: 4)
+         mcmc_chains = 2, # how many MCMC chain to run (default: 4)
          mcmc_cores = 1, # how many PC cores to use? (e.g. parallel chains)
          hdi_lvl = 0.95, # highest density interval level (de fault: 0.95)
          adapt_delta = 0.8, # MCMC target acceptance rate (default: 0.95)
@@ -487,10 +498,12 @@ ggplot(data = M$ppc$ppc_rep)+
   ylab(label = "PPC usage [counts]")
 ```
 
+
 ## Analysis of estimated effect sizes
 The top panel shows the average gene usage (GU) in different biological 
 conditions. The bottom panels shows the differential gene usage (DGU) 
 between pairs of biological conditions.
+
 
 ```{r, fig.weight = 7, fig.height = 4}
 g1 <- ggplot(data = M$gu)+
@@ -529,8 +542,6 @@ g2 <- ggplot(data = stats)+
 ```{r, fig.height = 6, fig.width = 7}
 (g1/g2)
 ```
-
-
 
 
 # Session
