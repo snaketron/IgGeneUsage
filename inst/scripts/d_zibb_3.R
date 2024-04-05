@@ -21,16 +21,23 @@ data {
   array [N_individual] int condition_id;       // id of conditions
   real <lower=0> phi;
   real <lower=0, upper=1> kappa;
-  array [N_condition] vector [N_gene] beta_condition;
   vector <lower=0> [N_condition] sigma_individual;
+  vector <lower=0> [N_condition] sigma_condition;
 }
 
 generated quantities {
   vector [N_gene] alpha;
   array [N_individual] vector <lower=0, upper=1> [N_gene] theta;
   array [N_individual] vector [N_gene] beta_individual;
+  array [N_condition] vector [N_gene] beta_condition;
   // generate usage
   array [N_gene, N_individual] int Y;
+  
+  for(i in 1:N_condition) {
+    for(j in 1:N_gene) {
+      beta_condition[i][j] = normal_rng(0, sigma_condition[i]);
+    }
+  }
   
   for(i in 1:N_gene) {
     alpha[i] = normal_rng(-3.0, 1.0);
@@ -54,10 +61,10 @@ N_condition <- 3
 N_individual <- 5
 N_gene <- 8
 N <- 10^3
-sigma_individual <- runif(n = N_condition, min = 0.1, max = 0.6)
-beta_condition <- t(replicate(n = N_condition, expr = rnorm(n = N_gene, mean = 0, sd = 1)))
+sigma_individual <- runif(n = N_condition, min = 0.1, max = 0.2)
+sigma_condition <- runif(n = N_condition, min = 0.2, max = 0.6)
 phi <- 200
-kappa <- 0.03
+kappa <- 0.015
 
 condition_id <- rep(x = 1:N_condition, each = N_individual)
 
@@ -67,7 +74,7 @@ l <- list(N_individual = N_individual*N_condition,
           N = N,
           condition_id = condition_id,
           sigma_individual = sigma_individual,
-          beta_condition = beta_condition,
+          sigma_condition = sigma_condition,
           phi = phi,
           kappa = kappa)
 
@@ -77,7 +84,7 @@ sim <- rstan::sampling(object = m,
                        iter = 1, 
                        chains = 1, 
                        algorithm = "Fixed_param",
-                       seed = 123456)
+                       seed = 12346)
 
 
 # extract simulation and convert into data frame which can 

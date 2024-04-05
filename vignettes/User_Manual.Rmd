@@ -88,19 +88,19 @@ on the posterior distribution of $\gamma$, and are thus related.
 `r Biocpkg("IgGeneUsage")` has a couple of built-in Ig gene usage datasets. 
 Some were obtained from studies and others were simulated.
 
-Lets look into the simulated dataset `d_zibb_2`. This dataset was generated 
+Lets look into the simulated dataset `d_zibb_3`. This dataset was generated 
 by a zero-inflated beta-binomial (ZIBB) model, and `r Biocpkg("IgGeneUsage")` 
 was designed to fit ZIBB-distributed data.
 
 ```{r}
-data("d_zibb_2", package = "IgGeneUsage")
-knitr::kable(head(d_zibb_2))
+data("d_zibb_3", package = "IgGeneUsage")
+knitr::kable(head(d_zibb_3))
 ```
 
-We can also visualize `d_zibb_2` with `r CRANpkg("ggplot")`:
+We can also visualize `d_zibb_3` with `r CRANpkg("ggplot")`:
 
 ```{r, fig.width=6, fig.height=3.25}
-ggplot(data = d_zibb_2)+
+ggplot(data = d_zibb_3)+
   geom_point(aes(x = gene_name, y = gene_usage_count, col = condition),
              position = position_dodge(width = .7), shape = 21)+
   theme_bw(base_size = 11)+
@@ -113,10 +113,10 @@ ggplot(data = d_zibb_2)+
 
 ## DGU analysis
 As main input `r Biocpkg("IgGeneUsage")` uses a data.frame formatted as e.g.
-`d_zibb_2`. Other input parameters allow you to configure specific settings 
+`d_zibb_3`. Other input parameters allow you to configure specific settings 
 of the `r CRANpkg("rstan")` sampler.
 
-In this example, we analyze `d_zibb_2` with 3 MCMC chains, 1500 iterations 
+In this example, we analyze `d_zibb_3` with 3 MCMC chains, 1500 iterations 
 each including 500 warm-ups using a single CPU core (Hint: for parallel 
 chain execution set parameter `mcmc_cores` = 3). We report for each model 
 parameter its mean and 95% highest density interval (HDIs).
@@ -129,8 +129,8 @@ issue with a reproducible script at the Bioconductor support site or on
 Github[^3].
 
 ```{r}
-M <- DGU(ud = d_zibb_2, # input data
-         mcmc_warmup = 500, # how many MCMC warm-ups per chain (default: 500)
+M <- DGU(ud = d_zibb_3, # input data
+         mcmc_warmup = 300, # how many MCMC warm-ups per chain (default: 500)
          mcmc_steps = 1500, # how many MCMC steps per chain (default: 1,500)
          mcmc_chains = 3, # how many MCMC chain to run (default: 4)
          mcmc_cores = 1, # how many PC cores to use? (e.g. parallel chains)
@@ -182,7 +182,7 @@ summary(M)
 rstan::check_hmc_diagnostics(M$fit)
 ```
 
-  * rhat < 1.03 and n_eff > 0
+  * rhat < 1.05 and n_eff > 0
   
 
 ```{r, fig.height = 3, fig.width = 6}
@@ -197,7 +197,7 @@ Error bars show 95% HDI of mean posterior prediction. The predictions can be
 compared with the observed data (x-axis). For points near the diagonal 
 $\rightarrow$ accurate prediction.
 
-```{r, fig.height = 3.25, fig.width = 7}
+```{r, fig.height = 4, fig.width = 7}
 ggplot(data = M$ppc$ppc_rep)+
   facet_wrap(facets = ~individual_id, ncol = 5)+
   geom_abline(intercept = 0, slope = 1, linetype = "dashed", col = "darkgray")+
@@ -366,7 +366,7 @@ by evaluating their variability for a specific gene.
 This analysis can be computationally demanding.
 
 ```{r}
-L <- LOO(ud = d_zibb_2, # input data
+L <- LOO(ud = d_zibb_3, # input data
          mcmc_warmup = 500, # how many MCMC warm-ups per chain (default: 500)
          mcmc_steps = 1000, # how many MCMC steps per chain (default: 1,500)
          mcmc_chains = 1, # how many MCMC chain to run (default: 4)
@@ -375,6 +375,7 @@ L <- LOO(ud = d_zibb_2, # input data
          adapt_delta = 0.8, # MCMC target acceptance rate (default: 0.95)
          max_treedepth = 10) # tree depth evaluated at each step (default: 12)
 ```
+
 
 Next, we collected the results (GU and DGU) from each LOO iteration:
 
@@ -388,32 +389,32 @@ L_dgu <- do.call(rbind, lapply(X = L, FUN = function(x){return(x$dgu)}))
 
 ## LOO-DGU: variability of effect size $\gamma$
 
-```{r, fig.width=6.5, fig.height=4}
+```{r, fig.width=6, fig.height=5}
 ggplot(data = L_dgu)+
+  facet_wrap(facets = ~contrast, ncol = 1)+
   geom_hline(yintercept = 0, linetype = "dashed", col = "gray")+
   geom_errorbar(aes(x = gene_name, y = es_mean, ymin = es_L,
                     ymax = es_H, col = contrast, group = loo_id),
-                width = 0.1, position = position_dodge(width = 0.5))+
+                width = 0.1, position = position_dodge(width = 0.75))+
   geom_point(aes(x = gene_name, y = es_mean, col = contrast,
                  group = loo_id), size = 1,
-             position = position_dodge(width = 0.5))+
+             position = position_dodge(width = 0.75))+
   theme_bw(base_size = 11)+
-  theme(legend.position = "top")+
-  ylab(expression(gamma))+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
+  theme(legend.position = "none")+
+  ylab(expression(gamma))
 ```
 
 ## LOO-DGU: variability of $\pi$
 
-```{r, fig.width=6.5, fig.height=4}
+```{r, fig.width=6, fig.height=5}
 ggplot(data = L_dgu)+
+  facet_wrap(facets = ~contrast, ncol = 1)+
   geom_point(aes(x = gene_name, y = pmax, col = contrast,
                  group = loo_id), size = 1,
              position = position_dodge(width = 0.5))+
   theme_bw(base_size = 11)+
-  theme(legend.position = "top")+
-  ylab(expression(pi))+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
+  theme(legend.position = "none")+
+  ylab(expression(pi))
 ```
 
 
@@ -425,24 +426,16 @@ ggplot(data = L_gu)+
   geom_errorbar(aes(x = gene_name, y = prob_mean, ymin = prob_L,
                     ymax = prob_H, col = condition, 
                     group = interaction(loo_id, condition)),
-                width = 0.1, position = position_dodge(width = 0.5))+
+                width = 0.1, position = position_dodge(width = 1))+
   geom_point(aes(x = gene_name, y = prob_mean, col = condition,
                  group = interaction(loo_id, condition)), size = 1,
-             position = position_dodge(width = 0.5))+
+             position = position_dodge(width = 1))+
   theme_bw(base_size = 11)+
   theme(legend.position = "top")+
   ylab("GU [probability]")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4))
 ```
 
-# Hierarchical clustering analaysis 
-
-```{r, fig.width=6, fig.height=4}
-# x <- M$theta
-x <- acast(individual_id~gene_name, data = M$theta, value.var = "theta_mean")
-
-plot(hclust(dist(x, method = "euclidean"), method = "average"))
-```
 
 
 # Case Study B: analyzing IRRs containing biological replicates

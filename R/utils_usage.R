@@ -34,8 +34,8 @@ get_usage <- function(u) {
   check_paired <- function(u, 
                            has_balanced_replicates, 
                            has_replicates, 
-                           has_condition) {
-    if(has_condition==FALSE) {
+                           has_conditions) {
+    if(has_conditions==FALSE) {
       return(FALSE)
     }
     if(has_balanced_replicates==FALSE) {
@@ -43,18 +43,19 @@ get_usage <- function(u) {
     }
     
     if(has_replicates) {
-      q <- u[duplicated(u[,c("individual_id","condition","replicate")])==FALSE,]
+      q <- u[duplicated(u[,c("individual_id","condition",
+                             "replicate_id")]) == FALSE,]
       q$f <- 1
-      q <- aggregate(f~individual_id+condition+replicate, data = q, 
-                     FUN = sum, simplify = FALSE, drop = FALSE)
+      q <- aggregate(f~individual_id+condition+replicate_id, 
+                     data = q, FUN = sum, drop = FALSE)
       q$f[is.null(q$f)|is.na(q$f)] <- 0
       return(ifelse(test = any(q$f!=1), yes = FALSE, no = TRUE))
     }
     else {
       q <- u[duplicated(u[,c("individual_id", "condition")])==FALSE,]
       q$f <- 1
-      q <- aggregate(f~individual_id+condition, data = q, FUN = sum, 
-                     simplify = FALSE, drop = FALSE)
+      q <- aggregate(f~individual_id+condition, 
+                     data = q, FUN = sum, drop = FALSE)
       q$f[is.null(q$f)|is.na(q$f)] <- 0
       return(ifelse(test = any(q$f!=1), yes = FALSE, no = TRUE))
     }
@@ -158,7 +159,7 @@ get_usage <- function(u) {
     u = u, 
     has_balanced_replicates = has_balanced_replicates, 
     has_replicates = has_replicates, 
-    has_condition = has_condition)
+    has_conditions = has_conditions)
   
   return(list(Y = Y, 
               N = as.numeric(N), 

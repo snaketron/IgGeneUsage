@@ -104,8 +104,8 @@ get_ppc_condition <- function(glm,
   }
   
   # condition map
-  condition_map <- data.frame(condition_name = ud$condition_names,
-                              condition_id = ud$condition_id)
+  condition_map <- data.frame(condition_name = ud$condition_name_of_sample,
+                              condition_id = ud$condition_id_of_sample)
   condition_map <- condition_map[duplicated(condition_map)==FALSE,]
   rownames(condition_map) <- condition_map$condition_id
   yhat$gene_name <- ud$gene_names[yhat$gene_id]
