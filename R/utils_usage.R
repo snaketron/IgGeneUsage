@@ -145,7 +145,7 @@ get_usage <- function(u) {
   }
   individual_ids <- as.numeric(as.factor(individual_names))
   replicate_ids <- as.numeric(as.factor(replicate_names))
-  tr <- table(replicate_ids)
+  tr <- table(paste0(individual_ids, '|', replicate_ids))
   has_balanced_replicates <- ifelse(test = all(tr==tr[1]), yes=TRUE, no=FALSE)
   
   cos <- get_condition_of_sample(sample_ids = sample_ids, m = m) 
