@@ -162,7 +162,7 @@ get_usage <- function(u) {
     has_conditions = has_conditions)
   
   return(list(Y = Y, 
-              N = as.numeric(N), 
+              N = as.array(as.numeric(N)), 
               N_sample = ncol(Y), 
               N_gene = nrow(Y),
               gene_names = gene_names,
